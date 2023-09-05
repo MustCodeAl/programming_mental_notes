@@ -30,10 +30,10 @@ How to reach the goal? If we think about it few successful people are able to sa
 
 A problem is an emotional state. Without emotions, it is just a situation.
 
-The only thing we have to do is to add the word "yet."
-	•	I cannot do this "yet."
-	•	This is not for me "yet."
-	•	I do not understand this "yet."
+The only thing we have to do is to add the word "*yet*."
+	* I cannot do this "*yet*."
+	* This is not for me "*yet*."
+	* I do not understand this "*yet*."
 
 Progress is noticeable when the question that tortured us has lost its meaning.
 
@@ -70,9 +70,9 @@ We have to understand how things work, how they are structured, and how to use t
 Purpose of documentation is to present the information we have obtained in a comprehensible and easy way to reproduce a specific activity.
 
 Therefore the essential characteristics of documentation are:
-	1	Overview
-	2	Structure
-	3	Clarity
+	1. Overview
+	2. Structure
+	3. Clarity
 
 information we collect has a certain level of quality, but not all information is helpful. More than that, some information can confuse and disorient us completely. 
 
@@ -84,8 +84,8 @@ When writing docs: 
 ### Learning faster
 
 It often is not easy to find the information we need. First, we have to find out what kind of information we need.
-	•	What do we already know?
-	•	What do we not know yet?
+	* What do we already know?
+	* What do we not know yet?
 
 When reading new information, an individual process is started, there is an initial reaction to an external information's influence, and then we imagine/interpret and process/link to our own existing knowledge.
 
@@ -111,12 +111,12 @@ Other Position(s) - This component describes the position of other persons.
 
 ###### states for a question
 We can assign two states, rough or precise, to a question:
-	•	A rough question would be: "How can I hack X?"
-	•	A precise question would be: "How can I use the server's SMB service to identify its existing user accounts?"
+	* A rough question would be: "How can I hack X?"
+	* A precise question would be: "How can I use the server's SMB service to identify its existing user accounts?"
 
 ###### Describing relationships between components
-Connection - How is X connected to Y?
-Affection - How does Y influence the state of component X?
+1. Connection - How is X connected to Y?
+2. Affection - How does Y influence the state of component X?
 
 
 ### Getting Stuck
