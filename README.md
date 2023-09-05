@@ -30,10 +30,11 @@ How to reach the goal? If we think about it few successful people are able to sa
 
 A problem is an emotional state. Without emotions, it is just a situation.
 
-The only thing we have to do is to add the word "*yet*."
-	* I cannot do this "*yet*."
-	* This is not for me "*yet*."
-	* I do not understand this "*yet*."
+The only thing we have to do is to add the word "_yet_."
+
+	* I cannot do this "_yet_."
+	* This is not for me "_yet_."
+	* I do not understand this "_yet_."
 
 Progress is noticeable when the question that tortured us has lost its meaning.
 
@@ -53,6 +54,7 @@ we use the information we already have. The art of thinking, called "Outside the
 Thinking outside the box means seeing things outside of the limitations placed on us
 
 once you solve a problem, it is important to:
+
 * think about how many different ways are there to solve it
 * think about why you didn't solve the problem in a different way.
 * think about the reasons for choosing the method that you chose
@@ -70,6 +72,7 @@ We have to understand how things work, how they are structured, and how to use t
 Purpose of documentation is to present the information we have obtained in a comprehensible and easy way to reproduce a specific activity.
 
 Therefore the essential characteristics of documentation are:
+
 	1. Overview
 	2. Structure
 	3. Clarity
@@ -84,6 +87,7 @@ When writing docs: 
 ### Learning faster
 
 It often is not easy to find the information we need. First, we have to find out what kind of information we need.
+
 	* What do we already know?
 	* What do we not know yet?
 
@@ -111,10 +115,12 @@ Other Position(s) - This component describes the position of other persons.
 
 ###### states for a question
 We can assign two states, rough or precise, to a question:
+
 	* A rough question would be: "How can I hack X?"
 	* A precise question would be: "How can I use the server's SMB service to identify its existing user accounts?"
 
 ###### Describing relationships between components
+
 1. Connection - How is X connected to Y?
 2. Affection - How does Y influence the state of component X?
 
@@ -146,7 +152,6 @@ Attention is influenced by your interests, needs, personal attitudes, beliefs, o
 When we leave the so-called comfort zone, we enter a situation or field where we have little or no experience. This kind of uncertainty lowers our ability to think and has a powerful impact on our thought processes, which, in turn, slows us down.
 
 * small children do not exhibit such uncertainty 
-
 * They love to try out something new all the time and are not afraid or uncertain of making mistakes.
 
 Mistakes are an essential part of the learning process, and we should always keep it in mind.
