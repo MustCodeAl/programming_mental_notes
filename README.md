@@ -2,16 +2,16 @@
 
 Notes and advice for mindset as a developer and hacker from htb
 To get better at programming:
-Find handy dandy note taking software, drawing software, and system design/modeling software
-Start off by piggy backing off established extendable software
-Modify read mes/configs/presets
-Look at small already made extensions/plugins/addons and modify them
-	if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and ask
-Then move on to make your own extensions/plugins/addons
-Then work on other small libraries
-Then work on other editing other established softwares
+1. Find handy dandy note taking software, drawing software, and system design/modeling software
+2. Start off by piggy backing off established extendable software
+3. Modify read mes/configs/presets
+4. Look at small already made extensions/plugins/addons and modify them
+   if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and ask
+5. Then move on to make your own extensions/plugins/addons
+6. Then work on other small libraries
+7. Then work on other editing other established softwares
 And refactoring them
-Then when you feel comfortable enough you can make your own software
+8. Then when you feel comfortable enough you can make your own software
 
 
 ### Simplicity
