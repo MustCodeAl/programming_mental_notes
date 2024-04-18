@@ -6,7 +6,7 @@
 2. Start off by piggy backing off established extendable software
 3. Modify read mes/configs/presets
 4. Look at small already made extensions/plugins/addons and modify them
-   if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and use tests
+   a. if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and use tests
 5. Then move on to make your own extensions/plugins/addons
 6. Then work on other small libraries
 7. Then work on other editing other established softwares
@@ -26,17 +26,19 @@ And refactoring them
 
 
 ## When writing your own software:
-1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies
+1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies:
+   
    	a. type of problem: its a counting, minimum/maximum, or a greedy problem
 	b. the cases: base, edge, corner, and boundary
 	c. variables: input, output, mutable, static, and global 
 	d. bottlenecks: searching/accessing, ordering/sorting, and reading/writing,
-	f. patterns: Data collections, data encoding, and dataflow, 
-3. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies - then choose approach, 
-4. Write good pseudo code - to make it easier to name stuff later down the line
-5. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
-6. Implement the code - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
-7. Document, organize, and refactor your code
+	f. patterns: Data collections, data encoding, and dataflow,
+
+2. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies - then choose approach, 
+3. Write good pseudo code - to make it easier to name stuff later down the line
+4. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
+5. Implement the code - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
+6. Document, organize, and refactor your code
 
 ### Simplicity
 
