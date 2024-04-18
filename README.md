@@ -73,11 +73,11 @@ A problem is an emotional state. Without emotions, it is just a situation.
 
 The only thing we have to do is to add the word "**yet**."
 
-	- I cannot do this "**yet**."
+    I cannot do this '**yet**.'
 
-  	- I do not understand this "**yet**."
+    I do not understand this '**yet**.'
 
- 	- This is not for me "**yet**."
+    This is not for me '**yet**.'
 	
 Progress is noticeable when the question that tortured us has lost its meaning.
 
@@ -132,6 +132,7 @@ When writing docs: 
 It often is not easy to find the information we need. First, we have to find out what kind of information we need.
 
 	* What do we already know?
+ 
 	* What do we not know yet?
 
 When reading new information, an individual process is started, there is an initial reaction to an external information's influence, and then we imagine/interpret and process/link to our own existing knowledge.
@@ -160,6 +161,7 @@ Other Position(s) - This component describes the position of other persons.
 We can assign two states, rough or precise, to a question:
 
 	* A rough question would be: "How can I hack X?"
+ 
 	* A precise question would be: "How can I use the server's SMB service to identify its existing user accounts?"
 
 ###### Describing relationships between components
