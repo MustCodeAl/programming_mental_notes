@@ -38,7 +38,7 @@ And refactoring them
 
 	f. patterns: Data collections, data encoding, and dataflow,
 
-3. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies - then choose approach, 
+3. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies
 4. Write good pseudo code - to make it easier to name stuff later down the line
 5. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
 6. Implement the code - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
@@ -71,12 +71,14 @@ How to reach the goal? If we think about it few successful people are able to sa
 
 A problem is an emotional state. Without emotions, it is just a situation.
 
-The only thing we have to do is to add the word "_yet_."
+The only thing we have to do is to add the word "**yet**."
 
-	* I cannot do this "_yet_."
-	* This is not for me "_yet_."
-	* I do not understand this "_yet_."
+	- I cannot do this "**yet**."
 
+  	- I do not understand this "**yet**."
+
+ 	- This is not for me "**yet**."
+	
 Progress is noticeable when the question that tortured us has lost its meaning.
 
 However, first of all, we have to fail. It is an unavoidable and essential part of learning. This is one of the parts of the learning process which make us successful. Experience is built on failures. It explains that we know how to handle differently. Sometimes adverse, situations where something does not work as expected.
