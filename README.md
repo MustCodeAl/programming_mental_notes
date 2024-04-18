@@ -1,29 +1,42 @@
 # programming_mental_notes
 
-Notes and advice for mindset as a developer and hacker from htb
-To get better at programming:
+# Notes and advice for mindset as a developer and hacker from htb
+## To get better at programming as a beginner:
 1. Find handy dandy note taking software, drawing software, and system design/modeling software
 2. Start off by piggy backing off established extendable software
 3. Modify read mes/configs/presets
 4. Look at small already made extensions/plugins/addons and modify them
-   if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and ask
+   if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and use tests
 5. Then move on to make your own extensions/plugins/addons
 6. Then work on other small libraries
 7. Then work on other editing other established softwares
 And refactoring them
 8. Then when you feel comfortable enough you can make your own software
 
-When making your own software:
-1. Research and decide on focus areas - think in terms of actors, use case, and scaling strategies
-2. identify the problem - thinks of in terms of what is repetitive,
-   	a. type of problem: its a counting problem, maxinimum/minimum problem, or a greedy problem
-	b. the cases: base, edge, corner, boundary,
-	c. variables: input, output, static, mutable, and global
-	d. bottlenecks: race conditions, deadlocks, and cache misses
-3. Write good pseudo code - to make it easier to name stuff later down the line
-4. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
-5. Implement the code - dont be afraid to use an extra dependency or two as you can inline them later
-6. Document, organize, and refactor your code
+## When reading code:
+1. Learn the standards of the language
+2. Read docs
+3. Read code outloud like english sentences
+4. Look up stuff you dont understand
+5. Read the tests
+6. Read comments
+7. Look at similar projects
+8. Use tools to help you such as ides, debuggers, and ai
+9. Ask for help from contributors, forums, and issues
+
+
+## When writing your own software:
+1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies
+   	a. type of problem: its a counting, minimum/maximum, or a greedy problem
+	b. the cases: base, edge, corner, and boundary
+	c. variables: input, output, mutable, static, and global 
+	d. bottlenecks: searching/accessing, ordering/sorting, and reading/writing,
+	f. patterns: Data collections, data encoding, and dataflow, 
+3. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies - then choose approach, 
+4. Write good pseudo code - to make it easier to name stuff later down the line
+5. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
+6. Implement the code - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
+7. Document, organize, and refactor your code
 
 ### Simplicity
 
