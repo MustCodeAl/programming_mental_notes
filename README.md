@@ -1,18 +1,48 @@
 # programming_mental_notes
 
-Notes and advice for mindset as a developer and hacker from htb
-To get better at programming:
+# Notes and advice for mindset as a developer and hacker from htb
+## To get better at programming as a beginner:
 1. Find handy dandy note taking software, drawing software, and system design/modeling software
 2. Start off by piggy backing off established extendable software
 3. Modify read mes/configs/presets
 4. Look at small already made extensions/plugins/addons and modify them
-   if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and ask
+   a. if you are stuck look at extensions/addons from similar software in the same language or different applications, and read documentation and use tests
 5. Then move on to make your own extensions/plugins/addons
 6. Then work on other small libraries
 7. Then work on other editing other established softwares
 And refactoring them
 8. Then when you feel comfortable enough you can make your own software
 
+## When reading code:
+1. Learn the standards of the language
+2. Read docs
+3. Read code outloud like english sentences
+4. Look up stuff you dont understand
+5. Read the tests
+6. Read comments
+7. Look at similar projects
+8. Use tools to help you such as ides, debuggers, and ai
+9. Ask for help from contributors, forums, and issues
+
+
+## When writing your own software:
+1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies:
+   
+   	a. type of problem: its a counting, minimum/maximum, or a greedy problem
+   
+	b. the cases: base, edge, corner, and boundary
+
+	c. variables: input, output, mutable, static, and global
+
+	d. bottlenecks: searching/accessing, ordering/sorting, and reading/writing,
+
+	f. patterns: Data collections, data encoding, and dataflow,
+
+3. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies
+4. Write good pseudo code - to make it easier to name stuff later down the line
+5. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
+6. Implement the code - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
+7. Document, organize, and refactor your code
 
 ### Simplicity
 
@@ -41,12 +71,14 @@ How to reach the goal? If we think about it few successful people are able to sa
 
 A problem is an emotional state. Without emotions, it is just a situation.
 
-The only thing we have to do is to add the word "_yet_."
+The only thing we have to do is to add the word "**yet**."
 
-	* I cannot do this "_yet_."
-	* This is not for me "_yet_."
-	* I do not understand this "_yet_."
+    I cannot do this '**yet**.'
 
+    I do not understand this '**yet**.'
+
+    This is not for me '**yet**.'
+	
 Progress is noticeable when the question that tortured us has lost its meaning.
 
 However, first of all, we have to fail. It is an unavoidable and essential part of learning. This is one of the parts of the learning process which make us successful. Experience is built on failures. It explains that we know how to handle differently. Sometimes adverse, situations where something does not work as expected.
@@ -100,6 +132,7 @@ When writing docs: 
 It often is not easy to find the information we need. First, we have to find out what kind of information we need.
 
 	* What do we already know?
+ 
 	* What do we not know yet?
 
 When reading new information, an individual process is started, there is an initial reaction to an external information's influence, and then we imagine/interpret and process/link to our own existing knowledge.
@@ -128,6 +161,7 @@ Other Position(s) - This component describes the position of other persons.
 We can assign two states, rough or precise, to a question:
 
 	* A rough question would be: "How can I hack X?"
+ 
 	* A precise question would be: "How can I use the server's SMB service to identify its existing user accounts?"
 
 ###### Describing relationships between components
@@ -171,6 +205,101 @@ Those who chose to leave the comfort zone would reach their destination faster t
 
 Now we should understand the progression between decisions to step out of our comfort zone or stay in it. We will often get into situations where we do not know what to do. These will come again and again. However, we will always learn something new, and it will become more comfortable each time.
  
+
+### Debugging advice
+
+Document and write version of all tools being used in your project with their versions and operation system env
+Keep track of reference env
+
+
+Make sure you can build the entire project with just one command at all times so u can reduce change of mistakes 
+
+
+While you're writing down style, you might also want to think about documenting how you do other things in your project consistently:
+* What do your commit messages look like?
+* What do your issues/tasks look like?
+* How are files and folders named?
+These are things that are harder to automate, but worth writing down! Again, consistency is the most important policy, so decide something for now, and write it down!
+Any time you have a "should we do X or Y" discussion, WRITE IT DOWN and never have it again.
+
+
+
+1. Continuous Reviews
+
+
+If you do reviews during a Pull or Merge Request on GitHub/GitLab, these are a good example!
+By focusing primarily on the changes, you get a better chance to see "micro" level changes. Did someone change what a function does? Did someone add a bunch of new code? Does what they changed make sense?
+
+These reviews are great for giving directed feedback (could this be done more simply? Is this adequately tested?), and for checking hard-to-see in the "large scale" bugs, like off-by-one errors, or forgetting to validate some input or check whether a pointer is null (in C/C++).
+
+
+1. Inspection Reviews
+
+You want to have someone "drive" and explain each part of the code, and allow the team to ask "why" questions, as well as considering "does this make sense?"
+
+Think about how the different parts of your system interact with each other, either through message passing, function calls, shared memory, semaphores/mutexes, or any other way.
+Is the system matching the original design? Or is it growing in an odd organic way?
+
+
+For both kinds of review, there is one important concept to keep in mind: Respect.
+
+
+You should also automate any steps of the review you possibly can.
+* Code formatting? Automate it.
+* Code LINTing (we'll talk about that later)? Automate it.
+* Do the tests pass? Automate it.
+Review time is EXPENSIVE, use it on the important stuff that you can't automate.
+
+
+Really at the end of the day, the usefulness of reviews boil down to a one thing:
+It's good to have different perspectives of the code that you write.
+You get one for each of:
+* You write it
+* You test it
+* You explain it to someone else
+* Someone else gives their perspective
+
+
+
+Also, take note of the kinds of questions that were valuable in a review.
+Eventually, it will make sense to collect these into a review checklist you can use to help jog your memory and ask good questions.
+Do all pointers get checked for NULL? Is input always validated?
+This checklist is also a great training tool 
+
+
+
+Eyeball debugging:
+But in summary, it's helpful to think about the tools you have for observing at hand already, and to think about your expectations for how your system works vs. how it is actually behaving.
+
+Print debugging:
+ this works best using the scientific method:
+* Guess at what your system is doing
+* Add print statements
+* Run, and analyze the results
+* Repeat until everything is clear
+
+
+
+Second: Debuggers like GDB typically require "stopping the world" to step through code at "human speed". This means that a lot of odd things can happen:
+* Interrupts may not fire as normal
+* You might miss messages or events
+* Hardware can "time out"
+
+
+
+In terms of mediating the cost of print debugging, there are a couple "power user" techniques that are great to add to your toolbox. At least for Cortex-M devices, these include:
+* Semihosting
+* ITM/SWO
+* RTT
+* Memoized logging
+* Deferred Formatting
+Semihosting is a technique of "logging over the debugger", instead of over a serial port.
+
+From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugger, you don't need a separate serial port! All these messages just go through the debugger.
+
+
+
+
 
 
 
