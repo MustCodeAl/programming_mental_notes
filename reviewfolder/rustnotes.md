@@ -1,3 +1,23 @@
+
+sources: 
+
+[Effective Rust](https://www.lurklurk.org/effective-rust/)
+
+[Building Linked List](https://rust-unofficial.github.io/too-many-lists/index.html)
+
+[Design Patterns](https://rust-unofficial.github.io/patterns/intro.html)
+
+[Api guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
+
+[Breakdown rust notes](https://www.breakdown-notes.com/make/load/rust_cs_canvas)
+
+[cheats.rs](https://cheats.rs/)
+
+
+
+
+
+
 The owner of an item gets to create it, read from it, update it, and drop it (CRUD).
 
 borrowing does not have ownership so the value wont be dropped when borrow goes out of scope
