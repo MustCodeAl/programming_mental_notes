@@ -302,7 +302,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 
 ## Useful links and references
 
-### general useful stuff
+#### general useful stuff
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
 * https://github.com/Awesome-Windows/Awesome
@@ -313,7 +313,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://github.com/karan/Projects-Solutions
 * https://github.com/GorvGoyl/Clone-Wars
 
-### hacking guides
+#### hacking guides
 * https://book.hacktricks.xyz/
 * https://ctf101.org/
 * https://www.hacker101.com/
@@ -323,7 +323,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://atlasos.net/
 * https://haveibeenpwned.com/
 
-### references and language guides
+#### references and language guides
 * https://www.techempower.com/benchmarks/
 * https://os.phil-opp.com/
 * https://missing.csail.mit.edu/
@@ -354,7 +354,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.sonarsource.com
 * https://bytebytego.com/
 
-### search engines
+#### search engines
 * https://osintframework.com/
 * https://metager.org/
 * https://www.phind.com/
@@ -366,12 +366,12 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.exploit-db.com/
 
 
-### good roadmaps
+#### good roadmaps
 * https://roadmap.sh/
 * https://andreasbm.github.io/web-skills/
 * https://www.sijinjoseph.com/programmer-competency-matrix/
 
-### useful tools
+#### useful tools
 * https://godbolt.org/
 * https://dogbolt.org/
 * https://crackstation.net/
@@ -381,7 +381,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://codepen.io/sdras/pen/rpwjzw
 * https://www.fakenamegenerator.com/
 
-### books online
+#### books online
 * https://beej.us/guide/bgnet/
 * https://cses.fi/book/book.pdf
 * https://gamehacking.academy/
@@ -389,19 +389,19 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://algs4.cs.princeton.edu/home/
 
 
-### other visuals
+#### other visuals
 * https://carlcheo.com/compsci
 * https://visualgo.net/en
 * https://tourofrust.com/index.html
 * https://thimbleby.gitlab.io/algorithm-wiki-site/
 
 
-### videos
+#### videos
 * https://www.youtube.com/watch?v=txr7iB4NFEE&
 * https://www.youtube.com/watch?v=erEgovG9WBs
 * https://www.youtube.com/watch?v=a2EkORFcSZo
 
-### media
+#### media
 * https://www.videocopilot.net/tutorials/
 * https://texturelabs.org/
 * https://greyscalegorilla.com/
@@ -409,7 +409,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://chat.freedomgpt.com/
 
 
-### practice
+#### practice
 * https://www.speedtyper.dev/
 * https://scratch.mit.edu/
 * https://www.codingame.com/start/
