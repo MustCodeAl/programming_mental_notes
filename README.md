@@ -302,114 +302,114 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 
 ## Useful links and references
 
-https://github.com/sindresorhus/awesome
-https://github.com/jaywcjlove/awesome-mac
-https://github.com/Awesome-Windows/Awesome
-https://alternativeto.net/
-https://www.libhunt.com/
-https://git.herrbischoff.com/awesome-macos-command-line/about/
-https://git.herrbischoff.com/awesome-command-line-apps/about/
-https://github.com/karan/Projects-Solutions
-https://github.com/GorvGoyl/Clone-Wars
+* https://github.com/sindresorhus/awesome
+* https://github.com/jaywcjlove/awesome-mac
+* https://github.com/Awesome-Windows/Awesome
+* https://alternativeto.net/
+* https://www.libhunt.com/
+* https://git.herrbischoff.com/awesome-macos-command-line/about/
+* https://git.herrbischoff.com/awesome-command-line-apps/about/
+* https://github.com/karan/Projects-Solutions
+* https://github.com/GorvGoyl/Clone-Wars
 
-https://book.hacktricks.xyz/
-https://ctf101.org/
-https://www.hacker101.com/
-https://anonymousplanet.org/
-https://www.privacytools.io/
-https://blackarch.org/
-https://atlasos.net/
-https://haveibeenpwned.com/
-
-
-https://www.techempower.com/benchmarks/
-https://os.phil-opp.com/
-https://missing.csail.mit.edu/
-https://www.lurklurk.org/effective-rust/
-https://craftinginterpreters.com/
-https://learnxinyminutes.com/
-https://regexone.com/
-https://www.interviewbit.com/
-https://www.tutorialspoint.com/
-https://www.w3schools.com/
-https://www.bigocheatsheet.com/
-https://programming-idioms.org/cheatsheet/Rust/Python
-https://rosettacode.org/wiki/Rosetta_Code
-https://hyperpolyglot.org/
-https://www.breakdown-notes.com/make/load/rust_cs_canvas
-https://google.github.io/styleguide/
-https://refactoring.guru/
-https://phuoc.ng/
-https://quickref.me/
-https://webhint.io
-https://cheats.rs/
-https://www.arewewebyet.org/
-https://devdocs.io/
-https://devhints.io/
-https://www.30secondsofcode.org/
-https://cpppatterns.com/
-https://hackingcpp.com/cpp/cheat_sheets.html
-https://www.sonarsource.com
-https://bytebytego.com/
-
-https://osintframework.com/
-https://metager.org/
-https://www.phind.com/
-https://you.com/
-https://searchcode.com/
-https://sourcegraph.com/search
-https://www.kaggle.com/
-https://cheatography.com/
-https://www.exploit-db.com/
+* https://book.hacktricks.xyz/
+* https://ctf101.org/
+* https://www.hacker101.com/
+* https://anonymousplanet.org/
+* https://www.privacytools.io/
+* https://blackarch.org/
+* https://atlasos.net/
+* https://haveibeenpwned.com/
 
 
+* https://www.techempower.com/benchmarks/
+* https://os.phil-opp.com/
+* https://missing.csail.mit.edu/
+* https://www.lurklurk.org/effective-rust/
+* https://craftinginterpreters.com/
+* https://learnxinyminutes.com/
+* https://regexone.com/
+* https://www.interviewbit.com/
+* https://www.tutorialspoint.com/
+* https://www.w3schools.com/
+* https://www.bigocheatsheet.com/
+* https://programming-idioms.org/cheatsheet/Rust/Python
+* https://rosettacode.org/wiki/Rosetta_Code
+* https://hyperpolyglot.org/
+* https://www.breakdown-notes.com/make/load/rust_cs_canvas
+* https://google.github.io/styleguide/
+* https://refactoring.guru/
+* https://phuoc.ng/
+* https://quickref.me/
+* https://webhint.io
+* https://cheats.rs/
+* https://www.arewewebyet.org/
+* https://devdocs.io/
+* https://devhints.io/
+* https://www.30secondsofcode.org/
+* https://cpppatterns.com/
+* https://hackingcpp.com/cpp/cheat_sheets.html
+* https://www.sonarsource.com
+* https://bytebytego.com/
 
-https://roadmap.sh/
-https://andreasbm.github.io/web-skills/
-https://www.sijinjoseph.com/programmer-competency-matrix/
-
-https://godbolt.org/
-https://dogbolt.org/
-https://crackstation.net/
-https://2captcha.com/
-https://codebeautify.org/
-https://regex-generator.olafneumann.org/
-https://codepen.io/sdras/pen/rpwjzw
-https://www.fakenamegenerator.com/
+* https://osintframework.com/
+* https://metager.org/
+* https://www.phind.com/
+* https://you.com/
+* https://searchcode.com/
+* https://sourcegraph.com/search
+* https://www.kaggle.com/
+* https://cheatography.com/
+* https://www.exploit-db.com/
 
 
-https://beej.us/guide/bgnet/
-https://cses.fi/book/book.pdf
-https://gamehacking.academy/
-https://pages.cs.wisc.edu/~remzi/OSTEP/
-https://algs4.cs.princeton.edu/home/
 
-https://carlcheo.com/compsci
-https://visualgo.net/en
-https://tourofrust.com/index.html
-https://thimbleby.gitlab.io/algorithm-wiki-site/
+* https://roadmap.sh/
+* https://andreasbm.github.io/web-skills/
+* https://www.sijinjoseph.com/programmer-competency-matrix/
 
-https://www.youtube.com/watch?v=txr7iB4NFEE&
-https://www.youtube.com/watch?v=erEgovG9WBs
-https://www.youtube.com/watch?v=a2EkORFcSZo
+* https://godbolt.org/
+* https://dogbolt.org/
+* https://crackstation.net/
+* https://2captcha.com/
+* https://codebeautify.org/
+* https://regex-generator.olafneumann.org/
+* https://codepen.io/sdras/pen/rpwjzw
+* https://www.fakenamegenerator.com/
 
-https://www.videocopilot.net/tutorials/
-https://texturelabs.org/
-https://greyscalegorilla.com/
-https://diffusionbee.com/
-https://chat.freedomgpt.com/
 
-https://www.speedtyper.dev/
-https://scratch.mit.edu/
-https://www.codingame.com/start/
-https://apps.apple.com/us/app/swift-playgrounds/id908519492
-https://www.exercism.org/
-https://www.codewars.com/
-https://www.openvim.com/
-https://cmdchallenge.com/
-https://www.linuxfromscratch.org/
-https://wokwi.com/
-https://crackmes.one/
-https://honzaap.github.io/Systemizer/create
-https://racknerd.com/
+* https://beej.us/guide/bgnet/
+* https://cses.fi/book/book.pdf
+* https://gamehacking.academy/
+* https://pages.cs.wisc.edu/~remzi/OSTEP/
+* https://algs4.cs.princeton.edu/home/
+
+* https://carlcheo.com/compsci
+* https://visualgo.net/en
+* https://tourofrust.com/index.html
+* https://thimbleby.gitlab.io/algorithm-wiki-site/
+
+* https://www.youtube.com/watch?v=txr7iB4NFEE&
+* https://www.youtube.com/watch?v=erEgovG9WBs
+* https://www.youtube.com/watch?v=a2EkORFcSZo
+
+* https://www.videocopilot.net/tutorials/
+* https://texturelabs.org/
+* https://greyscalegorilla.com/
+* https://diffusionbee.com/
+* https://chat.freedomgpt.com/
+
+* https://www.speedtyper.dev/
+* https://scratch.mit.edu/
+* https://www.codingame.com/start/
+* https://apps.apple.com/us/app/swift-playgrounds/id908519492
+* https://www.exercism.org/
+* https://www.codewars.com/
+* https://www.openvim.com/
+* https://cmdchallenge.com/
+* https://www.linuxfromscratch.org/
+* https://wokwi.com/
+* https://crackmes.one/
+* https://honzaap.github.io/Systemizer/create
+* https://racknerd.com/
 
