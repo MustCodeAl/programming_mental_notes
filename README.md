@@ -302,6 +302,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 
 ## Useful links and references
 
+### general useful stuff
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
 * https://github.com/Awesome-Windows/Awesome
@@ -312,6 +313,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://github.com/karan/Projects-Solutions
 * https://github.com/GorvGoyl/Clone-Wars
 
+### hacking guides
 * https://book.hacktricks.xyz/
 * https://ctf101.org/
 * https://www.hacker101.com/
@@ -321,7 +323,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://atlasos.net/
 * https://haveibeenpwned.com/
 
-
+### references and language guides
 * https://www.techempower.com/benchmarks/
 * https://os.phil-opp.com/
 * https://missing.csail.mit.edu/
@@ -352,6 +354,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.sonarsource.com
 * https://bytebytego.com/
 
+### search engines
 * https://osintframework.com/
 * https://metager.org/
 * https://www.phind.com/
@@ -363,11 +366,12 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.exploit-db.com/
 
 
-
+### good roadmaps
 * https://roadmap.sh/
 * https://andreasbm.github.io/web-skills/
 * https://www.sijinjoseph.com/programmer-competency-matrix/
 
+### useful tools
 * https://godbolt.org/
 * https://dogbolt.org/
 * https://crackstation.net/
@@ -377,28 +381,35 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://codepen.io/sdras/pen/rpwjzw
 * https://www.fakenamegenerator.com/
 
-
+### books online
 * https://beej.us/guide/bgnet/
 * https://cses.fi/book/book.pdf
 * https://gamehacking.academy/
 * https://pages.cs.wisc.edu/~remzi/OSTEP/
 * https://algs4.cs.princeton.edu/home/
 
+
+### other visuals
 * https://carlcheo.com/compsci
 * https://visualgo.net/en
 * https://tourofrust.com/index.html
 * https://thimbleby.gitlab.io/algorithm-wiki-site/
 
+
+### videos
 * https://www.youtube.com/watch?v=txr7iB4NFEE&
 * https://www.youtube.com/watch?v=erEgovG9WBs
 * https://www.youtube.com/watch?v=a2EkORFcSZo
 
+### media
 * https://www.videocopilot.net/tutorials/
 * https://texturelabs.org/
 * https://greyscalegorilla.com/
 * https://diffusionbee.com/
 * https://chat.freedomgpt.com/
 
+
+### practice
 * https://www.speedtyper.dev/
 * https://scratch.mit.edu/
 * https://www.codingame.com/start/
