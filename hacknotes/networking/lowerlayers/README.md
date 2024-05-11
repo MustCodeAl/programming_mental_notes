@@ -53,3 +53,31 @@ Contain optional information for routing
 `Padding`
 
 Pads the packet to a full word length
+
+
+
+
+PLEASE
+DO
+NOT
+THROW
+SAUSAGE
+PIZZA
+AWAY
+
+
+PLEASE (Physical)
+DO ( Data Link)
+NOT (Network)
+THROW (Transport)
+SAUSAGE (Session)
+PIZZA (Presentation)
+Away (Application)
+
+P.hyiscal Layer
+D.ata Link Layer
+N.etwork Layer
+T.ransport Layer
+S.ession Layer
+P.resentation Layer
+A.pplication Layer
