@@ -12,6 +12,12 @@
 7. Then work on other editing other established softwares
 And refactoring them
 8. Then when you feel comfortable enough you can make your own software
+9. Learn a programming language's idioms, Design Patterns, Computer system architecture, networking, and system design concepts really really really well
+   *  use linters, formatters, ides.
+   *  use public apis, frameworks, open source repos.
+   *  use debuging tools like gdb, iaito, wireshark.
+   *  use clis tools like `nmap`, `netcat`, `curl`.
+   *  use containers, templates, version control.
 
 ## When reading code:
 1. Learn the standards of the language
@@ -23,9 +29,9 @@ And refactoring them
 7. Look at similar projects
 8. Use tools to help you such as ides, debuggers, and ai
 9. Ask for help from contributors, forums, and issues
+10. Read mandocs for `file-hierarchy`, `syscalls`, `socketcall`
 
-
-## When writing your own software:
+## Checklist When writing your own software:
 1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies:
    
    	a. type of problem: its a counting, minimum/maximum, or a greedy problem
@@ -407,7 +413,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://greyscalegorilla.com/
 * https://diffusionbee.com/
 * https://chat.freedomgpt.com/
-
+* https://chat.lmsys.org/
 
 #### practice
 * https://www.speedtyper.dev/
