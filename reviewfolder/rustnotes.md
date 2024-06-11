@@ -1159,3 +1159,20 @@ That means any function that accepts `R: Read` or `W: Write` generic parameters 
 In the documentation of such functions, briefly remind users that a mut reference can be passed. New Rust users often struggle with this. They may have opened a file and want to read multiple pieces of data out of it, but the function to read one piece consumes the reader by value, so they are stuck. The solution would be to leverage one of the above impls and pass `&mut f` instead of `f` as the reader parameter.
 
 ---
+
+
+
+
+*Items* are exportable pieces of source code: structures, functions, constants, etc. Structures, Rust's class-like abstraction, are arguably our most fundamental organization tool. The top of the program organization hierarchy.
+
+A full list of language constructs considered items is available5. Technically, modules are items. But for the purpose of our current code organization discussion, we'll consider them taxonomically distinct.
+
+*Modules* group related items into cohesive units. They facilitate organizing code within a project, much like namespaces.
+
+Some programmers like to follow a "one module per source file" convention. But that 1:1 mapping is entirely optional. Modules are a logical, hierarchical grouping. They're not decided by the layout of a filesystem.
+
+*Crates* group one or more related modules into either a library or a binary. They facilitate organizing code between projects. For libraries, visibility modifiers decide which items the module(s) export (e.g. the public API of the crate).
+
+Crates can also have dependencies, which are themselves crates (e.g. 3rd party libraries used internally). Chapter 2's rcli tool was a binary crate that had two library crate dependencies: rc4 and clap.
+
+*System* is the general term for a large piece of software made up of interconnected components. That could mean multiple Rust crates, libraries written in other programming languages that interoperate via CFFI6, or even networked sub-services that communicate using structured formats like REST7 and gRPC8.
