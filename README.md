@@ -325,13 +325,16 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://portswigger.net/web-security/all-materials
 * https://ctf101.org/
 * https://www.hacker101.com/
-* https://anonymousplanet.org/
-* https://www.privacytools.io/
 * https://blackarch.org/
 * https://atlasos.net/
+
+
+#### privacy guides
 * https://haveibeenpwned.com/
 * https://browserleaks.com
 * https://nowsecure.nl
+* https://anonymousplanet.org/
+* https://www.privacytools.io/
 
 #### references and language guides
 * https://www.techempower.com/benchmarks/
@@ -363,7 +366,8 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://hackingcpp.com/cpp/cheat_sheets.html
 * https://www.sonarsource.com
 * https://bytebytego.com/
-
+* https://www.pythoncheatsheet.org/
+  
 #### search engines
 * https://osintframework.com/
 * https://webmii.com/
