@@ -13,10 +13,10 @@
 And refactoring them
 8. Then when you feel comfortable enough you can make your own software
 9. Learn a programming language's idioms, Design Patterns, Computer system architecture, networking, and system design concepts really really really well
-   *  use linters, formatters, ides.
-   *  use public apis, frameworks, open source repos.
+   *  use formatters, ides, linters, 
+   *  use frameworks, open source repos,  public apis
    *  use debuging tools like gdb, iaito, wireshark.
-   *  use clis tools like `nmap`, `netcat`, `curl`.
+   *  use clis tools like  `curl`.`netcat`, `nmap`,
    *  use containers, templates, version control.
 
 ## When reading code:
