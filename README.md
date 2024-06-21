@@ -12,7 +12,7 @@
 7. Then work on other editing other established softwares
 And refactoring them
 8. Then when you feel comfortable enough you can make your own software
-9. Learn [Programming Language Idioms](https://youtu.be/lkIFF4maKMU?si=xfJhdOQVqn26riqU), [Design Patterns](https://youtu.be/tv-_1er1mWI?si=3jG-bLJbMyTusc0E), [Computer System Architecture](https://youtu.be/-uleG_Vecis?si=uNHDOkUSeMBbTjDO), [Networking](https://youtu.be/erEgovG9WBs?si=BJL89Hv6h8TeWwah), and [System Scaling](https://www.youtube.com/watch?v=rIrNIzy6U_g) really really really [well](https://youtu.be/X3jw1JVNdPE?si=ffuLkalBiktkzsqk) then combine ideas [together](https://youtu.be/i53Gi_K3o7I?si=WCdUSppPm1-iViqH)
+9. Learn [Programming Language Idioms](https://youtu.be/4Zc9ci9L5wY?si=EAKPtwwD67xpFNh6), [Design Patterns](https://youtu.be/tv-_1er1mWI?si=3jG-bLJbMyTusc0E), [Computer System Architecture](https://youtu.be/-uleG_Vecis?si=uNHDOkUSeMBbTjDO), [Networking](https://youtu.be/erEgovG9WBs?si=BJL89Hv6h8TeWwah), and [System Scaling](https://www.youtube.com/watch?v=rIrNIzy6U_g) really really really [well](https://youtu.be/X3jw1JVNdPE?si=ffuLkalBiktkzsqk) then combine ideas [together](https://youtu.be/i53Gi_K3o7I?si=WCdUSppPm1-iViqH)
    *  use formatters, ides, linters, 
    *  use frameworks, libraries,  public apis
    *  use debuging tools like gdb, iaito, wireshark.
