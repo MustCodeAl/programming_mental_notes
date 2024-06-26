@@ -19,6 +19,13 @@ And refactoring them
    *  use clis tools like  `curl`.`netcat`, `nmap`,
    *  use containers, templates, version control.
 
+Tool productivity flaws hierachy:
+flaws for using tools in different forms
+1. Graphic User Interfaces - What you see is what you get
+2. Keyboard Shortcuts - Have to remember them in correct order
+3. Command Line Interface - Have to remember the commands and their syntax
+
+   
 ## When reading code:
 1. Learn the standards of the language
 2. Read docs
