@@ -374,6 +374,9 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.sonarsource.com
 * https://bytebytego.com/
 * https://www.pythoncheatsheet.org/
+* https://www.vergiliusproject.com/
+* https://learn.microsoft.com/en-us/windows/win32/stg/coding-style-conventions
+* https://www.toptal.com/developers/webdevchecklist
   
 #### search engines
 * https://osintframework.com/
