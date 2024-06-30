@@ -397,6 +397,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://malwareunicorn.org/#/workshops
 * https://connormcgarr.github.io/
 * https://fumalwareanalysis.blogspot.com/p/malware-analysis-tutorials-reverse.html
+* https://persistence-info.github.io/
 
   
 #### search engines
