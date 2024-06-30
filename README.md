@@ -379,6 +379,12 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://learn.microsoft.com/en-us/windows/win32/stg/coding-style-conventions
 * https://www.toptal.com/developers/webdevchecklist
 * https://www.jaiminton.com/#
+* https://search.maldevacademy.com/
+* https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/default.aspx
+* https://attack.mitre.org/
+* https://lots-project.com/
+* https://s0cm0nkey.gitbook.io/s0cm0nkeys-security-reference-guide
+* https://vx-underground.org/
   
 #### search engines
 * https://osintframework.com/
