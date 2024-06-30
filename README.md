@@ -328,6 +328,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 
 #### hacking guides
 * https://book.hacktricks.xyz/
+* https://book.blueteamguides.com/
 * https://ired.team
 * https://www.iblue.team/
 * https://portswigger.net/web-security/all-materials
@@ -379,13 +380,23 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://learn.microsoft.com/en-us/windows/win32/stg/coding-style-conventions
 * https://www.toptal.com/developers/webdevchecklist
 * https://www.jaiminton.com/#
-* https://search.maldevacademy.com/
 * https://www.ultimatewindowssecurity.com/securitylog/encyclopedia/default.aspx
 * https://attack.mitre.org/
 * https://lots-project.com/
 * https://s0cm0nkey.gitbook.io/s0cm0nkeys-security-reference-guide
 * https://vx-underground.org/
 * https://gtfobins.github.io/
+* https://anti-debug.checkpoint.com/
+* https://evasions.checkpoint.com/
+* https://gitbook.seguranca-informatica.pt/
+* https://wiki.osdev.org/Expanded_Main_Page
+* https://thestarman.pcministry.com/
+* https://www.corelan.be/index.php/articles/
+* https://guyinatuxedo.github.io/
+* https://fuzzysecurity.com/tutorials.html
+* https://malwareunicorn.org/#/workshops
+* https://connormcgarr.github.io/
+* https://fumalwareanalysis.blogspot.com/p/malware-analysis-tutorials-reverse.html
 
   
 #### search engines
@@ -399,6 +410,8 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.kaggle.com/
 * https://cheatography.com/
 * https://www.exploit-db.com/
+* https://unprotect.it/
+* https://search.maldevacademy.com/
 
 
 #### good roadmaps
@@ -443,6 +456,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://diffusionbee.com/
 * https://chat.freedomgpt.com/
 * https://chat.lmsys.org/
+* https://forum.reverse4you.org/
 
 #### practice
 * https://www.speedtyper.dev/
@@ -456,6 +470,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.linuxfromscratch.org/
 * https://wokwi.com/
 * https://crackmes.one/
+* https://malwareunicorn.org/#/workshops
 * https://honzaap.github.io/Systemizer/create
 * https://racknerd.com/
 
