@@ -329,6 +329,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 #### hacking guides
 * https://book.hacktricks.xyz/
 * https://ired.team
+* https://www.iblue.team/
 * https://portswigger.net/web-security/all-materials
 * https://ctf101.org/
 * https://www.hacker101.com/
