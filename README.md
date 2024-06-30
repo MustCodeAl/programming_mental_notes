@@ -385,6 +385,8 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://lots-project.com/
 * https://s0cm0nkey.gitbook.io/s0cm0nkeys-security-reference-guide
 * https://vx-underground.org/
+* https://gtfobins.github.io/
+
   
 #### search engines
 * https://osintframework.com/
