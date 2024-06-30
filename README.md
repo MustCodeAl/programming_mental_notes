@@ -378,6 +378,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.vergiliusproject.com/
 * https://learn.microsoft.com/en-us/windows/win32/stg/coding-style-conventions
 * https://www.toptal.com/developers/webdevchecklist
+* https://www.jaiminton.com/#
   
 #### search engines
 * https://osintframework.com/
