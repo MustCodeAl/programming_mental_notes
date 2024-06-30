@@ -41,7 +41,7 @@ flaws for using tools in different forms
 ## Checklist When writing your own software:
 1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies:
    
-   	a. type of problem: its a counting, minimum/maximum, or a greedy problem
+   	a. type of problem: its a counting, minimum/maximum, or a decision problem
    
 	b. the cases: base, edge, corner, and boundary
 
