@@ -398,6 +398,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://connormcgarr.github.io/
 * https://fumalwareanalysis.blogspot.com/p/malware-analysis-tutorials-reverse.html
 * https://persistence-info.github.io/
+* https://websites.umich.edu/~eecs381/generalFAQ/Debugging.html
 
   
 #### search engines
@@ -413,6 +414,9 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.exploit-db.com/
 * https://unprotect.it/
 * https://search.maldevacademy.com/
+* https://poe.com/
+* https://www.perplexity.ai/
+* https://kandi.openweaver.com/
 
 
 #### good roadmaps
@@ -429,6 +433,9 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://regex-generator.olafneumann.org/
 * https://codepen.io/sdras/pen/rpwjzw
 * https://www.fakenamegenerator.com/
+* https://elements.envato.com/
+* https://spline.design/
+
 
 #### books online
 * https://beej.us/guide/bgnet/
@@ -436,6 +443,8 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://gamehacking.academy/
 * https://pages.cs.wisc.edu/~remzi/OSTEP/
 * https://algs4.cs.princeton.edu/home/
+* https://jakevdp.github.io/PythonDataScienceHandbook/
+* https://goalkicker.com/
 
 
 #### other visuals
@@ -458,6 +467,8 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://chat.freedomgpt.com/
 * https://chat.lmsys.org/
 * https://forum.reverse4you.org/
+* https://www.deepseek.com/
+
 
 #### practice
 * https://www.speedtyper.dev/
@@ -474,4 +485,5 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://malwareunicorn.org/#/workshops
 * https://honzaap.github.io/Systemizer/create
 * https://racknerd.com/
+  
 
