@@ -417,6 +417,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://poe.com/
 * https://www.perplexity.ai/
 * https://kandi.openweaver.com/
+* https://www.qwant.com/
 
 
 #### good roadmaps
@@ -435,6 +436,7 @@ From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugg
 * https://www.fakenamegenerator.com/
 * https://elements.envato.com/
 * https://spline.design/
+* https://learnprompting.org/docs/intro
 
 
 #### books online
