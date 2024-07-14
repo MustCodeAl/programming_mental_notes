@@ -365,17 +365,17 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://git.herrbischoff.com/awesome-command-line-apps/about/
 * https://github.com/karan/Projects-Solutions
 * https://github.com/GorvGoyl/Clone-Wars
+* https://blackarch.org/
+* https://atlasos.net/
+
 
 #### hacking guides
 * https://book.hacktricks.xyz/
 * https://book.blueteamguides.com/
 * https://ired.team
 * https://www.iblue.team/
-* https://portswigger.net/web-security/all-materials
 * https://ctf101.org/
 * https://www.hacker101.com/
-* https://blackarch.org/
-* https://atlasos.net/
 
 
 #### privacy guides
@@ -388,7 +388,6 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 #### references and language guides
 * https://www.techempower.com/benchmarks/
 * https://os.phil-opp.com/
-* https://missing.csail.mit.edu/
 * https://www.lurklurk.org/effective-rust/
 * https://craftinginterpreters.com/
 * https://learnxinyminutes.com/
@@ -440,6 +439,22 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://fumalwareanalysis.blogspot.com/p/malware-analysis-tutorials-reverse.html
 * https://persistence-info.github.io/
 * https://websites.umich.edu/~eecs381/generalFAQ/Debugging.html
+* https://xdaforums.com/f/xda-university.2060/
+* https://portswigger.net/web-security/all-materials
+
+#### tutorials
+* http://derekwyatt.org/vim/tutorials/index.html
+* https://tourofrust.com/index.html
+
+
+#### courses
+* https://www.youtube.com/playlist?list=PL6B940F08B9773B9F
+* https://missing.csail.mit.edu/
+* https://www.khanacademy.org/computing/computer-science
+* https://masteringnextjs.com/
+* https://www.codecademy.com/learn/make-a-website
+* https://www.sololearn.com/
+
 
   
 #### search engines
@@ -493,7 +508,6 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 #### other visuals
 * https://carlcheo.com/compsci
 * https://visualgo.net/en
-* https://tourofrust.com/index.html
 * https://thimbleby.gitlab.io/algorithm-wiki-site/
 
 
@@ -501,6 +515,9 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://www.youtube.com/watch?v=txr7iB4NFEE&
 * https://www.youtube.com/watch?v=erEgovG9WBs
 * https://www.youtube.com/watch?v=a2EkORFcSZo
+* https://www.youtube.com/watch?v=LKCVKw9CzFo
+* https://www.youtube.com/watch?v=1PhArSujR_A
+* https://www.youtube.com/watch?v=tc4ROCJYbm0
 
 #### media
 * https://www.videocopilot.net/tutorials/
@@ -528,5 +545,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://malwareunicorn.org/#/workshops
 * https://honzaap.github.io/Systemizer/create
 * https://racknerd.com/
+* https://www.hackthebox.com/
+* https://tryhackme.com/
   
 
