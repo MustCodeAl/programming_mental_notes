@@ -1,4 +1,4 @@
-# programming_mental_notes
+# Programming Mental Notes
 
 # Notes and advice for mindset as a developer and hacker from htb
 ## To get better at programming as a beginner:
@@ -39,7 +39,7 @@ flaws for using tools in different forms
 10. Read mandocs for `file-hierarchy`, `syscalls`, `socketcall`
 
 ## Checklist When writing your own software:
-1. identify the problem - thinks of in terms of what is repetitive, what changes frequerently, and dependencies:
+1. **identify the problem** - thinks of in terms of what is repetitive, what changes frequerently, and dependencies:
    
    	a. type of problem: its a counting, minimum/maximum, or a decision problem
    
@@ -51,11 +51,11 @@ flaws for using tools in different forms
 
 	f. patterns: Data collections, data encoding, and dataflow,
 
-3. Research and decide on focus areas - think in terms of modularity, use case, and distributive scaling strategies
-4. Write good pseudo code - to make it easier to name stuff later down the line
-5. Write good tests - to allow for debugging, minimize bugs, and the problem actually being solved
-6. Implement the code - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
-7. Document, organize, and refactor your code
+3. **Research and decide on focus areas** - think in terms of modularity, use case, and distributive scaling strategies
+4. **Write good pseudo code** - to make it easier to name stuff later down the line
+5. **Write good tests** - to allow for debugging, minimize bugs, and the problem actually being solved
+6. **Implement the code** - solve the simplest problems, dont be afraid to use an extra dependency or two as you can inline them later
+7. **Document, organize, and refactor your code**
 
 ### Simplicity
 
