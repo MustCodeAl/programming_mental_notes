@@ -310,6 +310,46 @@ Semihosting is a technique of "logging over the debugger", instead of over a ser
 
 From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugger, you don't need a separate serial port! All these messages just go through the debugger.
 
+### making useful projects tips
+
+
+Programming, in short, is a wonderful world. Computers would be nowhere without it. Programming basically follows three steps for most languages:
+
+1: Inputting commands into an interpreter
+2: Telling the interpreter to convert those commands into a language the computer understands (machine code)
+3: Finding glitches (things you didn't want to happen, or things that didn't happen at all) and fixing them.
+
+----
+
+when writing plans, docs, and notes
+Avoid ambigious wording. - clarity
+position yourself as a reader - Overview
+Make as easy to read as possible. - structure
+
+when designign a database, put all the possible requred data as one table
+then use normalization tactics on it
+
+when it comes to software uniqueness: its the breakdown, the use cases, and the scaling that differentiates your software
+ linters  ,test driven developement, use containers, 
+
+writing useful software: think in terms of avoid manual labor aka work, avoiding repetitions, and avoiding being too specialized/niche
+by taking advantage of  sequences - avoid complicated steps, looping - avoid not caching information, and decisions - avoid unknowable or unreliable information
+
+when it comes to problem solving: 
+for counting problems, use iteration,  / structural patterns 
+for minimum/maximum problems, use recursive solution / creation patterns 
+for decsion problems, use greedy solutions / behavioral patterns
+
+
+
+when it comes to memory think in terms of creational patterns
+when it comes to networking think in terms of structural patterns
+when it comes to other peoples software/external software/operating systems, think in terms of behavioral patterns 
+
+
+when dealing with system design, think in a macro level in terms of  filtering, file input, searching, sorting, pipelines, pattern matching
+
+
 
 
 
