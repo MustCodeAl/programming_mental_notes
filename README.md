@@ -392,6 +392,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://www.lurklurk.org/effective-rust/
 * https://craftinginterpreters.com/
 * https://learnxinyminutes.com/
+* https://freecourses.github.io/
 * https://regexone.com/
 * https://www.interviewbit.com/
 * https://www.tutorialspoint.com/
