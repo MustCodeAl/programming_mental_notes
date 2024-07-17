@@ -503,6 +503,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://algs4.cs.princeton.edu/home/
 * https://jakevdp.github.io/PythonDataScienceHandbook/
 * https://goalkicker.com/
+* https://www.cl.cam.ac.uk/~rja14/book.html
 
 
 #### other visuals
