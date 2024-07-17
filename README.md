@@ -460,6 +460,8 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 #### search engines
 * https://osintframework.com/
 * https://webmii.com/
+* https://xresolver.com/
+* https://dnsdumpster.com/
 * https://metager.org/
 * https://www.phind.com/
 * https://you.com/
