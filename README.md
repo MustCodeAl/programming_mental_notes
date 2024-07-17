@@ -537,6 +537,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://www.speedtyper.dev/
 * https://scratch.mit.edu/
 * https://www.codingame.com/start/
+* https://github.com/codecrafters-io/build-your-own-x
 * https://apps.apple.com/us/app/swift-playgrounds/id908519492
 * https://www.exercism.org/
 * https://www.codewars.com/
