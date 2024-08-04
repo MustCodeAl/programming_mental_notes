@@ -1161,6 +1161,250 @@ In the documentation of such functions, briefly remind users that a mut referenc
 
 ---
 
+**Comparing and Sorting**
+
+- Process both strings from beginning to end as two sequences of maximal-length chunks, where each chunk consists either of a sequence of characters other than ASCII digits, or a sequence of ASCII digits (a numeric chunk), and compare corresponding chunks from the strings.
+- To compare two numeric chunks, compare them by numeric value, ignoring leading zeroes. If the two chunks have equal numeric value, but different numbers of leading digits, and this is the first time this has happened for these strings, treat the chunks as equal (moving on to the next chunk) but remember which string had more leading zeroes.
+- To compare two chunks if both are not numeric, compare them by Unicode character lexicographically, with two exceptions:
+	- _ (underscore) sorts immediately after (space) but before any other character. (This treats underscore as a word separator, as commonly used in identifiers.)
+	- Unless otherwise specified, version-sorting should sort non-lowercase characters (characters that can start an UpperCamelCase identifier) before lowercase characters.
+- If the comparison reaches the end of the string and considers each pair of chunks equal:
+	- If one of the numeric comparisons noted the earliest point at which one string had more leading zeroes than the other, sort the string with more leading zeroes first.
+	- Otherwise, the strings are equal.
+
+
+
+#### Expressions
+Prefer to use Rust's expression oriented nature where possible;
+
+```rust
+// use
+let x = if y { 1 } else { 0 };
+// not
+let x;
+if y {
+    x = 1;
+} else {
+    x = 0;
+}
+```
+
+Avoid `#[path]` annotations where possible.
+
+Prefer to use multiple imports rather than a multi-line import. However, tools should not split imports by default.
+
+
+
+
+------------------
+
+
+### formatting:
+
+When a name is forbidden because it is a reserved word (such as `crate`), either use a raw identifier (`r#crate`) or use a trailing underscore (`crate_`). Don't misspell the word (`krate`).
+
+Prefer to use single-letter names for generic parameters.
+
+When writing extern items (such as `extern "C" fn`), always specify the ABI. For example, write `extern "C" fn foo ...`, not `extern fn foo ...`, or `extern "C" { ... }`.
+
+A group of imports is a set of imports on the same or sequential lines. One or more blank lines or other items (e.g., a function) separate groups of imports.
+
+Within a group of imports, imports must be version-sorted. Groups of imports must not be merged or re-ordered
+
+
+Ordering list import
+Names in a list import must be version-sorted, except that:
+
+- `self` and `super` always come first if present, and
+- groups and glob imports always come last if present.
+  
+This applies recursively. For example, `a::*` comes before `b::a` but `a::b` comes before `a::*`. E.g., `use foo::bar::{a, b::c, b::d, b::d::{x, y, z}, b::{self, r, s}};`.
+
+Normalisation
+Tools must make the following normalisations, recursively:
+
+- `use a::self; -> use a;`
+- `use a::{}; -> (nothing)`
+- `use a::{b}; -> use a::b;`
+Tools must not otherwise merge or un-merge import lists or adjust glob imports (without an explicit option).
+
+Each nested import must be on its own line, but non-nested imports must be grouped on as few lines as possible.
+
+
+
+Prefer using a unit struct (e.g., `struct Foo;`) to an empty struct (e.g., `struct Foo();` or `struct Foo {}`, these only exist to simplify code generation), but if you must use an empty struct, keep it on one line with no space between the braces: `struct Foo;` or `struct Foo {}`.
+
+For more than a few fields (in particular if the tuple struct does not fit on one line), prefer a proper struct with named fields.
+
+The same guidelines are used for untagged union declarations.
+
+```rust
+union Foo {
+    a: A,
+    b: B,
+    long_name:
+        LongType,
+}
+```
+Use a semicolon where an expression has void type, even if it could be propagated. E.g.,
+
+
+```rust
+fn foo() { ... }
+
+fn bar() {
+    foo();
+}
+```
+
+
+###### Indentation and line width
+Use **spaces**, not *tabs*.
+Each level of indentation must be **4 spaces** (that is, all indentation outside of string literals and comments must be a multiple of 4).
+The *maximum width* for a line is **100 characters**.
+
+Keep type aliases on one line when they fit. If necessary to break the line, do so before the =, and block-indent the right-hand side, 
+Format associated types like type aliases. Where an associated type has a bound, put a space after the colon but not before:
+
+Format imports on one line where possible. Don't put spaces around braces.
+
+
+
+
+Prefer block indent over visual indent:
+
+```rust
+// Block indent
+a_function_call(
+    foo,
+    bar,
+);
+
+// Visual indent
+a_function_call(foo,
+                bar);
+```
+
+This makes for smaller diffs (e.g., if `a_function_call` is renamed in the above example) and less rightward drift.
+For a multi-line tuple struct, block-format the fields with a field on each line and a trailing comma:
+
+
+```rust
+pub struct Foo(
+    String,
+    u8,
+);
+```
+
+Use block-indent for trait items. If there are no items, format the trait (including its `{}`) on a single line. Otherwise, break after the opening brace and before the closing brace:
+
+
+```rust
+trait Foo {}
+
+pub trait Bar {
+    ...
+}
+```
+
+If the trait has bounds, put a space after the colon but not before, and put spaces around each +, e.g.,
+
+```rust
+trait Foo: Debug + Bar {}
+```
+
+Use block-indent for `impl` items. If there are no items, format the `impl` (including its `{}`) on a single line
+
+
+A `let` statement can contain an `else` component, making it a let-else statement. In this case, always apply the same formatting rules to the components preceding the else block (i.e. the `let pattern: Type = initializer_expr` portion) as described for other `let` statements.
+
+Format the entire let-else statement on a single line if all the following are true:
+
+- the entire statement is short
+- the `else` block contains only a single-line expression and no statements
+- the `else` block contains no comments
+- the `let` statement components preceding the `else` block can be formatted on a single line
+
+```rust
+let Some(1) = opt else { return };
+```
+
+###### Trailing commas
+In comma-separated lists of any kind, use a trailing comma when followed by a newline:
+
+```rust
+function_call(
+    argument,
+    another_argument,
+);
+
+let array = [
+    element,
+    another_element,
+    yet_another_element,
+];
+```
+This makes moving code (e.g., by copy and paste) easier, and makes diffs smaller, as appending or removing items does not require modifying another line to add or remove a comma.
+
+Blank lines
+Separate items and statements by either zero or one blank lines (i.e., one or two newlines). E.g,
+
+```rust
+fn foo() {
+    let x = ...;
+
+    let y = ...;
+    let z = ...;
+}
+
+fn bar() {}
+fn baz() {}
+```
+
+Avoid line-breaking in the signature if possible. If a line break is required in a non-inherent impl, break immediately before for, block indent the concrete type and put the opening brace on its own line:
+
+```rust
+impl Bar
+    for Foo
+{
+    ...
+}
+```
+for modules: Use spaces around keywords and before the opening brace, no spaces around the semicolon.
+
+
+Use `{}` for the full definition of the macro.
+
+```rust
+macro_rules! foo {
+}
+```
+Prefer to put a generics clause on one line. Break other parts of an item declaration rather than line-breaking a generics clause. If a generics clause is large enough to require line-breaking, prefer a where clause instead.
+
+Do not put spaces before or after < nor before >. Only put a space after > if it is followed by a word or opening brace, not an opening parenthesis. Put a space after each comma. Do not use a trailing comma for a single-line generics clause.
+
+
+###### Comments
+Prefer line comments (`//`) to block comments (`/* ... */`).
+
+When using line comments, put a single space after the opening sigil.
+
+Comments should usually be complete sentences. Start with a capital letter, end with a period (.). An inline block comment may be treated as a note without punctuation.
+
+Source lines which are entirely a comment should be limited to 80 characters in length (including comment sigils, but excluding indentation) or the maximum width of the line (including comment sigils and indentation), whichever is smaller:
+
+###### Doc comments
+Prefer line comments (`///`) to block comments (`/** ... */`).
+
+Prefer outer doc comments (`///` or `/** ... */`), only use inner doc comments (`//!` and `/*! ... */`) to write module-level or crate-level documentation.
+
+Put doc comments before attributes.
+
+For attributes with argument lists, format like functions.
+
+
+
+-----
 
 
 
