@@ -1170,7 +1170,7 @@ In the documentation of such functions, briefly remind users that a mut referenc
 - Process both strings from beginning to end as two sequences of maximal-length chunks, where each chunk consists either of a sequence of characters other than ASCII digits, or a sequence of ASCII digits (a numeric chunk), and compare corresponding chunks from the strings.
 - To compare two numeric chunks, compare them by numeric value, ignoring leading zeroes. If the two chunks have equal numeric value, but different numbers of leading digits, and this is the first time this has happened for these strings, treat the chunks as equal (moving on to the next chunk) but remember which string had more leading zeroes.
 - To compare two chunks if both are not numeric, compare them by Unicode character lexicographically, with two exceptions:
-	- _ (underscore) sorts immediately after (space) but before any other character. (This treats underscore as a word separator, as commonly used in identifiers.)
+	- `_` (underscore) sorts immediately after (space) but before any other character. (This treats underscore as a word separator, as commonly used in identifiers.)
 	- Unless otherwise specified, version-sorting should sort non-lowercase characters (characters that can start an UpperCamelCase identifier) before lowercase characters.
 - If the comparison reaches the end of the string and considers each pair of chunks equal:
 	- If one of the numeric comparisons noted the earliest point at which one string had more leading zeroes than the other, sort the string with more leading zeroes first.
@@ -1199,7 +1199,7 @@ Prefer to use multiple imports rather than a multi-line import. However, tools s
 
 In general, within expressions, prefer dereferencing to taking references, unless necessary (e.g. to avoid an unnecessarily expensive operation).
 
-Do include extraneous parentheses if it makes an arithmetic or logic expression easier to understand ((x * 15) + (y * 20) is fine)
+Do include extraneous parentheses if it makes an arithmetic or logic expression easier to understand `((x * 15) + (y * 20)` is fine)
 
 
 
@@ -1225,6 +1225,8 @@ When deciding on style guidelines, use these guiding principles (in rough priori
 * specifics - preventing rightward drift
 * application - ease of manual application
 
+-------
+sorting: 
 
 * As the last member of a delimited expression, delimited expressions are generally combinable, regardless of the number of members. Previously only applied with exactly one member (except for closures with explicit blocks).
 * When line-breaking a binary operator, if the first operand spans multiple lines, use the base indentation of the last line.
@@ -1410,7 +1412,6 @@ impl Bar
 ```
 for modules: Use spaces around keywords and before the opening brace, no spaces around the semicolon.
 
-
 Use `{}` for the full definition of the macro.
 
 ```rust
@@ -1446,16 +1447,16 @@ For attributes with argument lists, format like functions.
 
 
 
-**Items** are exportable pieces of source code: structures, functions, constants, etc. Structures, Rust's class-like abstraction, are arguably our most fundamental organization tool. The top of the program organization hierarchy.
+- **Items** are exportable pieces of source code: structures, functions, constants, etc. Structures, Rust's class-like abstraction, are arguably our most fundamental organization tool. The top of the program organization hierarchy.
 
 A full list of language constructs considered items is available5. Technically, modules are items. But for the purpose of our current code organization discussion, we'll consider them taxonomically distinct.
 
-**Modules** group related items into cohesive units. They facilitate organizing code within a project, much like namespaces.
+- **Modules** group related items into cohesive units. They facilitate organizing code within a project, much like namespaces.
 
 Some programmers like to follow a "one module per source file" convention. But that 1:1 mapping is entirely optional. Modules are a logical, hierarchical grouping. They're not decided by the layout of a filesystem.
 
-**Crates** group one or more related modules into either a library or a binary. They facilitate organizing code between projects. For libraries, visibility modifiers decide which items the module(s) export (e.g. the public API of the crate).
+- **Crates** group one or more related modules into either a library or a binary. They facilitate organizing code between projects. For libraries, visibility modifiers decide which items the module(s) export (e.g. the public API of the crate).
 
-Crates can also have dependencies, which are themselves crates (e.g. 3rd party libraries used internally). Chapter 2's rcli tool was a binary crate that had two library crate dependencies: rc4 and clap.
+    - Crates can also have dependencies, which are themselves crates (e.g. 3rd party libraries used internally). Chapter 2's rcli tool was a binary crate that had two library crate dependencies: rc4 and clap.
 
-**System** is the general term for a large piece of software made up of interconnected components. That could mean multiple Rust crates, libraries written in other programming languages that interoperate via CFFI6, or even networked sub-services that communicate using structured formats like REST7 and gRPC8.
+- **System** is the general term for a large piece of software made up of interconnected components. That could mean multiple Rust crates, libraries written in other programming languages that interoperate via CFFI6, or even networked sub-services that communicate using structured formats like REST7 and gRPC8.
