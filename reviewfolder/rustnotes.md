@@ -107,7 +107,7 @@ if item `A` has an `Rc` pointer to item `B`, and item `B` has an `Rc` pointer to
 Unlike default `impls`, which provide an `impl`, generic blanket `impls` provide the `impl`, so they are not overridable.
 
 
-** Trait coherence is the property that there exists at most one `impl` of a trait for any given type. **
+**Trait coherence is the property that there exists at most one `impl` of a trait for any given type.**
 
 The general rule-of-thumb is:
 
@@ -1449,11 +1449,11 @@ For attributes with argument lists, format like functions.
 
 - **Items** are exportable pieces of source code: structures, functions, constants, etc. Structures, Rust's class-like abstraction, are arguably our most fundamental organization tool. The top of the program organization hierarchy.
 
-A full list of language constructs considered items is available5. Technically, modules are items. But for the purpose of our current code organization discussion, we'll consider them taxonomically distinct.
+	- A full list of language constructs considered items is available5. Technically, modules are items. But for the purpose of our current code organization discussion, we'll consider them taxonomically distinct.
 
 - **Modules** group related items into cohesive units. They facilitate organizing code within a project, much like namespaces.
 
-Some programmers like to follow a "one module per source file" convention. But that 1:1 mapping is entirely optional. Modules are a logical, hierarchical grouping. They're not decided by the layout of a filesystem.
+	- Some programmers like to follow a "one module per source file" convention. But that 1:1 mapping is entirely optional. Modules are a logical, hierarchical grouping. They're not decided by the layout of a filesystem.
 
 - **Crates** group one or more related modules into either a library or a binary. They facilitate organizing code between projects. For libraries, visibility modifiers decide which items the module(s) export (e.g. the public API of the crate).
 
