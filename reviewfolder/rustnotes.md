@@ -1193,12 +1193,41 @@ Avoid `#[path]` annotations where possible.
 
 Prefer to use multiple imports rather than a multi-line import. However, tools should not split imports by default.
 
+In general, within expressions, prefer dereferencing to taking references, unless necessary (e.g. to avoid an unnecessarily expensive operation).
+
+Do include extraneous parentheses if it makes an arithmetic or logic expression easier to understand ((x * 15) + (y * 20) is fine)
 
 
+
+Prefer using a unit struct (e.g., `struct Foo;`) to an empty struct (e.g., `struct Foo();` or `struct Foo {}`, these only exist to simplify code generation), but if you must use an empty struct, keep it on one line with no space between the braces: `struct Foo;` or `struct Foo {}`.
+
+For more than a few fields (in particular if the tuple struct does not fit on one line), prefer a proper struct with named fields.
+
+The same guidelines are used for untagged union declarations.
+
+```rust
+union Foo {
+    a: A,
+    b: B,
+    long_name:
+        LongType,
+}
+```
 
 ------------------
+When deciding on style guidelines, use these guiding principles (in rough priority order):
+* readability - scan-ability
+* aesthetics - consistent with other languages/tools
+* specifics - preventing rightward drift
+* application - ease of manual application
 
 
+* As the last member of a delimited expression, delimited expressions are generally combinable, regardless of the number of members. Previously only applied with exactly one member (except for closures with explicit blocks).
+* When line-breaking a binary operator, if the first operand spans multiple lines, use the base indentation of the last line.
+* Use version-sort (sort `x8`, `x16`, `x32`, `x64`, `x128` in that order).
+* Change "ASCIIbetical" sort to Unicode-aware "non-lowercase before lowercase".
+* Format single associated type `where` clauses on the same line if they fit.
+  
 ### formatting:
 
 When a name is forbidden because it is a reserved word (such as `crate`), either use a raw identifier (`r#crate`) or use a trailing underscore (`crate_`). Don't misspell the word (`krate`).
@@ -1231,21 +1260,11 @@ Tools must not otherwise merge or un-merge import lists or adjust glob imports (
 Each nested import must be on its own line, but non-nested imports must be grouped on as few lines as possible.
 
 
+A chain is a sequence of field accesses, method calls, and/or uses of the try operator ?. E.g., a.b.c().d or foo?.bar().baz?.
 
-Prefer using a unit struct (e.g., `struct Foo;`) to an empty struct (e.g., `struct Foo();` or `struct Foo {}`, these only exist to simplify code generation), but if you must use an empty struct, keep it on one line with no space between the braces: `struct Foo;` or `struct Foo {}`.
+Format the chain on one line if it is "small" and otherwise possible to do so. If formatting on multiple lines, put each field access or method call in the chain on its own line, with the line-break before the . and after any ?. Block-indent each subsequent line:
 
-For more than a few fields (in particular if the tuple struct does not fit on one line), prefer a proper struct with named fields.
 
-The same guidelines are used for untagged union declarations.
-
-```rust
-union Foo {
-    a: A,
-    b: B,
-    long_name:
-        LongType,
-}
-```
 Use a semicolon where an expression has void type, even if it could be propagated. E.g.,
 
 
@@ -1259,9 +1278,9 @@ fn bar() {
 
 
 ###### Indentation and line width
-Use **spaces**, not *tabs*.
-Each level of indentation must be **4 spaces** (that is, all indentation outside of string literals and comments must be a multiple of 4).
-The *maximum width* for a line is **100 characters**.
+- Use **spaces**, not *tabs*.
+- Each level of indentation must be **4 spaces** (that is, all indentation outside of string literals and comments must be a multiple of 4).
+- The *maximum width* for a line is **100 characters**.
 
 Keep type aliases on one line when they fit. If necessary to break the line, do so before the =, and block-indent the right-hand side, 
 Format associated types like type aliases. Where an associated type has a bound, put a space after the colon but not before:
@@ -1327,6 +1346,21 @@ Format the entire let-else statement on a single line if all the following are t
 
 ```rust
 let Some(1) = opt else { return };
+```
+
+
+Break types with `+` by breaking before the `+` and block-indenting the subsequent lines. When breaking such a type, break before every `+`:
+
+```rust
+impl Clone
+    + Copy
+    + Debug
+
+Box<
+    Clone
+    + Copy
+    + Debug
+>
 ```
 
 ###### Trailing commas
