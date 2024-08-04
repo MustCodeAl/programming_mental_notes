@@ -1,4 +1,5 @@
-Isolation: Containers
+## Isolation: Containers
+
 • Cheaper than a VM, but less secure. E.g. Docker
 • Shared kernel, but isolates application code and
 libraries from the rest of the system -- not share
