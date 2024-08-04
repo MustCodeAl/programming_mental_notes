@@ -1,5 +1,9 @@
 
-sources: 
+Resources: 
+
+[The Rust Style Guide](https://doc.rust-lang.org/nightly/style-guide/index.html)
+
+[Api Guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
 
 [Effective Rust](https://www.lurklurk.org/effective-rust/)
 
@@ -7,11 +11,11 @@ sources:
 
 [Design Patterns](https://rust-unofficial.github.io/patterns/intro.html)
 
-[Api guidelines](https://rust-lang.github.io/api-guidelines/checklist.html)
-
 [Breakdown rust notes](https://www.breakdown-notes.com/make/load/rust_cs_canvas)
 
 [cheats.rs](https://cheats.rs/)
+
+[Blessed.rs](https://blessed.rs/crates)
 
 
 
