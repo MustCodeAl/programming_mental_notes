@@ -758,14 +758,19 @@ fn foo(a: u8) {
 }
 ```
 
+<dl>
+<dt>Static Enforcement</dt>
+	<dd>This is the process of using types to rule out bad inputs. For example, using the type <code>Ascii</code> instead of <code>u8</code> to guarantee that the highest bit is zero. This is the preferred method of enforcing validity of input.</dd>
 
-1. Static Enforcement: This is the process of using types to rule out bad inputs. For example, using the type `Ascii` instead of `u8` to guarantee that the highest bit is zero. This is the preferred method of enforcing validity of input.
+<dt> Dynamic Enforcement </dt>
+	<dd>This is the process of validating input as it is processed, or ahead of time if necessary. This is often easier to implement than static enforcement, but has several drawbacks such as runtime overhead and delayed detection of bugs. </dd>
 
-2. Dynamic Enforcement: This is the process of validating input as it is processed, or ahead of time if necessary. This is often easier to implement than static enforcement, but has several drawbacks such as runtime overhead and delayed detection of bugs.
+<dt> Destructors Never Fail</dt> 
+	<dd>Destructors should not fail, as this will cause the program to abort. Instead, provide a separate method for checking for clean teardown, such as a <code>close()</code> method, that returns a <code>Result</code> to signal problems. </dd>
 
-3. Destructors Never Fail: Destructors should not fail, as this will cause the program to abort. Instead, provide a separate method for checking for clean teardown, such as a `close` method, that returns a `Result` to signal problems.
-
-4. Destructors That May Block Have Alternatives: Destructors should not invoke blocking operations, as this can make debugging much more difficult. Consider providing a separate method for preparing for an infallible, nonblocking teardown.
+<dt> Destructors That May Block Have Alternatives </dt> 
+	<dd>Destructors should not invoke blocking operations, as this can make debugging much more difficult. Consider providing a separate method for preparing for an infallible, nonblocking teardown. </dd>
+</dl>
 
 Here are a few code snippets formatted in markdown for these concepts:
 
