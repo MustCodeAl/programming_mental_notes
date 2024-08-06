@@ -75,8 +75,6 @@
 - String methods: `trim()`, `trim_end_matches(w)`, `strip_prefix(p)`, `lines()`, `chars()`, `char_indices()`, `split_whitespace()`, `bytes()`, and `split_at(index)`.
 - Vec methods: `extend()` and `append()`.
 
-
-
 ## Error Handling
 
 - Rust uses `Result` and `Option` types for error handling.
@@ -118,3 +116,34 @@
 - Write tests for your code to ensure correctness.
 - Use `cargo fmt` to format your code.
 
+## Code Snippets
+
+```rust
+pub struct Ref<'a, T: 'a>(&'a T);
+```
+
+This generic data structure holds an explicit reference `&'a T`, as per the first bullet above. But the type `T` might itself contain references with some lifetime `'b`, as per the second bullet above. If `T`'s inherent lifetime `'b` were smaller than the exterior lifetime `'a` we'd have a potential disaster: the `Ref` would be holding a reference to a data structure whose own references have gone bad.
+
+To prevent this, we need `'b` to be larger than `'a`.
+
+One common place this shows up is when you try to move values between threads with `std::thread::spawn`. The moved values need to be of types that implement `Send`, indicating that they're safe to move between threads, but they also need to not contain any dynamic references (the `'static` lifetime bound). This makes sense when you realize that a reference to something on the stack now raises the question: which stack? Each thread's stack is independent, and so lifetimes can't be tracked between them.
+
+---
+
+```rust
+pub trait Future {
+    type Output;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>;
+}
+
+pub enum Poll<T> {
+    Ready(T),
+    Pending,
+}
+```
+
+- `Future` has to be `poll`ed (by the executor) to resume where it last yielded and make progress (async is lazy).
+
+## Conclusion
+
+Rust is a powerful and safe systems programming language that enforces memory safety and concurrency without a garbage collector. By understanding and utilizing Rust's ownership model, lifetimes, and concurrency primitives, you can write efficient and reliable code. Use the resources and best practices outlined in this guide to deepen your knowledge and improve your Rust programming skills.
