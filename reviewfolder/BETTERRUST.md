@@ -820,3 +820,96 @@ Box<
 >
 ```
 
+Here is a reformatted version of your notes for GitHub Markdown:
+
+
+## Trailing Commas
+In comma-separated lists of any kind, use a trailing comma when followed by a newline:
+
+```rust
+function_call(
+    argument,
+    another_argument,
+);
+
+let array = [
+    element,
+    another_element,
+    yet_another_element,
+];
+```
+
+This makes moving code (e.g., by copy and paste) easier, and makes diffs smaller, as appending or removing items does not require modifying another line to add or remove a comma.
+
+## Blank Lines
+Separate items and statements by either zero or one blank lines (i.e., one or two newlines). For example:
+
+```rust
+fn foo() {
+    let x = ...;
+    let y = ...;
+    let z = ...;
+}
+
+fn bar() {}
+
+fn baz() {}
+```
+
+Avoid line-breaking in the signature if possible. If a line break is required in a non-inherent `impl`, break immediately before `for`, block indent the concrete type, and put the opening brace on its own line:
+
+```rust
+impl Bar
+    for Foo
+{
+    ...
+}
+```
+
+For modules: Use spaces around keywords and before the opening brace, no spaces around the semicolon.
+
+## Macros
+Use `{}` for the full definition of the macro.
+
+```rust
+macro_rules! foo {
+}
+```
+
+Prefer to put a generics clause on one line. Break other parts of an item declaration rather than line-breaking a generics clause. If a generics clause is large enough to require line-breaking, prefer a `where` clause instead.
+
+Do not put spaces before or after `<` nor before `>`. Only put a space after `>` if it is followed by a word or opening brace, not an opening parenthesis. Put a space after each comma. Do not use a trailing comma for a single-line generics clause.
+
+## Comments
+Prefer line comments (`//`) to block comments (`/* ... */`).
+
+When using line comments, put a single space after the opening sigil.
+
+Comments should usually be complete sentences. Start with a capital letter, end with a period (.). An inline block comment may be treated as a note without punctuation.
+
+Source lines which are entirely a comment should be limited to 80 characters in length (including comment sigils, but excluding indentation) or the maximum width of the line (including comment sigils and indentation), whichever is smaller.
+
+## Doc Comments
+Prefer line comments (`///`) to block comments (`/** ... */`).
+
+Prefer outer doc comments (`///` or `/** ... */`), only use inner doc comments (`//!` and `/*! ... */`) to write module-level or crate-level documentation.
+
+Put doc comments before attributes.
+
+For attributes with argument lists, format like functions.
+
+## Items
+- **Items** are exportable pieces of source code: structures, functions, constants, etc. Structures, Rust's class-like abstraction, are arguably our most fundamental organization tool. The top of the program organization hierarchy.
+    - A full list of language constructs considered items is available. Technically, modules are items. But for the purpose of our current code organization discussion, we'll consider them taxonomically distinct.
+
+## Modules
+- **Modules** group related items into cohesive units. They facilitate organizing code within a project, much like namespaces.
+    - Some programmers like to follow a "one module per source file" convention. But that 1:1 mapping is entirely optional. Modules are a logical, hierarchical grouping. They're not decided by the layout of a filesystem.
+
+## Crates
+- **Crates** group one or more related modules into either a library or a binary. They facilitate organizing code between projects. For libraries, visibility modifiers decide which items the module(s) export (e.g. the public API of the crate).
+    - Crates can also have dependencies, which are themselves crates (e.g. 3rd party libraries used internally). Chapter 2's `rcli` tool was a binary crate that had two library crate dependencies: `rc4` and `clap`.
+
+## System
+- **System** is the general term for a large piece of software made up of interconnected components. That could mean multiple Rust crates, libraries written in other programming languages that interoperate via CFFI, or even networked sub-services that communicate using structured formats like REST and gRPC.
+  
