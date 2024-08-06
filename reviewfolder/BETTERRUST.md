@@ -456,25 +456,6 @@ A data race occurs when two distinct threads access the same memory location, wh
 - Avoid lock inversion and keep lock scopes small and obvious.
 - Use deadlock detection tools like `no_deadlocks`, `ThreadSanitizer`, or `parking_lot::deadlock`.
 
-### Conversions
-
-Ad-hoc conversions follow `as_`, `to_`, `into_` conventions (C-CONV):
-
-| Prefix | Cost | Ownership |
-| ------ | ---- | --------- |
-| `as_` | Free | borrowed -> borrowed |
-| `to_` | Expensive | borrowed -> borrowed<br>borrowed -> owned (non-Copy types)<br>owned -> owned (Copy types) |
-| `into_` | Variable | owned -> owned (non-Copy types) |
-
-- Conversions prefixed `as_` and `into_` typically decrease abstraction.
-- Conversions prefixed `to_` typically stay at the same level of abstraction but do some work to change from one representation to another.
-
-### Option and Result
-
-- Get used to the transformations of `Option` and `Result`, and prefer `Result` to `Option`.
-- Use `.as_ref()` as needed when transformations involve references.
-- Use them in preference to explicit `match` operations.
-- Use them to transform result types into a form where the `?` operator applies.
 
 ### Pinning and Self-Referential Data Structures
 
@@ -486,26 +467,7 @@ Ad-hoc conversions follow `as_`, `to_`, `into_` conventions (C-CONV):
 - Enums allow writing functions that take multiple types and for vecs which allow any enum type.
 - The size of an enum will not exceed the largest variant and needed tag.
 
-### String Methods
 
-- `trim()` removes whitespace.
-- `trim_end_matches(w)` removes occurrences of `w`.
-- `strip_prefix(p)` removes `p` at most once.
-- Split strings by `lines()`, `chars()`, `char_indices()`, `split_whitespace()`, `bytes()`, and `split_at(index)`.
-
-### Vec Methods
-
-- `extend()` appends to a vector by cloning contents of the second vector.
-- `append()` appends by move.
-- `concat()` adds two containers together.
-- `join()` adds the two by a separator.
-- `starts_with()`, `ends_with()`, `capacity()`, `length()`, `contains()`.
-- Use `get(index)` to get options back instead of indexing collections directly.
-
-### Power Functions
-
-- `pow()` for power.
-- `powf()` for power float.
 
 ### Option Methods
 
@@ -516,57 +478,11 @@ Ad-hoc conversions follow `as_`, `to_`, `into_` conventions (C-CONV):
 
 - Implement `Eq` and `PartialEq` for hashing.
 
-### Conversion Traits
 
-- `From<T>`: Items of this type can be built from items of type `T`.
-- `TryFrom<T>`: Items of this type can sometimes be built from items of type `T`.
-- `Into<T>`: Items of this type can be converted into items of type `T`.
-- `TryInto<T>`: Items of this type can sometimes be converted into items of type `T`.
 
-### Iterators
 
-#### Consumers:
-- `iter()` and `fold()`
-- `scan()`
-- `any(P)`
-- `all(p)`
 
-#### Shortcuts:
-- `sum()`
-- `product()`
-- `min()`, `max()`
-- `min_by(f)`, `max_by(f)`
-- `reduce(f)`
-- `fold(f)`
-- `scan(f)`
 
-#### Single Value Selection:
-- `find(p)`
-- `position(p)`
-- `nth(n)`
-
-#### Testing:
-- `take(n)`
-- `skip(n)`
-- `step_by(n)`
-- `chain(other)`
-- `cycle()`
-- `rev()`
-
-#### Item Transformations:
-- `map(|item| {...})`
-- `cloned()`
-- `copied()`
-- `enumerate()`
-- `zip(it)`
-
-#### Filtering:
-- `filter(|item| {...})`
-- `take_while()`
-- `skip_while()`
-- `flatten()`
-
----
 
 ## Adapters and Iterators
 
@@ -768,7 +684,6 @@ Duplicating derived traits as bounds on `Bad` is unnecessary and a backwards-com
 4. **Derived Trait Bounds**: Generic data structures should not use trait bounds that can be derived or do not otherwise add semantic value.
 
 
-```markdown
 ## Code snippets:
 
 ### Sealed Traits:
