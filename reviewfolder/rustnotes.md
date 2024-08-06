@@ -144,13 +144,13 @@ the most simple and elegant Alternative mental model for understanding the relat
 
 "Refinement" is intentionally kept somewhat vague because it can mean different things in different contexts:
 
-* a subtrait might make its supertrait's methods' impls more specialized, faster, use less memory, e.g. Copy: Clone
+* a subtrait might make its supertrait's methods' impls more specialized, faster, use less memory, e.g. `Copy: Clone`
 
-* a subtrait might make additional guarantees about the supertrait's methods' impls, e.g. Eq: PartialEq, Ord: PartialOrd, ExactSizeIterator: Iterator
+* a subtrait might make additional guarantees about the supertrait's methods' impls, e.g. `Eq: PartialEq`, `Ord: PartialOrd`, `ExactSizeIterator: Iterator`
 
-* a subtrait might make the supertrait's methods more flexible or easier to call, e.g. FnMut: FnOnce, Fn: FnMut
+* a subtrait might make the supertrait's methods more flexible or easier to call, e.g. `FnMut: FnOnce`, `Fn: FnMut`
 
-* a subtrait might extend a supertrait and add new methods, e.g. DoubleEndedIterator: Iterator, ExactSizeIterator: Iterator
+* a subtrait might extend a supertrait and add new methods, e.g. `DoubleEndedIterator: Iterator`, `ExactSizeIterator: Iterator`
 
 ---
 
