@@ -62,18 +62,7 @@
 - **Non-Lexical Lifetimes**: The compiler treats the endpoint of a reference's lifetime as the last place it's used, rather than the end of the enclosing scope.
 - **'static Lifetime**: The only allowed possibility for a returned reference with no input lifetimes, guaranteeing it never goes out of scope.
 
-## Future and Async
 
-- **Future Trait**: Represents an asynchronous computation that can be polled to make progress.
-- **Poll Enum**: Indicates whether a future is ready or pending.
-- **Pin and Context**: Used to manage self-referential data and notify the executor that progress can be made.
-- **Async/Await**: Implements futures using generators, allowing for non-blocking asynchronous code.
-
-## Async Runtimes and Streams
-
-- **Tokio**: Multithreaded runtime with a work-stealing scheduler.
-- **Actix**: Single-threaded async runtime.
-- **Streams**: Asynchronous version of iterators, with various creation and combination methods.
 
 ## Example Code
 
@@ -107,41 +96,12 @@ fn function<T: Clone>(t: T) {
 - **Send Trait**: Indicates types safe to move between threads.
 - **'static Lifetime Bound**: Required for values moved between threads to ensure no stack references are involved.
 
-## Future Example
-
-```rust
-pub trait Future {
-    type Output;
-    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>;
-}
-pub enum Poll<T> {
-    Ready(T),
-    Pending,
-}
-```
-
-- **Future Polling**: Futures must be polled to make progress, with `Pin` and `Context` managing state and notifications.
-
-## Async Runtimes
-
-- **Tokio**: Multithreaded runtime with work-stealing scheduler.
-- **Actix**: Single-threaded async runtime.
-
-## Streams
-
-- **Stream Trait**: Asynchronous version of `Iterator`, with various creation and combination methods.
 
 ---
 
 These notes provide a comprehensive overview of Rust's ownership, memory management, traits, lifetimes, and asynchronous programming concepts.
 
 
-## Concurrency
-
-- A data race occurs when two distinct threads access the same memory location, where at least one of them is a write, and there is no synchronization mechanism that enforces an ordering on the accesses.
-- Use `Arc`, `Mutex`, and `RwLock` to ensure thread safety.
-- Avoid lock inversion and keep lock scopes small and obvious.
-- Include deadlock detection tools in your CI system.
 
 ## Miscellaneous
 
