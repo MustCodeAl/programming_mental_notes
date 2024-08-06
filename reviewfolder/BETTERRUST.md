@@ -11,43 +11,130 @@
 - [cheats.rs](https://cheats.rs/)
 - [Blessed.rs](https://blessed.rs/crates)
 
+# Rust Ownership and Memory Management
+
 ## Ownership and Borrowing
 
-- The owner of an item gets to create it, read from it, update it, and drop it (CRUD).
-- Borrowing does not have ownership, so the value won't be dropped when the borrow goes out of scope.
-- If you mutable borrow a value, the owner can't change it until you're done borrowing it.
-- **Only the item's owner can move the item.**
-- **There can be any number of immutable references to the item, or a single mutable reference to the item but not both.**
-- The data pointed to at the location has to be valid, and any assignments to this location have to be of valid data, enforced by the reference to have existing data at all times.
-- It's **valid to read from a mutable reference, and it's valid to write to a mutable reference, and so the ability to do both at once is provided by the `std::mem::replace`.**
+- **CRUD Operations**: The owner of an item can create, read, update, and drop it.
+- **Borrowing**: Borrowing does not have ownership, so the value won't be dropped when the borrow goes out of scope.
+- **Mutable Borrowing**: If you mutable borrow a value, the owner can't change it until you're done borrowing it.
+- **Ownership Movement**: Only the item's owner can move the item.
+- **References**: There can be any number of immutable references to the item, or a single mutable reference to the item, but not both.
+- **Data Validity**: The data pointed to must be valid, and any assignments to this location must be of valid data, enforced by the reference to have existing data at all times.
+- **Mutable References**: It's valid to read from a mutable reference and write to it. The ability to do both at once is provided by `std::mem::replace`.
 
-## Memory Management
+## Memory Segments
 
-- `isize` is the size of a pointer on your system.
-- While a program is running, the memory it uses is divided into different chunks, sometimes called segments. Some of these chunks are a fixed size, such as the ones that hold the program code or the program's global data, but two of the chunks – the heap and the stack – change size as the program runs.
-- The stack is used to hold state related to the currently executing function, specifically its parameters, local variables, and temporary values, held in a stack frame.
-- Rust has two built-in fat pointer types: types that act as pointers but hold additional information about the thing they are pointing to.
-  - **Slice:** A reference to a subset of some contiguous collection of values.
-  - **Trait Object:** A reference to some item that implements a particular trait.
+- **Memory Segments**: While a program is running, memory is divided into different chunks (segments). Some are fixed size (program code, global data), while others (heap and stack) change size as the program runs.
+- **Heap and Stack**: Typically arranged at opposite ends of the program's virtual memory space, so one can grow downwards and the other upwards.
+
+## Stack and Function Calls
+
+- **Stack Usage**: The stack holds state related to the currently executing function, specifically its parameters, local variables, and temporary values.
+- **Stack Frames**: When a function `f()` is called, a new stack frame is added. When `f()` returns, the stack pointer resets to the caller's stack frame.
+- **Memory Reuse**: When a different function `g()` is called, the stack frame for `g()` reuses the same area of memory that `f()` previously used.
+
+## Fat Pointers
+
+- **Slice**: A reference to a subset of some contiguous collection of values, built from a pointer and a length field.
+- **Trait Object**: A reference to an item that implements a particular trait, built from a pointer to the item and a pointer to the type's vtable.
 
 ## Traits and Generics
 
-- The simplest is the `Pointer` trait, which formats a pointer value for output.
-- The `Borrow` and `BorrowMut` traits each have a single method (`borrow` and `borrow_mut` respectively) that has the same signature as the equivalent `AsRef` / `AsMut` trait methods.
-- A function that accepts `Borrow` can receive either items or references-to-items and can work with references in either case.
-- A function that accepts `ToOwned` can receive either items or references-to-items and can build its own personal copies of those items in either case.
-- `AsRef` is for cheap reference to reference conversions.
-- Rust allocates items on the stack by default; the `Box<T>` pointer type forces allocation to occur on the heap, which means that the allocated item can outlive the scope of the current block.
-- `Rc` and `Weak<T>` types are used for reference counting and non-owning references, respectively.
+- **Pointer Trait**: Formats a pointer value for output, useful for low-level debugging.
+- **Borrow and BorrowMut Traits**: Methods `borrow` and `borrow_mut` have the same signature as `AsRef` and `AsMut`.
+- **ToOwned Trait**: Allows functions to build their own copies of items.
+- **AsRef Trait**: Used for cheap reference to reference conversions.
+- **Box<T>**: Forces allocation on the heap, allowing the item to outlive the scope of the current block.
+- **Rc and Weak<T>**: Used for cyclical data structures and non-owning references, respectively.
+- **Cow**: "Clone-on-write" enum that can hold either owned data or a reference to borrowed data.
+
+## Trait Coherence and Implementation
+
+- **Trait Coherence**: There exists at most one `impl` of a trait for any given type.
+- **Associated Types vs. Generic Types**: Use associated types for a single `impl` per type, and generic types for multiple possible `impls`.
+- **Subtraits and Supertraits**: Subtraits refine their supertraits, making methods more specialized, adding guarantees, or extending functionality.
 
 ## Lifetimes
 
-- The lifetime of an item on the stack is the period where that item is guaranteed to stay in the same place.
-- The scope of any reference must be smaller than the lifetime of the item that it refers to.
-- **Lifetime extension:** Convert a temporary to be a new named local variable with a `let` binding.
-- **Lifetime reduction:** Add an additional block `{ ... }` around the use of a reference so that its lifetime ends at the end of the new block.
-- Precisely where an item gets automatically dropped depends on whether an item has a name or not.
-- The Rust compiler guarantees that a `'static` item always has the same address for the entire duration of the program and never moves.
+- **Stack Lifetimes**: The lifetime of an item on the stack is the period where a reference to the item is guaranteed not to become invalid.
+- **Lifetime Extension and Reduction**: Convert a temporary to a named local variable or add an additional block around a reference to control its lifetime.
+- **Non-Lexical Lifetimes**: The compiler treats the endpoint of a reference's lifetime as the last place it's used, rather than the end of the enclosing scope.
+- **'static Lifetime**: The only allowed possibility for a returned reference with no input lifetimes, guaranteeing it never goes out of scope.
+
+## Future and Async
+
+- **Future Trait**: Represents an asynchronous computation that can be polled to make progress.
+- **Poll Enum**: Indicates whether a future is ready or pending.
+- **Pin and Context**: Used to manage self-referential data and notify the executor that progress can be made.
+- **Async/Await**: Implements futures using generators, allowing for non-blocking asynchronous code.
+
+## Async Runtimes and Streams
+
+- **Tokio**: Multithreaded runtime with a work-stealing scheduler.
+- **Actix**: Single-threaded async runtime.
+- **Streams**: Asynchronous version of iterators, with various creation and combination methods.
+
+## Example Code
+
+```rust
+fn function<T: Clone>(t: T) {
+    // impl
+}
+```
+
+- **Generics and Trait Bounds**: Generic types depend on their trait bounds, implying a dependency on the trait.
+
+## Debugging
+
+- **dbg! Macro**: Superior to `println!` for quick and dirty print logging, printing to stderr and returning its arguments.
+
+## Heap and Ownership
+
+- **Heap Values**: Every item has an owner, and the lifetime of heap items is tied to stack lifetimes.
+- **Box<T>**: Example of heap allocation with ownership.
+
+```rust
+{
+    let b: Box<Item> = Box::new(Item { contents: 42 });
+} // `b` dropped here, so `Item` dropped too.
+```
+
+- **Ownership Chain**: The chain of ownership must end at a local variable or a global variable marked as `'static`.
+
+## Thread Safety
+
+- **Send Trait**: Indicates types safe to move between threads.
+- **'static Lifetime Bound**: Required for values moved between threads to ensure no stack references are involved.
+
+## Future Example
+
+```rust
+pub trait Future {
+    type Output;
+    fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output>;
+}
+pub enum Poll<T> {
+    Ready(T),
+    Pending,
+}
+```
+
+- **Future Polling**: Futures must be polled to make progress, with `Pin` and `Context` managing state and notifications.
+
+## Async Runtimes
+
+- **Tokio**: Multithreaded runtime with work-stealing scheduler.
+- **Actix**: Single-threaded async runtime.
+
+## Streams
+
+- **Stream Trait**: Asynchronous version of `Iterator`, with various creation and combination methods.
+
+---
+
+These notes provide a comprehensive overview of Rust's ownership, memory management, traits, lifetimes, and asynchronous programming concepts.
+
 
 ## Concurrency
 
@@ -100,6 +187,228 @@
 - Document your code with comments and `///` doc comments.
 - Write tests for your code to ensure correctness.
 - Use `cargo fmt` to format your code.
+
+
+---
+
+### Data Races and Concurrency
+
+A data race occurs when two distinct threads access the same memory location, where at least one of them is a write, and there is no synchronization mechanism that enforces an ordering on the accesses.
+
+Enforcing that there is a single writer, or multiple readers (but never both), means that there can be no data races.
+
+"Do not communicate by sharing memory; instead, share memory by communicating." In Rust, equivalent functionality is included in the standard library in the `std::sync::mpsc` module: the `channel()` function returns a `(Sender, Receiver)` pair that allows values of a particular type to be communicated between threads.
+
+If shared-state concurrency can't be avoided, then there are some ways to reduce the chances of writing deadlock-prone code:
+
+- Ensure that access to it is governed by some kind of external synchronization for users of a struct.
+- Ensure it is thread-safe by adding internal synchronization operations.
+- Use `Arc`, `Mutex`, and `RwLock`.
+- Avoid interaction between the two independently locked data structures where possible.
+- Use `sleep()` to help with debugging threads.
+- **Avoid lock inversion**: Try to lock stuff in a good ordering, to make it more deterministic.
+- Put data structures that must be kept consistent with each other under a single lock.
+- Keep lock scopes small and obvious; try to make it so no locks are held at the same time. Wherever possible, use helper methods that get and set things under the relevant lock.
+- Avoid invoking closures with locks held; this puts the code at the mercy of whatever closure gets added to the codebase in the future.
+- Similarly, avoid returning a `MutexGuard` to a caller: it's like handing out a loaded gun from a deadlock perspective.
+- Include deadlock detection tools in your CI system, such as `no_deadlocks`, `ThreadSanitizer`, or `parking_lot::deadlock`.
+- As a last resort: design, document, test, and police a locking hierarchy that describes what lock orderings are allowed/required. This should be a last resort because any strategy that relies on engineers never making a mistake is obviously doomed to failure in the long term.
+
+More abstractly, multi-threaded code is an ideal place to apply the general advice: prefer code that's so simple that it is obviously not wrong, rather than code that's so complex that it's not obviously wrong.
+
+---
+
+### Rust Variable and Struct Handling
+
+- `Copy` is default for variables stored on the stack.
+- Move is default for heap variables.
+- Everything that is not a copy is a move.
+- Structs are stored on the heap and move by default in Rust.
+- Add `mut` to a struct variable to make every field mutable.
+- Structs can be nested.
+- Use `self` if its value is on the stack.
+
+---
+
+### Ad-hoc Conversions
+
+Ad-hoc conversions follow `as_`, `to_`, `into_` conventions (C-CONV):
+
+| Prefix | Cost      | Ownership                                      |
+| ------ | --------- | ---------------------------------------------- |
+| `as_`  | Free      | borrowed -> borrowed                           |
+| `to_`  | Expensive | borrowed -> borrowed<br>borrowed -> owned (non-Copy types)<br>owned -> owned (Copy types) |
+| `into_`| Variable  | owned -> owned (non-Copy types)                |
+
+- Conversions prefixed `as_` and `into_` **typically decrease abstraction**:
+  - Exposing a view into the underlying representation (`as`).
+  - Deconstructing data into its underlying representation (`into`).
+- Conversions prefixed `to_`:
+  - Typically stay at the same level of abstraction.
+  - Do some work to change from one representation to another.
+
+**When a type wraps a single value to associate it with higher-level semantics, access to the wrapped value should be provided by an `into_inner()` method**. This applies to wrappers that provide buffering like `BufReader`, encoding or decoding like `GzDecoder`, atomic access like `AtomicBool`, or any similar semantics.
+
+---
+
+### Option and Result Transformations
+
+- Get used to the transformations of `Option` and `Result`, and prefer `Result` to `Option`.
+  - Use `.as_ref()` as needed when transformations involve references.
+- Use them in preference to explicit `match` operations.
+- In particular, use them to transform result types into a form where the `?` operator applies.
+
+*Note: This method is separate from the `AsRef` trait, even though the method name is the same.*
+
+---
+
+### Data Structures and Self-Referential Data
+
+**Data structures in Rust can move**: from the stack to the heap, from the heap to the stack, and from one place to another. If that happens, the "interior" title pointer would no longer be valid, and there's no way to keep it in sync.
+
+A simple alternative for this case is to use the indexing approach explored earlier; **a range of offsets into the text is not invalidated by a move, and is invisible to the borrow checker because it doesn't involve references**.
+
+A more general version of the self-reference problem turns up when the compiler deals with `async` code. Roughly speaking, the compiler bundles up a pending chunk of `async` code into a lambda, and the data for that lambda can include both values and references to those values. That's inherently a self-referential data structure, and so `async` support was a prime motivation for the `Pin` type in the standard library. **This pointer type "pins" its value in place, forcing the value to remain at the same location in memory, thus ensuring that internal self-references remain valid**.
+
+The internal reference fields need to use raw pointers, or near relatives (e.g. `NonNull`) thereof. The type being pinned needs to not implement the `Unpin` marker trait. This trait is automatically implemented for almost every type, so this typically involves adding a (zero-sized) field of type `PhantomPinned` to the struct definition.
+
+The item is only pinned once it's on the heap and held via `Pin`; in other words, only the contents of something like `Pin<Box<MyType>>` is pinned. This means that the internal reference fields can only be safely filled in after this point, but as they are raw pointers the compiler will give you no warning if you incorrectly set them before calling `Box::pin`.
+
+Where possible, avoid self-referential data structures or try to find library crates that encapsulate the difficulties for you (e.g. ouroborous).
+
+---
+
+### Enums
+
+Enums are useful because they allow writing functions that take multiple types and for vecs which allow any enum type. The size of an enum will not exceed the largest variant and needed tag.
+
+---
+
+### String Methods
+
+- Chars are 4 bytes, not one in Rust.
+- `trim()` removes whitespace and `trim_matches` removes strings.
+- `trim_end_matches(w)` removes occurrences of `w`.
+- `strip_prefix(p)` removes `p` at most once.
+- You can split strings by `lines()`, `chars()`, `char_indices()`, `split_whitespace()`, `bytes()`, and `split_at(index)`.
+- Indexing a string doesn't give a char.
+
+---
+
+### Vec Methods
+
+- `extend()` (append by clone) lets you append to a vector by cloning contents of the second vector.
+- `append()` normally just appends by move.
+- `concat()` adds two containers together, while `join()` adds the two by a separator.
+- `starts_with()` and `ends_with()`, `capacity()`, `length()`, `contains()`.
+- Indexing collections can cause panics, but using `get(index)` allows you to get options back.
+
+---
+
+### Power Functions
+
+- `pow()` for power.
+- `powf()` for power float.
+- `take()` replaces option with `None` and returns a new option with the value.
+- `ok_or` turns `Some(valid_value)` into `Result::Ok(valid_value)` and if it's a `None` into a `Result::Err(err_value)`.
+- `hash` for mapping a value of fixed size has to implement `Eq` and `PartialEq`.
+
+---
+
+### Conversion Traits
+
+The four relevant traits that express the ability to convert values of a type are:
+
+- `From<T>`: Items of this type can be built from items of type `T`.
+- `TryFrom<T>`: Items of this type can sometimes be built from items of type `T`.
+- `Into<T>`: Items of this type can be converted into items of type `T`.
+- `TryInto<T>`: Items of this type can sometimes be converted into items of type `T`.
+
+**Implement (just) the `Try`... trait if it's possible for a conversion to fail.**
+
+**Implement the `From` trait for conversions.**
+
+**Use the `Into` trait for trait bounds.**
+
+However, a generic version of the function that accepts (and explicitly converts) anything satisfying `Into<IanaAllocated>`:
+
+With this trait bound in place, the reflexive trait implementation of `From<T>` makes more sense: the combination of `From<T>` implementations and `Into<T>` trait bounds leads to code that appears to magically convert at the call site (but which is still doing safe, explicit, conversions under the covers). This pattern becomes even more powerful when combined with reference types and their related conversion traits.
+
+There are only two coercions whose behavior can be affected by user-defined types. The first of these is when a user-defined type implements the `Deref` or the `DerefMut` trait. These traits indicate that the user-defined type is acting as a smart pointer of some sort, and in this case, the compiler will coerce a reference to the smart pointer item into being a reference to an item of the type that the smart pointer contains (indicated by its Target).
+
+The second coercion of a user-defined type happens when a concrete item is converted to a trait object. This operation builds a fat pointer to the item; this pointer is fat because it includes both a pointer to the item's location in memory, together with a pointer to the vtable for the concrete type's implementation of the trait.
+
+Rust includes the `as` keyword to perform explicit casts between some pairs of types. The `as` version also allows lossy conversions.
+
+---
+
+### Closures and Iterators
+
+- `fnonce` consumes ownership of value.
+- Statements are instructions that perform some action and don't return a value.
+- Expressions evaluate to a resulting value.
+- `and_then()` returns `None` if the option is `None`, else calls the `fnonce()` closure you send to it.
+- `or_else()` returns the option if it contains a value, otherwise calls `f()` and returns the result.
+
+---
+
+### Iterators Consumers
+
+- `iter()` and `fold()`, let you iterate while holding state.
+- `scan()` takes an initial value for internal state and a closure with two arguments: one to a mutable reference to internal state, and the other an iterator element.
+- `any(P)` tests if any element in the collection matches the predicate, returns true if at least one does.
+- `all(p)` tests if every element in the collection matches the predicate and returns true if they all do.
+
+If the body of the for loop matches one of a number of common patterns, there are more specific iterator-consuming methods that are clearer, shorter, and more idiomatic. These patterns include shortcuts for building a single value out of the collection:
+
+- `sum()`, for summing a collection of numeric values (integers or floats).
+- `product()`, for multiplying together a collection of numeric values.
+- `min()` and `max()`, for finding the extreme values of a collection, relative to the Item's `Ord` implementation.
+- `min_by(f)` and `max_by(f)`, for finding the extreme values of a collection, relative to a user-specified comparison function `f`.
+- `reduce(f)` is a more general operation that encompasses the previous methods, building an accumulated value of the Item type by running a closure at each step that takes the value accumulated so far and the current item.
+- `fold(f)` is a generalization of reduce, allowing the "accumulated value" to be of an arbitrary type (not just the `Iterator::Item` type).
+- `scan(f)` generalizes in a slightly different way, giving the closure a mutable reference to some internal state at each step.
+
+There are also methods for selecting a single value out of the collection:
+
+- `find(p)` finds the first item that satisfies a predicate.
+- `position(p)` also finds the first item satisfying a predicate, but this time it returns the index of the item.
+- `nth(n)` returns the n-th element of the iterator, if available.
+
+There are methods for testing against every item in the collection:
+
+---
+
+### Iterator Transforms
+
+The `Iterator` trait has a single required method (`next`), but also provides default implementations of a large number of other methods that perform transformations on an iterator. Some of these transformations affect the overall iteration process:
+
+- `take(n)` restricts an iterator to emitting at most `n` items.
+- `skip(n)` skips over the first `n` elements of the iterator.
+- `step_by(n)` converts an iterator so it only emits every `n`-th item.
+- `chain(other)` glues together two iterators, to build a combined iterator that moves through one then the other.
+- `cycle()` converts an iterator that terminates into one that repeats forever, starting at the beginning again whenever it reaches the end. (The iterator must support `Clone` to allow this.)
+- `rev()` reverses the direction of an iterator. (The iterator must implement the `DoubleEndedIterator` trait, which has an additional `next_back` required method.)
+
+Other transformations affect the nature of the Item that's the subject of the `Iterator`:
+
+- `map(|item| {...})` is the most general version, repeatedly applying a closure to transform each item in turn. Several of the following entries in this list are convenience variants that could be equivalently implemented as a map.
+- `cloned()` produces a clone of all of the items in the original iterator; this is particularly useful with iterators over `&Item` references. (This obviously requires the underlying `Item` type to implement `Clone`).
+- `copied()` produces a copy of all of the items in the original iterator; this is particularly useful with iterators over `&Item` references. (This obviously requires the underlying `Item` type to implement `Copy`).
+- `enumerate()` converts an iterator over items to be an iterator over `(usize, Item)` pairs, providing an index to the items in the iterator.
+- `zip(it)` joins an iterator with a second iterator, to produce a combined iterator that emits pairs of items, one from each of the original iterators, until the shorter of the two iterators is finished.
+
+Yet other transformations perform filtering on the Items being emitted by the `Iterator`:
+
+- `filter(|item| {...})` is the most general version, applying a bool-returning closure to each item reference to determine whether it should be passed through.
+- `take_while()` and `skip_while()` are mirror images of each other, emitting either an initial subrange or a final subrange of the iterator, based on a predicate.
+
+The `flatten()` method deals with an iterator whose items are themselves iterators, flattening the result. On its own, this doesn't seem that helpful, but it becomes much more useful when combined with the observation that both `Option` and `Result` act as iterators: they produce either zero (for `None`, `Err(e)`) or one (for `Some(v)`, `Ok(v)`) items. This means that flattening a stream of `Option` / `Result` values is a simple way to extract just the valid values, ignoring the rest.
+
+Taken as a whole, these methods allow iterators to be transformed so that they produce exactly the sequence of elements that are needed for most situations.
+
+---
+
 
 ## Code Snippets
 
