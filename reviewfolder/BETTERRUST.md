@@ -499,4 +499,324 @@ Duplicating derived traits as bounds on `Bad` is unnecessary and a backwards-com
 4. **Derived Trait Bounds**: Generic data structures should not use trait bounds that can be derived or do not otherwise add semantic value.
 
 
+```markdown
+## Code snippets:
+
+### Sealed Traits:
+```rust
+pub trait TheTrait: private::Sealed {
+    // Zero or more methods that the user is allowed to call.
+    fn .   ;
+    // Zero or more private methods, not allowed for user to call.
+    #[doc(hidden)]
+    fn .   ;
+}
+// Implement for some types.
+impl TheTrait for usize {
+    /*    */
+}
+mod private {
+    pub trait Sealed {}
+    // Implement for those same types, but no others.
+    impl Sealed for usize {}
+}
+```
+
+### Private Fields:
+```rust
+struct Gizmo<T> {
+    // ...
+}
+```
+
+### Newtypes:
+```rust
+pub struct MyTransformResult<I>(Enumerate<Skip<I>>);
+impl<I: Iterator> Iterator for MyTransformResult<I> {
+    type Item = (usize, I::Item);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+```
+
+### Derived Trait Bounds:
+```rust
+#[derive(Clone, Debug, PartialEq)]
+struct Gizmo<T> {
+    // ...
+}
+```
+
+---
+
+## Concepts to Know:
+
+### C-INTERMEDIATE:
+Functions should expose intermediate results to avoid duplicate work. This means that if a function computes interesting related data, it should be exposed in the API. For example, `Vec::binary_search` returns information about the index if found, and also the index at which the value would need to be inserted if not found.
+
+### C-CALLER-CONTROL:
+If a function requires ownership of an argument, it should take ownership of the argument rather than borrowing and cloning the argument. For example, prefer `fn foo(b: Bar) { /* use b as owned, directly */ }` over `fn foo(b: &Bar) { let b = b.clone(); /* use b as owned after cloning */ }`.
+
+### C-GENERIC:
+Functions should minimize assumptions about parameters by using generics. This means that the fewer assumptions a function makes about its inputs, the more widely usable it becomes. For example, prefer `fn foo<I: IntoIterator<Item = i64>>(iter: I) { /* ... */ }` over any of `fn foo(c: &[i64]) { /* ... */ }`, `fn foo(c: &Vec<i64>) { /* ... */ }`, or `fn foo(c: &SomeOtherCollection<i64>) { /* ... */ }` if the function only needs to iterate over the data.
+
+```rust
+fn foo(b: Bar) -> (bool, Option<usize>) {
+    // do something
+    (result, related_data)
+}
+```
+
+### Caller decides where to copy and place data (C-CALLER-CONTROL):
+```rust
+// Prefer this:
+fn foo(b: Bar) {
+    /* use b as owned, directly */
+}
+// Over this:
+fn foo(b: &Bar) {
+    let b = b.clone();
+    /* use b as owned after cloning */
+}
+```
+
+### Minimizing assumptions about parameters by using generics (C-GENERIC):
+```rust
+fn foo<I: IntoIterator<Item = i64>>(iter: I) { /* ... */ }
+```
+
+---
+
+### Types are `Send` and `Sync` where possible (C-SEND-SYNC)
+`Send` and `Sync` are automatically implemented when the compiler determines it is appropriate. In types that manipulate raw pointers, be vigilant that the `Send` and `Sync` status of your type accurately reflects its thread safety characteristics. Tests like the following can help catch unintentional regressions in whether the type implements `Send` or `Sync`.
+
+```rust
+#[test]
+fn test_send() {
+    fn assert_send<T: Send>() {}
+    assert_send::<MyStrangeType>();
+}
+
+#[test]
+fn test_sync() {
+    fn assert_sync<T: Sync>() {}
+    assert_sync::<MyStrangeType>();
+}
+```
+
+---
+
+### Error types are meaningful and well-behaved (C-GOOD-ERR)
+An error type is any type `E` used in a `Result<T, E>` returned by any public function of your crate. `Error` types should always implement the `std::error::Error` trait which is the mechanism by which error handling libraries like `error-chain` abstract over different types of errors, and which allows the error to be used as the `source()` of another error.
+
+Additionally, error types should implement the `Send` and `Sync` traits. An `error` that is not `Send` cannot be returned by a `thread` run with `thread::spawn`. An `error` that is not `Sync` cannot be passed across threads using an `Arc`. These are common requirements for basic error handling in a multithreaded application.
+
+`Send` and `Sync` are also important for being able to package a custom error into an IO error using `std::io::Error::new`, which requires a trait bound of `Error + Send + Sync`.
+
+One place to be vigilant about this guideline is in functions that return Error trait objects, for example `reqwest::Error::get_ref`. Typically `Error + Send + Sync + 'static` will be the most useful for callers. The addition of `'static` allows the trait object to be used with `Error::downcast_ref`.
+
+Never use `()` as an error type, even where there is no useful additional information for the error to carry. `()` does not implement `Error` so it cannot be used with error handling libraries like `error-chain`. `()` does not implement `Display` so a user would need to write an error message of their own if they want to fail because of the error. `()` has an unhelpful Debug representation for users that decide to `unwrap()` the `error`. It would not be semantically meaningful for a downstream library to implement `From<()>` for their error type, so `()` as an error type cannot be used with the `?` operator.
+
+Instead, define a meaningful error type specific to your crate or to the individual function. Provide appropriate `Error` and `Display` impls. If there is no useful information for the error to carry, it can be implemented as a unit struct.
+
+```rust
+use std::error::Error;
+use std::fmt::Display;
+
+// Instead of this...
+fn do_the_thing() -> Result<Wow, ()>
+
+// Prefer this...
+fn do_the_thing() -> Result<Wow, DoError>
+
+#[derive(Debug)]
+struct DoError;
+
+impl Display for DoError { /* ... */ }
+impl Error for DoError { /* ... */ }
+```
+
+The `error` message given by the `Display` representation of an `error` type should be lowercase without trailing punctuation, and typically concise. `Error::description()` should not be implemented. It has been deprecated and users should always use `Display` instead of `description()` to print the error.
+
+Examples of error messages:
+- `"unexpected end of file"`
+- `"provided string was not 'true' or 'false'"`
+- `"invalid IP address syntax"`
+- `"second time provided was later than self"`
+- `"invalid UTF-8 sequence of {} bytes from index {}"`
+- `"environment variable was not valid unicode: {:?}"`
+
+### Binary number types provide `Hex`, `Octal`, `Binary` formatting (C-NUM-FMT)
+`std::fmt::UpperHex`
+`std::fmt::LowerHex`
+`std::fmt::Octal`
+`std::fmt::Binary`
+
+These traits control the representation of a type under the `{:X}`, `{:x}`, `{:o}`, and `{:b}` `format!` specifiers. Implement these traits for any number type on which you would consider doing bitwise manipulations like `|` or `&`. This is especially appropriate for bitflag types. Numeric quantity types like `struct Nanoseconds(u64)` probably do not need these.
+
+If we were adding an error to represent an address failing to parse, for consistency we would want to name it in verb-object-error or verb-subject-error order like `ParseAddrError` rather than `AddrParseError`.
+
+---
+
+### Generic reader/writer functions take `R: Read` and `W: Write` by value (C-RW-VALUE)
+The standard library contains these two impls:
+```rust
+impl<'a, R: Read + ?Sized> Read for &'a mut R { /* ... */ }
+impl<'a, W: Write + ?Sized> Write for &'a mut W { /* ... */ }
+```
+
+That means any function that accepts `R: Read` or `W: Write` generic parameters by value can be called with a `&mut` reference if necessary. In the documentation of such functions, briefly remind users that a mut reference can be passed. New Rust users often struggle with this. They may have opened a file and want to read multiple pieces of data out of it, but the function to read one piece consumes the reader by value, so they are stuck. The solution would be to leverage one of the above impls and pass `&mut f` instead of `f` as the reader parameter.
+
+---
+
+## Comparing and Sorting
+- Process both strings from beginning to end as two sequences of maximal-length chunks, where each chunk consists either of a sequence of characters other than ASCII digits, or a sequence of ASCII digits (a numeric chunk), and compare corresponding chunks from the strings.
+- To compare two numeric chunks, compare them by numeric value, ignoring leading zeroes. If the two chunks have equal numeric value, but different numbers of leading digits, and this is the first time this has happened for these strings, treat the chunks as equal (moving on to the next chunk) but remember which string had more leading zeroes.
+- To compare two chunks if both are not numeric, compare them by Unicode character lexicographically, with two exceptions:
+    - `_` (underscore) sorts immediately after (space) but before any other character. (This treats underscore as a word separator, as commonly used in identifiers.)
+    - Unless otherwise specified, version-sorting should sort non-lowercase characters (characters that can start an UpperCamelCase identifier) before lowercase characters.
+- If the comparison reaches the end of the string and considers each pair of chunks equal:
+    - If one of the numeric comparisons noted the earliest point at which one string had more leading zeroes than the other, sort the string with more leading zeroes first.
+    - Otherwise, the strings are equal.
+
+### Expressions
+Prefer to use Rust's expression oriented nature where possible:
+```rust
+// use
+let x = if y { 1 } else { 0 };
+// not
+let x;
+if y {
+    x = 1;
+} else {
+    x = 0;
+}
+```
+
+Avoid `#[path]` annotations where possible. Prefer to use multiple imports rather than a multi-line import. However, tools should not split imports by default. In general, within expressions, prefer dereferencing to taking references, unless necessary (e.g. to avoid an unnecessarily expensive operation). Do include extraneous parentheses if it makes an arithmetic or logic expression easier to understand `((x * 15) + (y * 20)` is fine). Prefer using a unit struct (e.g., `struct Foo;`) to an empty struct (e.g., `struct Foo();` or `struct Foo {}`, these only exist to simplify code generation), but if you must use an empty struct, keep it on one line with no space between the braces: `struct Foo;` or `struct Foo {}`. For more than a few fields (in particular if the tuple struct does not fit on one line), prefer a proper struct with named fields. The same guidelines are used for untagged union declarations.
+
+```rust
+union Foo {
+    a: A,
+    b: B,
+    long_name: LongType,
+}
+```
+
+---
+
+## When deciding on style guidelines, use these guiding principles (in rough priority order):
+* readability - scan-ability
+* aesthetics - consistent with other languages/tools
+* specifics - preventing rightward drift
+* application - ease of manual application
+
+---
+
+### Sorting:
+* As the last member of a delimited expression, delimited expressions are generally combinable, regardless of the number of members. Previously only applied with exactly one member (except for closures with explicit blocks).
+* When line-breaking a binary operator, if the first operand spans multiple lines, use the base indentation of the last line.
+* Use version-sort (sort `x8`, `x16`, `x32`, `x64`, `x128` in that order).
+* Change "ASCIIbetical" sort to Unicode-aware "non-lowercase before lowercase".
+* Format single associated type `where` clauses on the same line if they fit.
+
+### Formatting:
+When a name is forbidden because it is a reserved word (such as `crate`), either use a raw identifier (`r#crate`) or use a trailing underscore (`crate_`). Don't misspell the word (`krate`). Prefer to use single-letter names for generic parameters. When writing extern items (such as `extern "C" fn`), always specify the ABI. For example, write `extern "C" fn foo ...`, not `extern fn foo ...`, or `extern "C" { ... }`.
+
+A group of imports is a set of imports on the same or sequential lines. One or more blank lines or other items (e.g., a function) separate groups of imports. Within a group of imports, imports must be version-sorted. Groups of imports must not be merged or re-ordered.
+
+### Ordering list import:
+Names in a list import must be version-sorted, except that:
+- `self` and `super` always come first if present, and
+- groups and glob imports always come last if present.
+
+This applies recursively. For example, `a::*` comes before `b::a` but `a::b` comes before `a::*`. E.g., `use foo::bar::{a, b::c, b::d, b::d::{x, y, z}, b::{self, r, s}};`.
+
+### Normalisation:
+Tools must make the following normalisations, recursively:
+- `use a::self; -> use a;`
+- `use a::{}; -> (nothing)`
+- `use a::{b}; -> use a::b;`
+
+Tools must not otherwise merge or un-merge import lists or adjust glob imports (without an explicit option). Each nested import must be on its own line, but non-nested imports must be grouped on as few lines as possible.
+
+### Chains:
+A chain is a sequence of field accesses, method calls, and/or uses of the try operator `?`. E.g., `a.b.c().d` or `foo?.bar().baz?`. Format the chain on one line if it is "small" and otherwise possible to do so. If formatting on multiple lines, put each field access or method call in the chain on its own line, with the line-break before the `.` and after any `?`. Block-indent each subsequent line:
+
+### Use a semicolon where an expression has void type, even if it could be propagated. E.g.,
+```rust
+fn foo() { ... }
+fn bar() {
+    foo();
+}
+```
+
+### Indentation and line width:
+- Use **spaces**, not *tabs*.
+- Each level of indentation must be **4 spaces** (that is, all indentation outside of string literals and comments must be a multiple of 4).
+- The *maximum width* for a line is **100 characters**.
+
+Keep type aliases on one line when they fit. If necessary to break the line, do so before the `=`, and block-indent the right-hand side. Format associated types like type aliases. Where an associated type has a bound, put a space after the colon but not before:
+
+Format imports on one line where possible. Don't put spaces around braces. Prefer block indent over visual indent:
+
+```rust
+// Block indent
+a_function_call(
+    foo,
+    bar,
+);
+// Visual indent
+a_function_call(foo,
+                bar);
+```
+
+This makes for smaller diffs (e.g., if `a_function_call` is renamed in the above example) and less rightward drift. For a multi-line tuple struct, block-format the fields with a field on each line and a trailing comma:
+
+```rust
+pub struct Foo(
+    String,
+    u8,
+);
+```
+
+Use block-indent for trait items. If there are no items, format the trait (including its `{}`) on a single line. Otherwise, break after the opening brace and before the closing brace:
+
+```rust
+trait Foo {}
+pub trait Bar {
+    ...
+}
+```
+
+If the trait has bounds, put a space after the colon but not before, and put spaces around each `+`, e.g.,
+```rust
+trait Foo: Debug + Bar {}
+```
+
+Use block-indent for `impl` items. If there are no items, format the `impl` (including its `{}`) on a single line. A `let` statement can contain an `else` component, making it a let-else statement. In this case, always apply the same formatting rules to the components preceding the else block (i.e. the `let pattern: Type = initializer_expr` portion) as described for other `let` statements.
+
+Format the entire let-else statement on a single line if all the following are true:
+- the entire statement is short
+- the `else` block contains only a single-line expression and no statements
+- the `else` block contains no comments
+- the `let` statement components preceding the `else` block can be formatted on a single line
+
+```rust
+let Some(1) = opt else { return };
+```
+
+Break types with `+` by breaking before the `+` and block-indenting the subsequent lines. When breaking such a type, break before every `+`:
+
+```rust
+impl Clone
+    + Copy
+    + Debug
+Box<
+    Clone
+  + Copy
+  + Debug
+>
+```
 
