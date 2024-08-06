@@ -157,7 +157,7 @@ the most simple and elegant Alternative mental model for understanding the relat
 
 
 
-Generics give us compile-time polymorphism where trait objects give us run-time polymorphism. We can use trait objects to allow functions to dynamically return different types at run-time:
+> Generics give us compile-time polymorphism where trait objects give us run-time polymorphism. We can use trait objects to allow functions to dynamically return different types at run-time:
 
 
 
