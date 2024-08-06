@@ -299,5 +299,204 @@ Ad-hoc conversions follow `as_`, `to_`, `into_` conventions (C-CONV):
 
 ---
 
+## Adapters and Iterators
+
+Adapters are functions that take iterators and return other iterators.
+
+### Replacing Vector Indexing with Iterators
+
+The first step is to replace vector indexing with direct use of an iterator in a for-each loop:
+
+```rust
+for i in 0..values.len() {
+    if values[i] % 2 != 0 {
+        continue;
+    }
+}
+```
+
+to 
+
+```rust
+for value in values.iter() {
+    if value % 2 != 0 {
+        continue;
+    }
+}
+```
+
+### Using `filter()`
+
+An initial arm of the loop that uses `continue` to skip over some items is naturally expressed as a `filter()`:
+
+```rust
+for value in values.iter().filter(|x| *x % 2 == 0) {
+}
+```
+
+### Using `take()`
+
+Next, the early exit from the loop once 5 even items have been spotted maps to a `take(5)`:
+
+```rust
+for value in values.iter().filter(|x| *x % 2 == 0).take(5) {
+    even_sum_squares += value * value;
+}
+```
+
+### Using `map()`
+
+The value of the item is never used directly, only in the `value * value` combination, which makes it an ideal target for a `map()`:
+
+```rust   
+let mut even_sum_squares = 0;
+for val_sqr in values.iter().filter(|x| *x % 2 == 0).take(5).map(|x| x * x) {
+    even_sum_squares += val_sqr;
+}
+```
+
+### Collection-Producing Methods
+
+Other (more obscure) collection-producing methods include:
+
+- `collect()`: Accumulates all of the iterated items into a new collection.
+- `unzip()`: Divides an iterator of pairs into two collections.
+- `partition(p)`: Splits an iterator into two collections based on a predicate that is applied to each item.
+
+## File System Operations
+
+- `file()`: Reference to an open file on the system.
+- `path`: Operations for inspecting paths.
+- `fs`: Methods to manipulate contents of the local filesystem:
+  - `read_to_string(&buffer)`
+  - `copy(src, dst)`
+  - `create_dir()`
+  - `hard_link()`
+  - `remove_dir()`
+  - `remove_file(file_to_remove)`
+  - `rename()`
+
+## Code Snippets
+
+### Static Enforcement
+
+```rust
+fn foo(a: Ascii) { /* ... */ }
+```
+
+### Dynamic Enforcement
+
+```rust
+fn foo(a: u8) {
+    if !a.is_valid() {
+        panic!("invalid input");
+    }
+    // ...
+}
+```
+
+### Dynamic Enforcement with `debug_assert!`
+
+```rust
+fn foo(a: u8) {
+    debug_assert!(a.is_valid());
+    // ...
+}
+```
+
+## Concepts
+
+### Static Enforcement
+
+This is the process of using types to rule out bad inputs. For example, using the type `Ascii` instead of `u8` to guarantee that the highest bit is zero. This is the preferred method of enforcing validity of input.
+
+### Dynamic Enforcement
+
+This is the process of validating input as it is processed, or ahead of time if necessary. This is often easier to implement than static enforcement, but has several drawbacks such as runtime overhead and delayed detection of bugs.
+
+### Destructors Never Fail
+
+Destructors should not fail, as this will cause the program to abort. Instead, provide a separate method for checking for clean teardown, such as a `close()` method, that returns a `Result` to signal problems.
+
+### Destructors That May Block Have Alternatives
+
+Destructors should not invoke blocking operations, as this can make debugging much more difficult. Consider providing a separate method for preparing for an infallible, nonblocking teardown.
+
+### Sealed Traits
+
+Sealed traits protect against downstream implementations. Some traits are only meant to be implemented within the crate that defines them. In such cases, we can retain the ability to make changes to the trait in a non-breaking way by using the sealed trait pattern.
+
+```rust
+/// This trait is sealed and cannot be implemented for types outside this crate.
+pub trait TheTrait: private::Sealed {
+    // Zero or more methods that the user is allowed to call.
+    fn ...();
+    // Zero or more private methods, not allowed for user to call.
+    #[doc(hidden)]
+    fn ...();
+}
+// Implement for some types.
+impl TheTrait for usize {
+    /* ... */
+}
+mod private {
+    pub trait Sealed {}
+    // Implement for those same types, but no others.
+    impl Sealed for usize {}
+}
+```
+
+### Structs Have Private Fields
+
+Making a field public is a strong commitment: it pins down a representation choice, and prevents the type from providing any validation or maintaining any invariants on the contents of the field, since clients can mutate it arbitrarily. Public fields are most appropriate for struct types in the C spirit: compound, passive data structures. Otherwise, consider providing getter/setter methods and hiding fields instead.
+
+### Newtypes Encapsulate Implementation Details
+
+A newtype can be used to hide representation details while making precise promises to the client.
+
+```rust
+use std::iter::{Enumerate, Skip};
+
+pub fn my_transform<I: Iterator>(input: I) -> Enumerate<Skip<I>> {
+    input.skip(3).enumerate()
+}
+
+pub struct MyTransformResult<I>(Enumerate<Skip<I>>);
+
+impl<I: Iterator> Iterator for MyTransformResult<I> {
+    type Item = (usize, I::Item);
+    fn next(&mut self) -> Option<Self::Item> {
+        self.0.next()
+    }
+}
+
+pub fn my_transform<I: Iterator>(input: I) -> MyTransformResult<I> {
+    MyTransformResult(input.skip(3).enumerate())
+}
+```
+
+### Derived Trait Bounds
+
+Generic data structures should not use trait bounds that can be derived or do not otherwise add semantic value.
+
+```rust
+// Prefer this:
+#[derive(Clone, Debug, PartialEq)]
+struct Good<T> { /* ... */ }
+
+// Over this:
+#[derive(Clone, Debug, PartialEq)]
+struct Bad<T: Clone + Debug + PartialEq> { /* ... */ }
+```
+
+Duplicating derived traits as bounds on `Bad` is unnecessary and a backwards-compatibility hazard.
+
+### Most Important Concepts to Know
+
+1. **Sealed Traits**: Sealed traits are traits that are only meant to be implemented within the crate that defines them. This allows for changes to be made to the trait in a non-breaking way. To avoid frustrated users trying to implement the trait, it should be documented that the trait is sealed and not meant to be implemented outside of the current crate.
+2. **Private Fields**: Making a field public is a strong commitment and should only be done for struct types in the C spirit. Otherwise, consider providing getter/setter methods and hiding fields instead.
+3. **Newtypes**: Newtypes can be used to hide representation details while making precise promises to the client. This allows for the representation to change in the future without breaking client code.
+4. **Derived Trait Bounds**: Generic data structures should not use trait bounds that can be derived or do not otherwise add semantic value.
+
 
 
