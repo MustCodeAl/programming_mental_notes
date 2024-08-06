@@ -56,14 +56,6 @@
 - Avoid lock inversion and keep lock scopes small and obvious.
 - Include deadlock detection tools in your CI system.
 
-## Async and Futures
-
-- `Future` has to be `poll`ed (by the executor) to resume where it last yielded and make progress.
-- `Pin` the memory location because the future contains self-referential data.
-- `Context` contains the Waker to notify the executor that progress can be made.
-- `async`/`await` on futures is implemented by generators.
-- `Stream<Item = T>` is an asynchronous version of `Iterator<Item = T>`.
-
 ## Miscellaneous
 
 - `Copy` is default for variables stored on the stack.
@@ -98,13 +90,6 @@
 - `cargo test` - Run tests.
 - `cargo doc --open` - Generate and open documentation.
 
-## Useful Crates
-
-- `serde` for serialization and deserialization.
-- `tokio` for asynchronous programming.
-- `reqwest` for making HTTP requests.
-- `clap` for command-line argument parsing.
-- `rand` for random number generation.
 
 ## Best Practices
 
