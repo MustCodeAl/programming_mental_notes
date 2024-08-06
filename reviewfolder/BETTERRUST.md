@@ -62,6 +62,15 @@
 - **Non-Lexical Lifetimes**: The compiler treats the endpoint of a reference's lifetime as the last place it's used, rather than the end of the enclosing scope.
 - **'static Lifetime**: The only allowed possibility for a returned reference with no input lifetimes, guaranteeing it never goes out of scope.
 
+> Precisely where an item gets automatically dropped depends on whether an item has a name or not.
+> One way to see what the compiler calculates as an item's lifetime is to insert a deliberate error for the borrow checker (Item 15) to detect.
+> if the compiler can prove to itself that there is no use of a reference beyond a certain point in the code, then it treats the endpoint of the reference's lifetime as the last place it's used, rather than the end of the enclosing scope. This feature (known as non-lexical lifetimes) allows the borrow checker to be a little bit more generous:
+
+What happens if there are no input lifetimes, but the output return value includes a reference anyway?
+
+The only allowed possibility is for the returned reference to have a lifetime that's guaranteed to never go out of scope. This is indicated by the special lifetime 'static, which is also the only lifetime that has a specific name rather than a placeholder label.
+
+
 
 
 ## Example Code
