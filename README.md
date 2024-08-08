@@ -399,6 +399,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://www.w3schools.com/
 * https://www.bigocheatsheet.com/
 * https://programming-idioms.org/cheatsheet/Rust/Python
+* https://ml-cheatsheet.readthedocs.io/en/latest/index.html
 * https://rosettacode.org/wiki/Rosetta_Code
 * https://hyperpolyglot.org/
 * https://www.breakdown-notes.com/make/load/rust_cs_canvas
