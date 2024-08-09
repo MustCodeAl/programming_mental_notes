@@ -367,6 +367,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://github.com/GorvGoyl/Clone-Wars
 * https://blackarch.org/
 * https://atlasos.net/
+* https://www.w3schools.com/ai/default.asp
 
 
 #### hacking guides
