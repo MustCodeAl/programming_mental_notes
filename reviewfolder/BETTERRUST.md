@@ -415,6 +415,17 @@ Rust is a powerful and safe systems programming language that enforces memory sa
 
 ---
 
+### ASync Definitions
+- shared: memory threads operate on regions of shared memory
+- worker pools:	many identical threads receive jobs from a shared job queue
+- actors:	many different job queues, one for each actor; actors communicate exclusively by exchanging messages
+- Green threads (or virtual threads): Threads that are scheduled by a runtime library or virtual machine (VM) instead of natively by the underlying operating system (OS)
+- Task: An asynchronous green thread.
+- Executor: Runs asynchronous tasks..
+- Generator: Used internally by the compiler. Can stop (or yield) its execution and resume (poll) afterwards from its last yield point by inspecting the previously stored state in self.
+- Reactor: Leaf futures register event sources with the reactor.
+- Runtime: Bundles a reactor and an executor.
+
 ### Futures and Async in Rust
 
 - `Future` has to be `poll`ed (by the executor) to resume where it last yielded and make progress (async is lazy).
@@ -427,11 +438,14 @@ Rust is a powerful and safe systems programming language that enforces memory sa
 
 Futures form a tree of futures. The leaf futures communicate with the executor. The root future of a tree is called a **task**.
 
+
+
 ### Async Runtimes
 
 - **tokio** (multithreaded): Thread pool with work-stealing scheduler: each processor maintains its own run queue; idle processor checks sibling processor run queues and attempts to steal tasks from them.
 - **actix_rt**: Single-threaded async runtime; futures are `!Send`.
 - **actix-web**: Constructs an application instance for each thread; application data must be constructed multiple times or shared between threads.
+
 
 ### Streams
 
