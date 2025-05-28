@@ -45,13 +45,13 @@ productivity motions:
 * `‘ {a-z}` -	Move to position {a-z}
 * `ggyG` - Copy a whole document
 
-``	Back to position in current buffer where jumped from
+`\ `` `	Back to position in current buffer where jumped from
 `.	Last change in current buffer
 
 do `ga` on a text to get the ascii enocding
-za / zA	Toggle fold (zr reduce fold zm expend fold, zo open fold zc close fold) 
-]p	Paste under the current indentation level
-:set ff=unix	Convert Windows line endings to Unix line endings
+`za` / `zA`	Toggle fold (`zr` reduce fold `zm` expend fold, `zo` open fold `zc` close fold) 
+`]p`	Paste under the current indentation level
+`:set ff=unix`	Convert Windows line endings to Unix line endings
 
 
 
@@ -61,13 +61,13 @@ you can do actions (d, y, v,  c) - inside/around(i, a) - text object
 so 
 
 text objects are things like 
-`p`	Paragraph
-`w`	Word
-`W`	WORD (surrounded by whitespace)
-`s`	Sentence
-[ ( { <	A [], (), or {} block
-] ) } >	A [], (), or {} block
-' " `	A quoted string
+* `p`	Paragraph
+* `w`	Word
+* `W`	WORD (surrounded by whitespace)
+* `s`	Sentence
+* `[ ( { <	A [], (), or {} block`
+* `] ) } >	A [], (), or {} block`
+* `' " ``	A quoted string
 b	A block [(
 B	A block in [{
 t	A HTML tag block
@@ -86,9 +86,9 @@ to increment text - select text, then press `g`, then `<Ctrl + a>`
 and g8 to get the utf 8 encoding
 `:e` to reopen the buffer
 
-ggVG	Select all text
-ggdG	Delete a complete document
-gg=G	Indent a complete document
+`ggVG`	Select all text
+`ggdG`	Delete a complete document
+`gg=G`	Indent a complete document
 
 
 counter - motion - mode
@@ -171,39 +171,39 @@ Add TODOs in files you want to work on in future but don't need now and delete t
 
 
 
-:!pwd	Execute the pwd unix command, then returns to Vi
-!!pwd	Execute the pwd unix command and insert output in file
-:sh	Temporary returns to Unix
-$exit	Retourns to Vi
+`:!pwd`	Execute the pwd unix command, then returns to Vi
+`!!pwd`	Execute the pwd unix command and insert output in file
+`:sh`	Temporary returns to Unix
+`$exit`	Retourns to Vi
 
 
 
 
 Combination	Description
-dd	Delete current line
-dj	Delete two lines
-dw	Delete to next word
-db	Delete to beginning of word
-dfa	Delete until a char
-d/hello	Delete until hello
-cc	Change current line, synonym with S
-yy	Copy current line
->j	Indent 2 lines
+`dd`	Delete current line
+`dj`	Delete two lines
+`dw`	Delete to next word
+`db`	Delete to beginning of word
+`dfa`	Delete until a char
+`d/hello`	Delete until hello
+`cc`	Change current line, synonym with S
+`yy`	Copy current line
+`>j`	Indent 2 lines
 
 
 
 
 
 Ranges
-%	Entire file
-’<,’>	Current selection
-5	Line 5
-5,10	Lines 5 to 10
-$	Last line
-2,$	Lines 2 to Last
-.	Current line
-,3	Next 3 lines
--3,	Forward 3 lines
+`%`	Entire file
+`’<,’>`	Current selection
+`5`	Line 5
+`5,10`	Lines 5 to 10
+`$`	Last line
+`2,$`	Lines 2 to Last
+`.`	Current line
+`,3`	Next 3 lines
+`-3`,	Forward 3 lines
 
 
 
