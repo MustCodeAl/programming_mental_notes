@@ -363,6 +363,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
 * https://github.com/Awesome-Windows/Awesome
+* https://github.com/awesome-selfhosted/awesome-selfhosted
 * https://alternativeto.net/
 * https://www.libhunt.com/
 * https://git.herrbischoff.com/awesome-macos-command-line/about/
@@ -372,6 +373,10 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://blackarch.org/
 * https://atlasos.net/
 * https://www.w3schools.com/ai/default.asp
+* https://wiki.archlinux.org/title/General_recommendations
+* https://ubuntu.com/tutorials/command-line-for-beginners#1-overview
+* https://github.com/ossu/computer-science
+* https://www.kali.org/docs/
 
 
 #### hacking guides
@@ -461,6 +466,8 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://masteringnextjs.com/
 * https://www.codecademy.com/learn/make-a-website
 * https://www.sololearn.com/
+* https://teachyourselfcs.com/
+* https://sophia.org
 
 
   
@@ -483,6 +490,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://www.perplexity.ai/
 * https://kandi.openweaver.com/
 * https://www.qwant.com/
+* https://grok.com/
 
 
 #### good roadmaps
@@ -538,6 +546,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://chat.lmsys.org/
 * https://forum.reverse4you.org/
 * https://www.deepseek.com/
+  
 
 
 #### practice
