@@ -1,3 +1,10 @@
+Do `<leader>sk` to search for shortcuts
+
+do `<leader>sc` Command history
+
+do `<leader>sw` Search word under cursor
+
+
 * `i` - inside
 * `a` - around
 * `c` - same as delete but goes directly into insert mode instead of keeping same model like d
@@ -38,7 +45,7 @@ productivity motions:
 * `<C-o>`	Go back to previous cursor location
 * `<C-i>`	Go forward to next cursor location
 * `gf` -	Go to file in cursor
-*`gt/gT`	- Go to next tab / previous tab
+* `gt/gT`	- Go to next tab / previous tab
 * `["x]gp `        2  put the text [from register x] after the
 
 * `m {a-z}` - Marks current position as {a-z}
@@ -141,7 +148,7 @@ insert mode specials:
 to add and remove tabs
 - `:help i_CTRL-W` - Delete word at a time
  to remove a word at a time
- Ctrl+x Ctrl+l	Complete line
+ `Ctrl+x` `Ctrl+l` -	Complete line
  
  
  
@@ -152,13 +159,33 @@ to add and remove tabs
  - Change windows with `CTRL-w h`, `CTRL-w j`, `CTRL-w k` or `CTRL-w l`.
 
 
+
+
+
+
 Use H and L if the buffer you want to go to is visually close to where you are
-Otherwise, if the buffer is open, use <leader>,
+Otherwise, if the buffer is open, use `<leader>`,
 For other files, use <leader><space>
 Close buffers you no longer need with <leader>bd
-<leader>ss to quickly jump to a function in the buffer you're on
-<c-o>, <c-i> and gd to navigate the code
-You can pin buffers with <leader>bp and delete all non pinned buffers with <leader>bP
+`<leader>ss` to quickly jump to a function in the buffer you're on
+`<c-o>`, `<c-i>` and `gd` to navigate the code
+You can pin buffers with `<leader>bp` and delete all non pinned buffers with `<leader>bP`
+
+
+lsp stuff 
+
+* `gd` to navigate the code
+* `gr` go to reference
+* `I-`go to implementation
+* `gy` go to type defintion
+* `gD` go to declaration
+* `K` hover
+* `gK` signature help
+* `<C -K> `- signature help
+* `<Leader>cr` - rename
+
+`]]`Next Reference**n**`[[`Prev Reference**n**`<a-n>`Next Reference**n**`<a-p>`Prev Reference**n**
+
 Add TODOs in files you want to work on in future but don't need now and delete their buffers, git will track them
 
 
@@ -180,15 +207,15 @@ Add TODOs in files you want to work on in future but don't need now and delete t
 
 
 Combination	Description
-`dd`	Delete current line
-`dj`	Delete two lines
-`dw`	Delete to next word
-`db`	Delete to beginning of word
-`dfa`	Delete until a char
-`d/hello`	Delete until hello
-`cc`	Change current line, synonym with S
-`yy`	Copy current line
-`>j`	Indent 2 lines
+* `dd`	Delete current line
+* `dj`	Delete two lines
+* `dw`	Delete to next word
+* `db`	Delete to beginning of word
+* `dfa`	Delete until a char
+* `d/hello`	Delete until hello
+* `cc`	Change current line, synonym with S
+* `yy`	Copy current line
+* `>j`	Indent 2 lines
 
 
 
@@ -207,6 +234,6 @@ Ranges
 
 
 
-LazyCheck
-Mason
-TsUpdate
+`:LazyCheck`
+`:Mason`
+`:TsUpdate`
