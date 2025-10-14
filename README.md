@@ -394,6 +394,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://nowsecure.nl
 * https://anonymousplanet.org/
 * https://www.privacytools.io/
+* https://www.privacyguides.org/
 
 #### references and language guides
 * https://www.techempower.com/benchmarks/
