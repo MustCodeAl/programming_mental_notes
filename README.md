@@ -360,6 +360,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 ## Useful links and references
 
 #### general useful stuff
+* https://github.com/MustCodeAl/awesome-voice-active-discord
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
 * https://github.com/Awesome-Windows/Awesome
@@ -493,6 +494,8 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://kandi.openweaver.com/
 * https://www.qwant.com/
 * https://grok.com/
+* https://grep.app/
+* https://www.hacktricks.ai/
 
 
 #### good roadmaps
@@ -512,6 +515,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://elements.envato.com/
 * https://spline.design/
 * https://learnprompting.org/docs/intro
+* https://github.com/MustCodeAl/awesome-ai-cli
 
 
 #### books online
