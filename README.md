@@ -377,6 +377,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://ubuntu.com/tutorials/command-line-for-beginners#1-overview
 * https://github.com/ossu/computer-science
 * https://www.kali.org/docs/
+* https://luzkan.github.io/smells/
 
 
 #### hacking guides
