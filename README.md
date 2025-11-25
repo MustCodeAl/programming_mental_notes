@@ -516,6 +516,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://spline.design/
 * https://learnprompting.org/docs/intro
 * https://github.com/MustCodeAl/awesome-ai-cli
+* https://context7.com/
 
 
 #### books online
