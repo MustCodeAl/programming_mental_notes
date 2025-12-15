@@ -528,6 +528,7 @@ when dealing with system design, think in a macro level in terms of  filtering, 
 * https://jakevdp.github.io/PythonDataScienceHandbook/
 * https://goalkicker.com/
 * https://www.cl.cam.ac.uk/~rja14/book.html
+* https://users.math.uoc.gr/~plex/mem291-Fall2023/ark/Skiena-The_Algorithm_Design_Manual.pdf
 
 
 #### other visuals
