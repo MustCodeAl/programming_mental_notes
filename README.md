@@ -441,6 +441,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://www.sololearn.com/
 * https://teachyourselfcs.com/
 * https://sophia.org
+* https://microsoft.github.io/code-with-engineering-playbook/
 
 
   
