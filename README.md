@@ -500,6 +500,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://goalkicker.com/
 * https://www.cl.cam.ac.uk/~rja14/book.html
 * https://users.math.uoc.gr/~plex/mem291-Fall2023/ark/Skiena-The_Algorithm_Design_Manual.pdf
+* https://shuyuej.com/books/Computer%20Systems-%20A%20Programmer's%20Perspective.pdf
 
 
 #### other visuals
