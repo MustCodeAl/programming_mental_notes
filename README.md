@@ -146,42 +146,46 @@ When writing docs: 
 
 ### Learning faster
 
-It often is not easy to find the information we need. First, we have to find out what kind of information we need.
+Finding the information we need can be challenging. First, we need to determine what information we require.
 
 * What do we already know?
- 
+
 * What do we not know yet?
 
-When reading new information, an individual process is started, there is an initial reaction to an external information's influence, and then we imagine/interpret and process/link to our own existing knowledge.
+When reading new information, an individual process begins. We initially react to the external information’s influence and then imagine, interpret, and process it in relation to our existing knowledge.
 
-We learn what we need, how to use it, and how to work with it. We will see what kind of things can happen, collect our first practical experience, and improve our existing skills
+Through this process, we learn what we need, how to use it, and how to work with it. We gain practical experience, see what can happen, and improve our existing skills.
 
-Moreover, the we can now learn all of the theoretical aspects more in-depth through practice and repetition.
+Moreover, we can now delve deeper into theoretical aspects through practice and repetition.
 
-To be good at something means we know what we are doing. If we know what we are doing, that means that we are experienced with this topic. Experience means we have a vast repertoire in this field. Repertoire comes from associations and practical experience. When we say practical experience, we want to know how much we have to practice to become competent at a specific task.
+To be proficient in something, we must understand what we are doing. Experience comes from having a vast repertoire in a field, which is formed through associations and practical experience. For instance, an inexperienced woodcutter might take 30 minutes to sharpen their axe and 3 hours to cut down a tree.
+
+In contrast, an experienced woodcutter will sharpen the axe in 3 hours and cut down the tree within 30 minutes.
+
+This emphasizes the importance of understanding the context of our research and paying attention to seemingly insignificant details.
+
+When we encounter difficulties, there are various reasons for getting “stuck.” One possibility is that we’ve become overly focused and lost track of the task at hand. Another reason could be fatigue, which prevents us from taking sufficient breaks.
+
+It’s important to recognize that no single individual possesses all the knowledge. In such situations, we must learn how to identify, select, acquire, and adapt the information we require.
+
+To effectively filter this information, we need to develop a repertoire that we acquire through practice.
+
+Here’s a question to consider:
+
+* A rough question would be: “How can I hack X?”
+
+* A precise question would be: “How can I use the server’s SMB service to identify its existing user accounts?”n to a specific goal. When we know our goal, it becomes easier to align our focus accordingly. However, attention is influenced by various factors such as our interests, needs, personal attitudes, beliefs, orientations, goals, and experiences.
+
+When we venture outside our comfort zone, we enter a situation or field where we lack experience. This uncertainty can hinder our thinking and significantly impact our thought processes, causing us to feel slower.
+
+Interestingly, small children don’t exhibit such uncertainty. They embrace trying new things constantly and aren’t afraid or uncertain of making mistakes.
+
+Mistakes are an integral part of the learning process, and it’s crucial to remember this. Those who choose to step out of their comfort zones often reach their destination faster than they anticipated. They’ll never have sprinted at such speed before in their lives.
+
+Now, let’s understand the progression between making decisions to step out of our comfort zone or staying in it. We’ll often find ourselves in situations where we’re unsure of what to do, and these situations will continue to arise. However, with each encounter, we’ll learn something new, and the experience will become more comfortable over time.
 
 
-### Questioning
-
-A right question is a precise question that allows us to establish the relationships between the components, to understand them, and to take us one step further to the required answer.
-
-Relational Oriented Questioning Model represents five components:
-
-Your Position - This describes the position we are in and our view.
-The  Object - The object is the core element of the question. The main component of our sentence takes the meaning out of the question.
-Known - This information is known to us.
-Unknown -This information is not known to us.
-Other Position(s) - This component describes the position of other persons.
-
-
-###### states for a question
-We can assign two states, rough or precise, to a question:
-
-* A rough question would be: "How can I hack X?"
- 
-* A precise question would be: "How can I use the server's SMB service to identify its existing user accounts?"
-
-###### Describing relationships between components
+##### Describing relationships between components
 
 1. Connection - How is X connected to Y?
 2. Affection - How does Y influence the state of component X?
@@ -205,153 +209,119 @@ To filter such information, we need a repertoire which we collect by practici
 
 ### Productivity
 
-Focusing is the purposeful and deliberate alignment to a specific goal.
+Focusing is the purposeful and deliberate alignment of our attention to a specific goal. When we know our goal, it becomes easier to align our focus accordingly. However, attention is influenced by various factors such as our interests, needs, personal attitudes, beliefs, orientations, goals, and experiences.
 
-If we know our goal, it is easier to align our focus accordingly. 
+When we venture outside our comfort zone, we enter a situation or field where we lack experience. This uncertainty can hinder our thinking and significantly impact our thought processes, causing us to feel slower.
 
-Attention is influenced by your interests, needs, personal attitudes, beliefs, orientations, goals, and experiences.
+Interestingly, small children don’t exhibit such uncertainty. They embrace trying new things constantly and aren’t afraid or uncertain of making mistakes.
 
-When we leave the so-called comfort zone, we enter a situation or field where we have little or no experience. This kind of uncertainty lowers our ability to think and has a powerful impact on our thought processes, which, in turn, slows us down.
+Mistakes are an integral part of the learning process, and it’s crucial to remember this. Those who choose to step out of their comfort zones often reach their destination faster than they anticipated. They’ll never have sprinted at such speed before in their lives.
 
-* small children do not exhibit such uncertainty 
-* They love to try out something new all the time and are not afraid or uncertain of making mistakes.
+Now, let’s understand the progression between making decisions to step out of our comfort zone or staying in it. We’ll often find ourselves in situations where we’re unsure of what to do, and these situations will continue to arise. However, with each encounter, we’ll learn something new, and the experience will become more comfortable over time.
 
-Mistakes are an essential part of the learning process, and we should always keep it in mind.
-
-Those who chose to leave the comfort zone would reach their destination faster than they thought they would. They would never have sprinted at such speed before in their lives.
-
-Now we should understand the progression between decisions to step out of our comfort zone or stay in it. We will often get into situations where we do not know what to do. These will come again and again. However, we will always learn something new, and it will become more comfortable each time.
  
 
 ### Debugging advice
 
-Document and write version of all tools being used in your project with their versions and operation system env
-Keep track of reference env
+Document and write down a version of all the tools used in your project, along with their versions and operating system environments. Keep track of the reference environment.
 
+Ensure that you can build the entire project with just one command at all times to reduce the chances of making mistakes.
 
-Make sure you can build the entire project with just one command at all times so u can reduce change of mistakes 
-
-
-While you're writing down style, you might also want to think about documenting how you do other things in your project consistently:
+While documenting the style, consider documenting how you consistently perform other tasks in your project:
 * What do your commit messages look like?
-* What do your issues/tasks look like?
+* What do your issues and tasks look like?
 * How are files and folders named?
-These are things that are harder to automate, but worth writing down! Again, consistency is the most important policy, so decide something for now, and write it down!
-Any time you have a "should we do X or Y" discussion, WRITE IT DOWN and never have it again.
+
+These are things that are harder to automate, but they’re worth writing down! Consistency is the most important policy, so decide something for now and write it down.
+
+Any time you have a “should we do X or Y” discussion, write it down and never have it again.
+
+1.a Continuous Reviews
+
+If you conduct reviews during a Pull or Merge Request on GitHub or GitLab, these are excellent examples. By focusing primarily on the changes, you increase your chances of identifying “micro” level changes. Did someone modify the functionality of a function? Did someone add a significant amount of new code? Does the change make sense?
+
+These reviews are ideal for providing directed feedback, such as suggesting simpler approaches or assessing the adequacy of testing. They also help identify hard-to-detect issues in the “large scale,” like off-by-one errors or forgetting to validate input or check for null pointers (in C/C++).
+
+1.b Inspection Reviews
+
+It’s beneficial to have someone “drive” through the code and explain each part. This allows the team to ask “why” questions and consider whether the change makes sense.
+
+Consider how the different components of your system interact with each other, such as through message passing, function calls, shared memory, semaphores, or mutexes. Evaluate whether the system aligns with the original design or is evolving in an unusual manner.
 
 
+For both types of reviews, one crucial concept to keep in mind is respect.
 
-1. Continuous Reviews
-
-
-If you do reviews during a Pull or Merge Request on GitHub/GitLab, these are a good example!
-By focusing primarily on the changes, you get a better chance to see "micro" level changes. Did someone change what a function does? Did someone add a bunch of new code? Does what they changed make sense?
-
-These reviews are great for giving directed feedback (could this be done more simply? Is this adequately tested?), and for checking hard-to-see in the "large scale" bugs, like off-by-one errors, or forgetting to validate some input or check whether a pointer is null (in C/C++).
-
-
-1. Inspection Reviews
-
-You want to have someone "drive" and explain each part of the code, and allow the team to ask "why" questions, as well as considering "does this make sense?"
-
-Think about how the different parts of your system interact with each other, either through message passing, function calls, shared memory, semaphores/mutexes, or any other way.
-Is the system matching the original design? Or is it growing in an odd organic way?
-
-
-For both kinds of review, there is one important concept to keep in mind: Respect.
-
-
-You should also automate any steps of the review you possibly can.
+Additionally, automate any review steps you can.
 * Code formatting? Automate it.
-* Code LINTing (we'll talk about that later)? Automate it.
+* Code LINTing (we’ll discuss that later)? Automate it.
 * Do the tests pass? Automate it.
-Review time is EXPENSIVE, use it on the important stuff that you can't automate.
+Review time is EXPENSIVE, so use it on the important stuff that can’t be automated.
 
+Ultimately, the usefulness of reviews boils down to one thing: having different perspectives on the code you write. You get one for each of:
+* You write it.
+* You test it.
+* You explain it to someone else.
+* Someone else gives their perspective.
 
-Really at the end of the day, the usefulness of reviews boil down to a one thing:
-It's good to have different perspectives of the code that you write.
-You get one for each of:
-* You write it
-* You test it
-* You explain it to someone else
-* Someone else gives their perspective
+Also, note the valuable questions that were raised in a review. Eventually, it will make sense to collect these into a review checklist that you can use to jog your memory and ask good questions. Do all pointers get checked for NULL? Is input always validated?
 
-
-
-Also, take note of the kinds of questions that were valuable in a review.
-Eventually, it will make sense to collect these into a review checklist you can use to help jog your memory and ask good questions.
-Do all pointers get checked for NULL? Is input always validated?
-This checklist is also a great training tool 
-
-
+This checklist is also a great training tool.
 
 Eyeball debugging:
-But in summary, it's helpful to think about the tools you have for observing at hand already, and to think about your expectations for how your system works vs. how it is actually behaving.
+In summary, it’s helpful to think about the tools you already have for observing your system and your expectations for how it works versus how it actually behaves.
 
 Print debugging:
- this works best using the scientific method:
-* Guess at what your system is doing
-* Add print statements
-* Run, and analyze the results
-* Repeat until everything is clear
+This works best using the scientific method:
+* Guess at what your system is doing.
+* Add print statements.
+* Run, and analyze the results.
+* Repeat until everything is clear.
 
+Debuggers like GDB typically require “stopping the world” to step through code at “human speed.” This means that many odd things can happen:
+* Interrupts may not fire as normal.
+* You might miss messages or events.
+* Hardware can “time out.”
 
+In terms of mitigating the cost of print debugging, there are a couple of “power user” techniques that are great to add to your toolbox. At least for Cortex-M devices, these include:
+* Semihosting.
+* ITM/SWO.
+* RTT.
+* Memoized logging.
+* Deferred formatting.
 
-Second: Debuggers like GDB typically require "stopping the world" to step through code at "human speed". This means that a lot of odd things can happen:
-* Interrupts may not fire as normal
-* You might miss messages or events
-* Hardware can "time out"
+Semihosting is a technique of “logging over the debugger,” instead of over a serial port.
 
-
-
-In terms of mediating the cost of print debugging, there are a couple "power user" techniques that are great to add to your toolbox. At least for Cortex-M devices, these include:
-* Semihosting
-* ITM/SWO
-* RTT
-* Memoized logging
-* Deferred Formatting
-Semihosting is a technique of "logging over the debugger", instead of over a serial port.
-
-From a plus side: It's very easy to implement, and if you have a JTAG/SWD debugger, you don't need a separate serial port! All these messages just go through the debugger.
+From a plus side, it’s very easy to implement, and if you have a JTAG/SWD debugger, you don’t need a separate serial port! All these messages just go through the debugger.
 
 ### making useful projects tips
 
 
-Programming, in short, is a wonderful world. Computers would be nowhere without it. Programming basically follows three steps for most languages:
+In short, programming is a wonderful world that makes computers possible. Most programming languages follow three main steps:
 
-1: Inputting commands into an interpreter
-2: Telling the interpreter to convert those commands into a language the computer understands (machine code)
-3: Finding glitches (things you didn't want to happen, or things that didn't happen at all) and fixing them.
+1: Inputting commands into an interpreter.
+2: Telling the interpreter to convert those commands into a language the computer understands (machine code).
+3: Identifying and fixing glitches (unwanted or unexpected outcomes) and errors.
 
 ----
 
-when writing plans, docs, and notes
-Avoid ambigious wording. - clarity
-position yourself as a reader - Overview
-Make as easy to read as possible. - structure
+When writing plans, documents, and notes, avoid ambiguous wording. This ensures clarity and positions you as a reader. Make the overview as easy to read as possible. Structure your content effectively.
 
-when designign a database, put all the possible requred data as one table
-then use normalization tactics on it
+When designing a database, organize all the possible required data into a single table. Then, apply normalization tactics to optimize the database’s efficiency.
 
-when it comes to software uniqueness: its the breakdown, the use cases, and the scaling that differentiates your software
- linters  ,test driven developement, use containers, 
+When it comes to software uniqueness, consider the breakdown, use cases, and scaling that differentiate your software. For instance, software linters, test-driven development, and using containers are all unique aspects of software design.
 
-writing useful software: think in terms of avoid manual labor aka work, avoiding repetitions, and avoiding being too specialized/niche
-by taking advantage of  sequences - avoid complicated steps, looping - avoid not caching information, and decisions - avoid unknowable or unreliable information
+When writing useful software, think in terms of avoiding manual labor, repetitions, and over-specialization. Instead, leverage sequences to streamline your processes. Avoid complicated steps, loops, and not caching information or making decisions. Also, avoid using unknowable or unreliable information.
 
-when it comes to problem solving: 
-for counting problems, use iteration,  / structural patterns 
-for minimum/maximum problems, use recursive solution / creation patterns 
-for decsion problems, use greedy solutions / behavioral patterns
+When problem-solving, consider the following approaches:
 
+- For counting problems, use iteration.
+- For minimum and maximum problems, use structural patterns.
+- For decision problems, use recursive solution or creation patterns.
+- For greedy solutions or behavioral patterns, use greedy solutions.
 
+When dealing with memory, think in terms of creational patterns. When it comes to networking, think in terms of structural patterns. When it comes to other people’s software, external software, or operating systems, think in terms of behavioral patterns.
 
-when it comes to memory think in terms of creational patterns
-when it comes to networking think in terms of structural patterns
-when it comes to other peoples software/external software/operating systems, think in terms of behavioral patterns 
-
-
-when dealing with system design, think in a macro level in terms of  filtering, file input, searching, sorting, pipelines, pattern matching
+When designing a system, consider the macro level, such as filtering, file input, searching, sorting, pipelines, and pattern matching.
 
 
 
