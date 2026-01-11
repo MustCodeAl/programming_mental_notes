@@ -436,6 +436,7 @@ When designing a system, consider the macro level, such as filtering, file input
 #### courses
 * https://www.youtube.com/playlist?list=PL6B940F08B9773B9F
 * https://google.github.io/comprehensive-rust/index.html
+* https://rust-exercises.ferrous-systems.com/latest/book/introduction
 * https://missing.csail.mit.edu/
 * https://www.khanacademy.org/computing/computer-science
 * https://masteringnextjs.com/
