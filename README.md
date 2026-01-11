@@ -430,10 +430,12 @@ When designing a system, consider the macro level, such as filtering, file input
 #### tutorials
 * http://derekwyatt.org/vim/tutorials/index.html
 * https://tourofrust.com/index.html
+* https://createlang.rs/intro.html
 
 
 #### courses
 * https://www.youtube.com/playlist?list=PL6B940F08B9773B9F
+* https://google.github.io/comprehensive-rust/index.html
 * https://missing.csail.mit.edu/
 * https://www.khanacademy.org/computing/computer-science
 * https://masteringnextjs.com/
