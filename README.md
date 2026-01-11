@@ -548,5 +548,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://www.hackthebox.com/
 * https://tryhackme.com/
 * https://overthewire.org/wargames/
+* https://www.vimarcade.com/
+* https://www.shortcutfoo.com/app/dojos/vim
   
 
