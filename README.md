@@ -18,6 +18,8 @@ And refactoring them
    *  use debuging tools like gdb, iaito, wireshark.
    *  use clis tools like  `curl`.`netcat`, `nmap`,
    *  use containers, templates, version control.
+     
+Dont forget [algorithms!](https://www.youtube.com/watch?v=txr7iB4NFEE)
 
 Tool productivity flaws hierachy:
 flaws for using tools in different forms
@@ -435,6 +437,8 @@ When designing a system, consider the macro level, such as filtering, file input
 
 #### courses
 * https://www.youtube.com/playlist?list=PL6B940F08B9773B9F
+* https://www.youtube.com/playlist?list=PLOtl7M3yp-DX6ic0HGT0PUX_wiNmkWkXx
+* https://www.youtube.com/playlist?list=PLbY-cFJNzq7z_tQGq-rxtq_n2QQDf5vnM
 * https://google.github.io/comprehensive-rust/index.html
 * https://rust-exercises.ferrous-systems.com/latest/book/introduction
 * https://missing.csail.mit.edu/
