@@ -530,7 +530,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://greyscalegorilla.com/
 * https://diffusionbee.com/
 * https://chat.freedomgpt.com/
-* https://chat.lmsys.org/
+* https://lmarena.ai/  (old site https://chat.lmsys.org/)
 * https://forum.reverse4you.org/
 * https://www.deepseek.com/
   
