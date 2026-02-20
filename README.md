@@ -354,7 +354,9 @@ When designing a system, consider the macro level, such as filtering, file input
 
 
 #### hacking guides
-* https://book.hacktricks.xyz/
+* https://book.hacktricks.wiki/
+* https://ai.hacktricks.wiki/
+* https://tools.hacktricks.wiki/
 * https://book.blueteamguides.com/
 * https://ired.team
 * https://www.iblue.team/
@@ -530,7 +532,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://greyscalegorilla.com/
 * https://diffusionbee.com/
 * https://chat.freedomgpt.com/
-* https://lmarena.ai/  (old site https://chat.lmsys.org/)
+* https://arena.ai/ (old site https://chat.lmsys.org/)
 * https://forum.reverse4you.org/
 * https://www.deepseek.com/
   
