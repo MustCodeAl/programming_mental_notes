@@ -10,6 +10,7 @@
 - [Breakdown Rust Notes](https://www.breakdown-notes.com/make/load/rust_cs_canvas)
 - [cheats.rs](https://cheats.rs/)
 - [Blessed.rs](https://blessed.rs/crates)
+- [High Assurance](https://highassurance.rs/chp4/sw_stack_1.html)
 
 # Rust Ownership and Memory Management
 
