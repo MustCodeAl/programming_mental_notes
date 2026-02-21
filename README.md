@@ -486,6 +486,7 @@ When designing a system, consider the macro level, such as filtering, file input
 #### useful tools
 * https://godbolt.org/
 * https://dogbolt.org/
+* https://unicode-explorer.com/
 * https://crackstation.net/
 * https://2captcha.com/
 * https://codebeautify.org/
