@@ -430,6 +430,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://websites.umich.edu/~eecs381/generalFAQ/Debugging.html
 * https://xdaforums.com/f/xda-university.2060/
 * https://portswigger.net/web-security/all-materials
+* https://secrets.club
 
 #### tutorials
 * http://derekwyatt.org/vim/tutorials/index.html
