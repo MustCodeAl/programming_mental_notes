@@ -358,10 +358,14 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://ai.hacktricks.wiki/
 * https://tools.hacktricks.wiki/
 * https://book.blueteamguides.com/
+* https://book.redteamguides.com/
 * https://ired.team
 * https://www.iblue.team/
 * https://ctf101.org/
 * https://www.hacker101.com/
+* https://secret.club
+* https://wiki.devsecopsguides.com/
+
 
 
 #### privacy guides
@@ -430,7 +434,6 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://websites.umich.edu/~eecs381/generalFAQ/Debugging.html
 * https://xdaforums.com/f/xda-university.2060/
 * https://portswigger.net/web-security/all-materials
-* https://secrets.club
 
 #### tutorials
 * http://derekwyatt.org/vim/tutorials/index.html
