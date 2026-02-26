@@ -351,6 +351,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://github.com/ossu/computer-science
 * https://www.kali.org/docs/
 * https://luzkan.github.io/smells/
+* https://www.bottomupcs.com/index.html
 
 
 #### hacking guides
@@ -399,6 +400,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://phuoc.ng/
 * https://quickref.me/
 * https://webhint.io
+* https://osdev.wiki/wiki/Categorized_Main_Page
 * https://cheats.rs/
 * https://www.arewewebyet.org/
 * https://devdocs.io/
@@ -507,6 +509,8 @@ When designing a system, consider the macro level, such as filtering, file input
 #### books online
 * https://beej.us/guide/bgnet/
 * https://cses.fi/book/book.pdf
+* https://littleosbook.github.io/
+* https://greenteapress.com/thinkos/html/index.html
 * https://gamehacking.academy/
 * https://pages.cs.wisc.edu/~remzi/OSTEP/
 * https://algs4.cs.princeton.edu/home/
@@ -515,6 +519,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://www.cl.cam.ac.uk/~rja14/book.html
 * https://users.math.uoc.gr/~plex/mem291-Fall2023/ark/Skiena-The_Algorithm_Design_Manual.pdf
 * https://shuyuej.com/books/Computer%20Systems-%20A%20Programmer's%20Perspective.pdf
+  
 
 
 #### other visuals
