@@ -352,6 +352,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://www.kali.org/docs/
 * https://luzkan.github.io/smells/
 * https://www.bottomupcs.com/index.html
+* https://mcpservers.org/
 
 
 #### hacking guides
