@@ -5,18 +5,39 @@
 This pattern is perfect for finding the maximum sum of a contiguous subarray of size `k`.
 
 ```rust
+
 fn max_sum_subarray(arr: &[i32], k: usize) -> Option<i32> {
-    if arr.len() < k { return None; }
-
-    let mut window_sum: i32 = arr[..k].iter().sum();
-    let mut max_sum = window_sum;
-
-    for i in k..arr.len() {
-        window_sum += arr[i] - arr[i - k]; // Slide the window
-        max_sum = max_sum.max(window_sum);
+    // Step 1: Handle the edge case where the array is shorter than the window
+    if arr.len() < k { 
+        return None; 
     }
-    Some(max_sum)
+
+    // Step 2: Calculate the sum of the very first window manually
+    let mut current_window_sum: i32 = 0;
+    for i in 0..k {
+        current_window_sum += arr[i];
+    }
+    
+    let mut absolute_max_sum: i32 = current_window_sum;
+
+    // Step 3: Slide the window across the rest of the array
+    for current_index in k..arr.len() {
+        let index_leaving_window = current_index - k;
+        let element_leaving_window = arr[index_leaving_window];
+        let element_entering_window = arr[current_index];
+        
+        // The magic O(1) mathematical operations!
+        current_window_sum = current_window_sum - element_leaving_window + element_entering_window;
+        
+        // Step 4: Update the maximum sum if we found a new high score
+        if current_window_sum > absolute_max_sum {
+            absolute_max_sum = current_window_sum;
+        }
+    }
+    
+    Some(absolute_max_sum)
 }
+
 
 ```
 
