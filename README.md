@@ -353,6 +353,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://luzkan.github.io/smells/
 * https://www.bottomupcs.com/index.html
 * https://mcpservers.org/
+* https://flokoe.github.io/bash-hackers-wiki/
 
 
 #### hacking guides
