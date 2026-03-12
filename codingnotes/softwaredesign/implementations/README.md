@@ -124,71 +124,102 @@ fn max_sum_subarray(arr: &[i32], k: usize) -> Option<i32> {
 
 ### 2. Two Pointers (Fast and Slow)
 
-Used here to detect a cycle in a linked list (Floyd's Cycle-Finding Algorithm).
+Commonly known as Floyd’s Cycle-Finding Algorithm (the "Tortoise and the Hare"), this pattern detects cycles in linked structures using two pointers moving at different speeds.
 
 ```rust
-// Simplified logic for a linked list node
-fn has_cycle(head: Option<&Node>) -> bool {
-    let mut slow = head;
-    let mut fast = head;
+// A simplified representation of a linked list node for logic demonstration
+fn detect_linked_list_cycle(head_node: Option<&Node>) -> bool {
+    // Initialize both pointers at the start of the list
+    let mut slow_pointer = head_node;
+    let mut fast_pointer = head_node;
 
-    while let (Some(s), Some(f)) = (slow, fast.and_then(|n| n.next.as_deref())) {
-        slow = s.next.as_deref();
-        fast = f.next.as_deref(); // Fast moves twice
+    // Use 'and_then' to safely check if the fast pointer can move two steps ahead
+    while let (Some(slow), Some(fast)) = (slow_pointer, fast_pointer.and_then(|node| node.next_node.as_deref())) {
+        // Move the slow pointer one step
+        slow_pointer = slow.next_node.as_deref();
+        // Move the fast pointer two steps (the next of the current 'fast' node)
+        fast_pointer = fast.next_node.as_deref();
         
-        if std::ptr::eq(s, f) { return true; }
+        // If the fast pointer eventually catches up to the slow pointer, a cycle exists
+        // We use std::ptr::eq to compare the memory addresses of the nodes
+        if std::ptr::eq(slow, fast) { 
+            return true; 
+        }
     }
+    
+    // If the fast pointer reaches the end (None), no cycle was detected
     false
 }
-
 ```
 
 ### 3. Prefix Sum
 
-Great for pre-calculating range sums in $O(1)$ time after an $O(n)$ setup.
+This technique is ideal for Range Sum Queries, allowing you to calculate the sum of any subarray in constant time after a one-time linear preprocessing step.
 
 ```rust
-struct PrefixSum {
-    prefix: Vec<i32>,
+struct RangeSumEngine {
+    // We store an extra element at the start (usually 0) to simplify boundary logic
+    accumulated_prefix_sums: Vec<i32>,
 }
 
-impl PrefixSum {
-    fn new(nums: Vec<i32>) -> Self {
-        let mut prefix = vec![0; nums.len() + 1];
-        for i in 0..nums.len() {
-            prefix[i + 1] = prefix[i] + nums[i];
+impl RangeSumEngine {
+    /// Pre-calculates the running totals of the input numbers in O(n) time.
+    fn new(input_numbers: Vec<i32>) -> Self {
+        let mut prefix_buffer = vec![0; input_numbers.len() + 1];
+        
+        for current_index in 0..input_numbers.len() {
+            // Each position stores the sum of all elements before it
+            prefix_buffer[current_index + 1] = prefix_buffer[current_index] + input_numbers[current_index];
         }
-        Self { prefix }
+        
+        Self { accumulated_prefix_sums: prefix_buffer }
     }
 
-    fn query(&self, left: usize, right: usize) -> i32 {
-        self.prefix[right + 1] - self.prefix[left]
+    /// Retrieves the sum of elements from 'left_index' to 'right_index' (inclusive) in O(1).
+    fn get_sum_in_range(&self, left_index: usize, right_index: usize) -> i32 {
+        // Formula: Sum(left..right) = Prefix[right + 1] - Prefix[left]
+        self.accumulated_prefix_sums[right_index + 1] - self.accumulated_prefix_sums[left_index]
     }
 }
-
 ```
 
 ### 4. Binary Search
 
-The classic "divide and conquer" for sorted arrays!
+The classic "divide and conquer" algorithm for finding a target in a sorted collection by repeatedly 
+halving the search space.
 
 ```rust
-fn binary_search(arr: &[i32], target: i32) -> Option<usize> {
-    let (mut left, mut right) = (0, arr.len() as i32 - 1);
+fn perform_binary_search(sorted_array: &[i32], target_value: i32) -> Option<usize> {
+    // Initialize boundary pointers. We use i32 to safely handle the -1 case for 'right'
+    let mut low_boundary = 0;
+    let mut high_boundary = sorted_array.len() as i32 - 1;
 
-    while left <= right {
-        let mid = left + (right - left) / 2;
-        if arr[mid as usize] == target { return Some(mid as usize); }
-        if arr[mid as usize] < target { left = mid + 1; } 
-        else { right = mid - 1; }
+    while low_boundary <= high_boundary {
+        // Calculate the midpoint. 
+        // We use (low + (high - low) / 2) to prevent integer overflow on large arrays.
+        let mid_index = low_boundary + (high_boundary - low_boundary) / 2;
+        let current_value = sorted_array[mid_index as usize];
+
+        if current_value == target_value {
+            // Target found! Return the index as a usize
+            return Some(mid_index as usize);
+        } else if current_value < target_value {
+            // Target is in the upper half; move the low boundary up
+            low_boundary = mid_index + 1;
+        } else {
+            // Target is in the lower half; move the high boundary down
+            high_boundary = mid_index - 1;
+        }
     }
+
+    // Loop finished without finding the target
     None
 }
 
 ```
 
 
-recursive approach:
+##### Recursive approach:
 
 ```rust
 
