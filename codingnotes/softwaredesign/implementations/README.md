@@ -1,4 +1,27 @@
 
+Depth-first search(DFS), breadth-first search(BFS) and two pointers, make up a good portion of all interview problems. DFS in particular can be used to solve a wide range of problems from tree to graph to combinatorial problems and is very useful in tech interviews
+
+***if you can't figure out a dynamic programming solution, you can always do DFS + memoization which does the same thing.***
+
+Master: Linked List, Array, Hash Map, Stack, Queue, Sorting.
+
+*A good-enough rule of thumb is an algorithm named after a person(s) you can safely ignore.*
+
+
+How to calculate MOD from scratch
+The rule to calculate `x % y` is:
+
+- `if x < y`, `return x`
+- `else` subtract `y` from `x` until `x < y`
+
+```js
+function mod(x, y) {
+  while (x >= y) {
+    x -= y
+  }
+  return x
+}
+```
 
 ### 1. Sliding Window (Fixed Size)
 
@@ -104,6 +127,30 @@ fn binary_search(arr: &[i32], target: i32) -> Option<usize> {
     None
 }
 
+```
+
+
+recursive approach:
+
+```rust
+
+fn binary_search(numbers: &[u32], target: u32) -> Option<u32> {
+    if numbers.is_empty() {
+        return None;
+    }
+
+    let mid = numbers.len() / 2;
+
+    if numbers[mid] == target {
+        Some(numbers[mid]) // Found it!
+    } else if numbers[mid] < target {
+        // Search the right half (exclude mid)
+        binary_search(&numbers[mid + 1..], target)
+    } else {
+        // Search the left half (exclude mid)
+        binary_search(&numbers[..mid], target)
+    }
+}
 ```
 
 ### 5. Heaps (Priority Queue)
