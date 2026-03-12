@@ -15,7 +15,7 @@ The rule to calculate `x % y` is:
 - `else` subtract `y` from `x` until `x < y`
 
 ```js
-function mod(x, y) {
+fn mod(mut x: u32, mut y: u32) -> u32{
   while (x >= y) {
     x -= y
   }
