@@ -1,14 +1,31 @@
 
-Depth-first search(DFS), breadth-first search(BFS) and two pointers, make up a good portion of all interview problems. DFS in particular can be used to solve a wide range of problems from tree to graph to combinatorial problems and is very useful in tech interviews
+**Depth-first search(DFS)**, **breadth-first search(BFS)** and **two pointers**, make up a good portion of all interview problems. DFS in particular can be used to solve a wide range of problems from tree to graph to combinatorial problems and is very useful in tech interviews
 
-***if you can't figure out a dynamic programming solution, you can always do DFS + memoization which does the same thing.***
+*if you can't figure out a dynamic programming solution*, you can always do ***DFS + memoization*** which does the same thing.
 
-Master: Linked List, Array, Hash Map, Stack, Queue, Sorting.
+Master these dsa: *Linked List, Array, Hash Map, Stack, Queue, Sorting.*
 
-*A good-enough rule of thumb is an algorithm named after a person(s) you can safely ignore.*
+*A good-enough rule of thumb is an algorithm named after a person(s) you can safely ignore as the ROI on learning the algorithm usually isn't worth it .*
 
 #### 1. House Robber (Dynamic Programming)
+
+**Problem:** You are a robber planning to rob houses along a street. Each house has a certain amount of money. You cannot rob two adjacent houses. Find the maximum amount you can rob.
+
+**The Logic:**
+At each house `i`, you have two choices:
+
+1. **Rob it:** You get the money in `house[i]` + the maximum amount from `house[i-2]`.
+2. **Skip it:** You carry over the maximum amount found at `house[i-1]`.
+
+**Steps to Implement:**
+
+1. Handle edge cases (0 or 1 house).
+2. Initialize two variables (`prev2`, `prev1`) to track the max profit of the previous two steps.
+3. Iterate through the houses, updating the current max: `current = max(prev1, prev2 + house[i])`.
+4. Return the final `prev1`.
+
 This approach uses iteration with space optimization to calculate the maximum loot without ever robbing two adjacent houses.
+
 
 ```rust
 fn calculate_max_robbery_loot(house_values: Vec<i32>) -> i32 {
@@ -39,7 +56,19 @@ fn calculate_max_robbery_loot(house_values: Vec<i32>) -> i32 {
 ```
 
 #### 2. Robot Paths (Unique Paths)
-This implementation finds the number of unique paths from the top-left to the bottom-right of a grid using a space-optimized 1D DP array.
+**Problem:** A robot is at the top-left corner of an `m x n` grid and wants to reach the bottom-right. It can only move **down** or **right**. How many unique paths exist?
+
+**The Logic:**
+The number of ways to reach a cell `(i, j)` is the sum of the ways to reach the cell above it `(i-1, j)` and the cell to its left `(i, j-1)`.
+
+* **Formula:** `dp[i][j] = dp[i-1][j] + dp[i][j-1]`
+
+**Steps to Implement:**
+
+1. Create a 2D grid (or a 1D array to save space) initialized with 1s for the first row/column.
+2. Iterate through the grid starting from `(1, 1)`.
+3. Fill each cell by adding the values from the top and left.
+4. The answer is in the bottom-right cell.
 
 ```rust
 fn calculate_unique_robot_paths(total_rows: i32, total_columns: i32) -> i32 {
@@ -66,7 +95,7 @@ fn calculate_unique_robot_paths(total_rows: i32, total_columns: i32) -> i32 {
 }
 ```
 
-#### How to calculate MOD from scratch
+####  How to calculate MOD from scratch
 The rule to calculate `x % y` is:
 
 - `if x < y`, `return x`
