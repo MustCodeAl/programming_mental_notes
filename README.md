@@ -333,6 +333,7 @@ When designing a system, consider the macro level, such as filtering, file input
 
 #### general useful stuff
 * https://github.com/MustCodeAl/awesome-voice-active-discord
+* https://deckly.dev/
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
 * https://github.com/Awesome-Windows/Awesome
