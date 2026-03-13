@@ -369,6 +369,8 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://www.hacker101.com/
 * https://secret.club
 * https://wiki.devsecopsguides.com/
+* https://malwareunicorn.org/workshops/re101.html#0
+* https://github.com/0xZ0F/Z0FCourse_ReverseEngineering
 
 
 
