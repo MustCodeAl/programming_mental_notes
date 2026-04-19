@@ -157,12 +157,33 @@ These notes provide a comprehensive overview of Rust's ownership, memory managem
 
 ## Common Commands
 
-- `cargo new project_name` - Create a new project.
-- `cargo build` - Compile the project.
-- `cargo run` - Build and run the project.
-- `cargo test` - Run tests.
-- `cargo doc --open` - Generate and open documentation.
+```bash
 
+# Starter commands
+cargo new project_name   # Create a new project.
+cargo run                # Build and run the project.
+cargo doc --open         # Generate and open documentation.
+
+# Build and check
+cargo build              # Compile the project.
+cargo check              # Fast type checking without codegen
+cargo clippy             # Lints and suggestions
+cargo fmt                # Format code
+
+# Testing
+cargo test                   # Run tests.
+cargo test -- --nocapture    # Show println output
+cargo test --lib             # Unit tests only
+cargo test --test integration # Integration tests only
+
+# Dependencies
+cargo audit              # Security audit
+cargo tree               # Dependency tree
+cargo update             # Update dependencies
+
+# Performance
+cargo bench              # Run benchmarks
+```
 
 ## Best Practices
 
