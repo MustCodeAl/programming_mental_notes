@@ -95,11 +95,7 @@ fn main() {
 
 This version uses a single visitor to handle multiple shapes, keeping the logic decoupled from the data structures.
 
-
-
-Rust specific
 ---
-
 
 ### Simplified Breakdown
 * **The Data (`Circle`, `Rectangle`)**: These are "dumb" structs. They only know how to "accept" a visitor.
@@ -108,6 +104,13 @@ Rust specific
 
 ### When to avoid this in Rust?
 If you know all your shapes upfront, use an **Enum** with a `match` statement. It is faster, more "idiomatic" Rust, and avoids the complexity of traits and `Box<dyn Shape>`.
+
+
+Rust idiomatic implementation
+---
+
+
+
 
 Implementing the Visitor Pattern in Rust is unique because the language lacks traditional inheritance. Using **Enums** in Rust is often considered the more "idiomatic" approach for double dispatch because it leverages **pattern matching**, which is highly optimized and safer than trait objects.
 
