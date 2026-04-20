@@ -4,7 +4,7 @@ The **Visitor Pattern** is a behavioral design pattern used to separate an algor
 Imagine you have a complex graph of objects (like a file system or a compiler's abstract syntax tree). Instead of adding logic into every class to handle a specific task, you create a "Visitor" object that "visits" each element and performs the operation.
 
 
-
+![Alt text](./visitorpattern.png "visotor pattern")
 
 
 ---
@@ -41,8 +41,6 @@ For a deep dive into how this looks in practice, check out the [Refactoring Guru
 
 This version uses a single visitor to handle multiple shapes, keeping the logic decoupled from the data structures.
 
-**Implementing the Visitor Pattern in Rust is unique because the language lacks traditional inheritance. 
-Instead, we use Traits and Enums to achieve double dispatch.**
 
 
 
@@ -97,6 +95,9 @@ fn main() {
 
 ---
 
+
+rust specific
+
 ### Simplified Breakdown
 * **The Data (`Circle`, `Rectangle`)**: These are "dumb" structs. They only know how to "accept" a visitor.
 * **The Logic (`AreaCalculator`)**: All the math lives here. If you want to add a `JsonExporter` later, you just create a new visitor without touching the Shape structs.
@@ -105,8 +106,7 @@ fn main() {
 ### When to avoid this in Rust?
 If you know all your shapes upfront, use an **Enum** with a `match` statement. It is faster, more "idiomatic" Rust, and avoids the complexity of traits and `Box<dyn Shape>`.
 
-
-Using **Enums** in Rust is often considered the more "idiomatic" approach for double dispatch because it leverages **pattern matching**, which is highly optimized and safer than trait objects.
+Implementing the Visitor Pattern in Rust is unique because the language lacks traditional inheritance. Using **Enums** in Rust is often considered the more "idiomatic" approach for double dispatch because it leverages **pattern matching**, which is highly optimized and safer than trait objects.
 
 Here is the simplified, complete code using **Enums**:
 
