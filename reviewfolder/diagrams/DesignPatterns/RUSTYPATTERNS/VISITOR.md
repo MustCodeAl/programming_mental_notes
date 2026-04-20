@@ -1,3 +1,5 @@
+
+
 The **Visitor Pattern** is a behavioral design pattern used to separate an algorithm from the object structure on which it operates. It allows you to add new operations to existing object structures without modifying those structures.
 
 ### Core Concept
@@ -35,7 +37,11 @@ Imagine you have a complex graph of objects (like a file system or a compiler's 
 | **Target** | Multiple heterogeneous classes. | A single class or context. |
 | **Structure** | Uses "Double Dispatch" (`accept` + `visit`). | Uses composition and a simple method call. |
 
+
+
 For a deep dive into how this looks in practice, check out the [Refactoring Guru Visitor Documentation](https://refactoring.guru/design-patterns/visitor).
+
+
 
 ---
 
@@ -91,7 +97,14 @@ fn main() {
 }
 ```
 
+**TL;DR:** The Visitor Pattern is an awesome behavioral trick that lets you separate an algorithm from the object structure it operates on!
 
+Think of it like a nerdy health inspector visiting different restaurants (elements); the inspector brings their own unique checklist (the logic), so the restaurants only need a single method to let them inside without changing their menus.
+
+To build this: 
+1) create a `trait Visitor` with specific `visit` methods, 
+2) add an `accept` method to your elements, and
+3) let elements pass themselves to the `Visitor` to achieve double dispatch.
 
 ---
 
