@@ -1,8 +1,3 @@
-**TL;DR:** The Interpreter pattern turns grammar rules into an executable tree structure! 
-Think of it like a LEGO instruction manual where every single block magically knows how to 
-read its own shape and connect itself to the next piece to finish the toy. 
-
-
 
 The **Interpreter Pattern** is a behavioral design pattern used to define a grammatical representation for a language and an interpreter to deal with this grammar. It is most commonly used to parse and evaluate mathematical expressions or simple domain-specific languages (DSLs).
 
@@ -15,6 +10,9 @@ The pattern works by defining a class hierarchy for the "grammar" of the languag
 ![Alt text](./Interpreter1.png "Interpreter pattern")
 
 
+**TL;DR:** The Interpreter pattern turns grammar rules into an executable tree structure! 
+Think of it like a LEGO instruction manual where every single block magically knows how to 
+read its own shape and connect itself to the next piece to finish the toy. 
 
 ---
 
