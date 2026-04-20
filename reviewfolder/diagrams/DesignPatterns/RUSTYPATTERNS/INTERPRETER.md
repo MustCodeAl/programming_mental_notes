@@ -1,9 +1,6 @@
 **TL;DR:** The Interpreter pattern turns grammar rules into an executable tree structure! 
 Think of it like a LEGO instruction manual where every single block magically knows how to 
 read its own shape and connect itself to the next piece to finish the toy. 
-Here is the fully runnable, simplified Rust code using Enums to evaluate
-the math expression `(10 + 5) - 2`. For a deeper dive into these concepts, 
-you can reference the [Rust Design Patterns documentation](https://rust-unofficial.github.io/patterns/). 
 
 
 
@@ -25,6 +22,10 @@ The pattern works by defining a class hierarchy for the "grammar" of the languag
 
 
 In Rust, the most efficient way to implement this is using **Enums** and **Recursive Functions**, rather than a heavy class-based hierarchy.
+
+Here is the fully runnable, simplified Rust code using Enums to evaluate
+the math expression `(10 + 5) - 2`. For a deeper dive into these concepts, 
+you can reference the [Rust Design Patterns documentation](https://rust-unofficial.github.io/patterns/). 
 
 
 ```rust
@@ -72,4 +73,4 @@ fn main() {
 * **Performance**: Deep recursive calls can lead to stack overflows or slow performance on massive trees.
 * **Complex Grammars**: If the grammar changes frequently or is highly complex, maintaining dozens of expression classes/variants becomes a nightmare.
 
-For more visual examples, you can check out the diagrams in the [programming_mental_notes repository](https://github.com/MustCodeAl/programming_mental_notes/blob/main/reviewfolder/diagrams/DesignPatterns/RUSTYPATTERNS/Interpreter1.png).
+
