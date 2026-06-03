@@ -1,4 +1,22 @@
 
+## **The Key Insight**
+
+A recursive function has two parts:
+1. **Base case** - A condition where we return directly, without recursion. This is our “smallest doll” - the problem we can solve without any more work.
+2. **Recursive case** - We call ourselves with a “smaller” problem, then combine the result with our current work.
+
+Every recursive function must have both. Without a base case, the recursion never stops - you keep opening dolls forever, eventually crashing (stack overflow). Without a recursive case, there’s no recursion at all - just a regular function.
+
+Recursion is natural for problems with recursive structure:
+- Trees (each subtree is a smaller tree)
+- Mathematical sequences (Fibonacci, factorial)
+- Divide-and-conquer algorithms (merge sort, quicksort)
+- Parsing nested structures (JSON, HTML, our AST!)
+
+For simple loops, iteration is usually clearer. But for inherently recursive problems, recursion is often more natural.
+
+----
+
 **Depth-first search(DFS)**, **breadth-first search(BFS)** and **two pointers**, make up a good portion of all interview problems. DFS in particular can be used to solve a wide range of problems from tree to graph to combinatorial problems and is very useful in tech interviews
 
 *if you can't figure out a dynamic programming solution*, you can always do ***DFS + memoization*** which does the same thing.
@@ -6,6 +24,9 @@
 Master these dsa: *Linked List, Array, Hash Map, Stack, Queue, Sorting.*
 
 *A good-enough rule of thumb is an algorithm named after a person(s) you can safely ignore as the ROI on learning the algorithm usually isn't worth it .*
+
+
+---
 
 #### 1. House Robber (Dynamic Programming)
 
