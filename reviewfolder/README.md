@@ -199,14 +199,11 @@ Let’s walk through this pipeline with a simple example. Say the user types `1
 3. **Parser** - Builds a tree structure from the tokens. `[1, +, 2]` becomes a tree with `+` at the top and `1` and `2` as children. This tree is the **Abstract Syntax Tree (AST)**.
 
 
-## IV. Bytecode & Virtual Machines
+## IV.  Virtual Machines
 
 Another technique to translate source code to Machine Code is emulating the Instruction Set with a new (human-friendly) encoding (perhaps easier than assembly). [Bytecode](https://en.wikipedia.org/wiki/Bytecode) is such an *intermediate language/representation* which is lower-level than the actual programming language that it was translated from, and higher-level than Assembly language.
 
 
-Think of bytecode as a *simplified assembly language* designed for our VM. Real assembly has hundreds of instructions. Our bytecode has just four:
-
-Now we need a machine to execute our bytecode. Our VM is a **stack machine** - it keeps intermediate values on a stack.
 
 Now comes the payoff. We have a tree representing our program. How do we actually *compute* the result?
 
@@ -242,19 +239,26 @@ This is how Python, Java, Ruby, and many other languages work. You compile sourc
 
 
 
+
+### [**What Is Bytecode?**](https://createlang.rs/01_calculator/vm.html#what-is-bytecode)
+
+Think of bytecode as a *simplified assembly language* designed for our VM. Real assembly has hundreds of instructions. Our bytecode has just four:
+
+Now we need a machine to execute our bytecode. Our VM is a **stack machine** - it keeps intermediate values on a stack.
+
+`bytecode` - The program to execute
+- `stack` - Where we store intermediate values (a fixed-size array for speed)
+- `sp` - Stack pointer: points to the next free slot
+
+
+
+
 ### The Stack Machine
 
 A Stack Machine is a simple computing model with two main components:
 
 * A **memory (stack)** array keeping intermediate values.
 * An **Instruction Pointer (IP)** and **Stack Pointer (SP)**.
-
-**Why Stacks?** Stacks handle *any* nesting automatically. For `(1 + 2) * (3 + 4)`, you push 1, push 2, add (stack now holds 3). Push 3, push 4, add (stack holds 3, 7). Multiply (stack holds 21). Every operation pops inputs and pushes outputs.  The stack naturally tracks what’s “in progress.”
-
-`bytecode` - The program to execute
-- `stack` - Where we store intermediate values (a fixed-size array for speed)
-- `sp` - Stack pointer: points to the next free slot
-
 
 
 
@@ -269,7 +273,7 @@ The VM reads instructions left-to-right with an **instruction pointer (IP)**. F
 3. **Execute** - Manipulate the stack accordingly
 4. **Repeat** - Increment IP and continue until we’re out of instructions
 
-
+**Why Stacks?** Stacks handle *any* nesting automatically. For `(1 + 2) * (3 + 4)`, you push 1, push 2, add (stack now holds 3). Push 3, push 4, add (stack holds 3, 7). Multiply (stack holds 21). Every operation pops inputs and pushes outputs.  The stack naturally tracks what’s “in progress.”
 
 ---
 
