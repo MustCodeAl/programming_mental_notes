@@ -139,17 +139,16 @@ If the left side were `(3 + 4)`, we'd recursively evaluate it first. This is why
 ### State & Functions
 
 A calculator is **stateless** — input goes in, output comes out, nothing persists. A real language is a **state machine**:
-- **Variables(memory)** — Named storage (`n`).
-- **Conditionals** — Branching (`if`/`else`).
-- **Loops** — Repetition (`while`).
-- **Functions** (`fib`) - Abstraction and reuse
-- **Parameters** (passing `n`) - Data flow
-- **Operators** (`<`, `-`) - Computation
-- **Recursion** (`fib` calls `fib`) - Self-reference
-- **Call stack** (tracks each frame) - Memory management
+
+- **Variables** — Named storage (`n`).
+- **Functions** (`fib`) — Abstraction and reuse.
+- **Parameters** (passing `n`) — Data flow.
+- **Conditionals** (`if`/`else`) — Branching.
+- **Operators** (`<`, `-`) — Computation.
+- **Recursion** (`fib` calls `fib`) — Self-reference.
+- **Call stack** (tracks each frame) — Memory management.
 
 The AST becomes a *program to execute*, not just an expression to evaluate.
-
 
 ---
 
@@ -166,9 +165,7 @@ For `add(3, 4)`:
 
 > **Call stack analogy:** A stack of sticky notes. Each call writes variables on a new note and puts it on top. Returning tears it off. This is why `inner()`'s variables don't overwrite `outer()`'s — they're on different notes.
 
-Each **Frame** is just a `HashMap` pushed and popped like any stack. **Grammar grows**, **AST nodes multiply**, but execution is still recursive tree traversal — now with scoped state.
-
-
+Each **frame** is just a `HashMap` pushed and popped like any stack. Grammar grows, AST nodes multiply, but execution is still recursive tree traversal — now with scoped state.
 
 ---
 
@@ -221,9 +218,9 @@ Every operation pops its inputs and pushes its output. The stack naturally track
 **VM execution of `1 + 2` (fetch-decode-execute):**
 
 ```
-OpConstant(1)  →  push 1       [stack: 1      ]
-OpConstant(2)  →  push 2       [stack: 1, 2   ]
-OpAdd          →  pop 2, pop 1, push 3  [stack: 3]
+OpConstant(1)  →  push 1                  [stack: 1   ]
+OpConstant(2)  →  push 2                  [stack: 1, 2]
+OpAdd          →  pop 2, pop 1, push 3    [stack: 3   ]
 OpPop          →  return 3
 ```
 
@@ -329,7 +326,7 @@ AST → [Constant Folding] → [Algebraic Simplification] → [Dead Code Elimina
 | **Inlining** | Substitute function body directly at call site |
 | **Tail Call Optimization** | Convert tail recursion into a flat loop |
 
-> Even when LLVM will optimize downstream, custom passes improve: compile speed, debug output readability, and can exploit language-specific knowledge LLVM can't.
+> Even when LLVM will optimize downstream, custom passes improve compile speed, debug output readability, and can exploit language-specific knowledge LLVM can't.
 
 ---
 
@@ -362,7 +359,7 @@ store i64 5, i64* %x.addr    ; write (mutate)
 %x = load i64, i64* %x.addr  ; read
 ```
 
-LLVM's **`mem2reg` pass** promotes these stack slots to fast registers automatically. This pattern is simple to generate and LLVM optimizes it away.
+LLVM's **`mem2reg` pass** promotes these stack slots to fast registers automatically.
 
 #### Basic Blocks & Branching
 
@@ -398,7 +395,7 @@ merge:
 
 #### Recursion
 
-Recursive functions use the standard `call` instruction — calling the same function from within itself:
+Recursive functions use the standard `call` instruction:
 
 ```llvm
 %result = call i64 @fib(i64 %n_minus_1)
@@ -407,8 +404,6 @@ Recursive functions use the standard `call` instruction — calling the same fun
 ---
 
 ### LLVM State
-
-LLVM maintains state via:
 
 | Component | Role |
 |---|---|
@@ -423,34 +418,515 @@ LLVM maintains state via:
 
 ### The Three-Pass Compilation Process
 
-1. **Pass 1 — Declare Functions** — Announce all function signatures to LLVM before compiling any body. Enables mutual recursion via forward references.
-2. **Pass 2 — Compile Bodies** — Generate IR instructions for each function body using the alloca/load/store pattern for variables.
-3. **Pass 3 — Create `@__main` Wrapper** — Wrap top-level expressions (e.g., `fib(10)`) in a `__main` function as the JIT entry point, then verify the module.
+1. **Pass 1 — Declare Functions** — Announce all function signatures before compiling any body. Enables mutual recursion via forward references.
+2. **Pass 2 — Compile Bodies** — Generate IR instructions for each function body using the alloca/load/store pattern.
+3. **Pass 3 — Create `@__main` Wrapper** — Wrap top-level expressions (e.g., `fib(10)`) in `__main` as the JIT entry point, then verify the module.
 
 **Full pipeline:**
 ```
 Source → Parse → Type Check → Optimize → Codegen → LLVM IR → JIT → Execute
 ```
 
-**JIT execution:**
-1. Create a JIT execution engine from the verified module.
-2. Get a function pointer to `@__main`.
-3. Call it — LLVM compiles IR to native machine code on the fly and executes it.
-
 > The `unsafe` block required when calling JIT output signals that we are invoking raw machine code — we must trust that our code generator produced valid IR.
 
 ---
 
-## VIII. Object-Oriented Concepts
+### LLVM Optimization Passes
 
-Classes provide four core benefits:
+After code generation, LLVM passes transform naive IR into efficient code. Passes are chained in a **pipeline string** (e.g., `"mem2reg,dce,instcombine,simplifycfg"`).
 
-| Benefit | Description |
+| Pass | What It Does |
 |---|---|
-| **Grouping** | Related data lives together in one structure |
-| **Methods** | Functions that explicitly operate on the grouped data |
-| **Encapsulation** | Data and behavior bundled in one place |
-| **New Types** | `Point` becomes a first-class type just like `int` |
+| **`mem2reg`** | Promotes `alloca` stack slots to SSA registers — the most impactful pass |
+| **`dce`** | Dead Code Elimination — removes instructions whose results are never used |
+| **`instcombine`** | Merges redundant instructions; constant folds; strength-reduces (`mul x, 2` → `shl x, 1`) |
+| **`simplifycfg`** | Removes empty blocks, merges single-predecessor blocks, simplifies trivial branches |
+
+**Before/after example — `increment` method (14 → 4 instructions):**
+
+```llvm
+; BEFORE (naive codegen)
+define i64 @Counter__increment(ptr %self) {
+entry:
+  %self1 = alloca ptr                     ; alloca for parameter
+  store ptr %self, ptr %self1             ; store param to stack
+  %self2 = load ptr, ptr %self1           ; load self
+  %field_ptr = getelementptr %Counter, ptr %self2, i32 0, i32 0
+  %field = load i64, ptr %field_ptr       ; load self.value
+  %add = add i64 %field, 1
+  %self3 = load ptr, ptr %self1           ; load self AGAIN
+  %field_ptr4 = getelementptr %Counter, ptr %self3, i32 0, i32 0
+  store i64 %add, ptr %field_ptr4
+  %self5 = load ptr, ptr %self1           ; load self A THIRD TIME
+  %field_ptr6 = getelementptr %Counter, ptr %self5, i32 0, i32 0
+  %field7 = load i64, ptr %field_ptr6     ; load for return
+  ret i64 %field7
+}
+
+; AFTER mem2reg → instcombine → dce
+define i64 @Counter__increment(ptr %self) {
+entry:
+  %field = load i64, ptr %self            ; no alloca, GEP simplified away
+  %add = add i64 %field, 1
+  store i64 %add, ptr %self
+  ret i64 %add                            ; return register directly
+}
+```
+
+**LLVM preset pipelines:**
+
+| Level | Description |
+|---|---|
+| `default<O0>` | No optimization (verification only) |
+| `default<O1>` | Light optimization |
+| `default<O2>` | Standard optimization (recommended) |
+| `default<O3>` | Aggressive optimization |
+
+**CLI usage:**
+```bash
+thirdlang examples/point.tl                        # Run without optimization
+thirdlang -O examples/point.tl                     # Run with optimization
+thirdlang --passes "mem2reg,dce" examples/point.tl # Custom pass pipeline
+thirdlang --ir examples/point.tl                   # Print unoptimized IR
+thirdlang --ir -O examples/point.tl                # Print optimized IR
+thirdlang --passes "default<O2>" examples/point.tl # LLVM O2 preset
+```
+
+---
+
+## VIII. Object-Oriented Concepts (Classes)
+
+### Why Classes?
+
+Without classes, related data is **scattered** — easy to mix up, verbose to pass around, with no encapsulation:
+
+```
+# Without classes — error-prone
+distance(x1, y1, x2, y2)
+
+# With classes — clear, grouped, safe
+p1.distance(p2)
+```
+
+> **Classes analogy:** Think of a filing cabinet. Without classes you have loose papers (`x1`, `y1`). Classes are folders that group related papers together — and know what operations to perform on them.
+
+---
+
+### OOP Vocabulary
+
+| Concept | Description | Example |
+|---|---|---|
+| **Class** | Blueprint for creating objects | `class Point { ... }` |
+| **Object** | An instance of a class | `p = new Point(1, 2)` |
+| **Field** | Data stored in an object | `self.x`, `self.y` |
+| **Method** | Function attached to a class | `def distance(self)` |
+| **Constructor** | Initializes a new object | `def __init__(self)` |
+| **Destructor** | Cleans up before deletion | `def __del__(self)` |
+
+---
+
+### Classes as Custom Types
+
+Classes define **new types** in a **nominal type system** — types are identified by their names:
+
+```
+class Point   { x: int  y: int  ... }
+class Counter { count: int  ... }
+
+def move(p: Point, dx: int) -> Point { ... }
+#         ^^^^^  Point is now a first-class type like int
+```
+
+---
+
+### Design Decisions
+
+We implement a **subset** of OOP — deliberately simple:
+
+**No Inheritance** — Many OOP languages support `class B extends class A`. We skip this because it adds significant complexity (vtables, dynamic dispatch), and composition over inheritance is often preferred anyway. The core concepts are clearer without it.
+
+**Explicit Memory Management** — Instead of GC, we use explicit `delete`:
+```
+p = new Point(1, 2)
+delete p   # programmer's responsibility
+```
+This mirrors C++ and teaches how memory actually works. Understanding manual management helps you appreciate what GC, reference counting, and ownership models solve.
+
+**What we include vs exclude:**
+
+| Included | Excluded |
+|---|---|
+| Class definition with fields | Inheritance (vtables, dynamic dispatch) |
+| Methods with `self` | Interfaces / Traits |
+| Constructor `__init__` | Visibility (`public`/`private`) |
+| Destructor `__del__` | Static methods |
+| `new` / `delete` | Operator overloading |
+| Field access `p.x` / `self.x` | |
+| Method calls `p.method()` | |
+| Classes as types `other: Point` | |
+
+---
+
+### Memory Model: Stack vs Heap
+
+In most primitive/variable contexts, values live on the **stack**. Objects live on the **heap** because they must outlive the function that created them and can be shared across references.
+
+| | Stack | Heap |
+|---|---|---|
+| **Management** | Automatic (LIFO with call frames) | Manual (`new`/`delete`) |
+| **Speed** | Fast (just move a pointer) | Slower (system call to OS) |
+| **Size** | Limited (~few MB) | Large (all available RAM) |
+| **Lifetime** | Tied to function scope | Until explicitly freed |
+
+> **Analogy:** The stack is a stack of cafeteria trays — same size, add/remove from top only. The heap is a parking lot — park anywhere, leave as long as you want, but you must retrieve it or it stays forever (memory leak).
+
+---
+
+### Constructors & `new`
+
+The **constructor** (`__init__`) initializes a new object. It always takes `self` as the first parameter.
+
+When you write `p = new Point(10, 20)`:
+1. **Calculate size** — `Point` has two `i64` fields → 16 bytes.
+2. **Call `malloc`** — Ask the OS for 16 bytes; get back a pointer.
+3. **Initialize fields** — Zero-initialize all fields as a safety baseline.
+4. **Call `__init__`** — Runs with the new pointer as `self`; sets `self.x = 10`, `self.y = 20`.
+5. **Return pointer** — `p` now holds the heap address of the object.
+
+**Memory layout:**
+
+```
+class Point {
+    x: int    # offset 0,  8 bytes (i64)
+    y: int    # offset 8,  8 bytes (i64)
+}             # total: 16 bytes
+
+LLVM: %Point = type { i64, i64 }
+```
+
+Field order (tracked via `field_order` in `ClassInfo`) determines the memory layout — order matters!
+
+---
+
+### Constructor Patterns
+
+**Default values:**
+```
+class Config {
+    value: int
+    enabled: bool
+
+    def __init__(self) {
+        self.value = 42       # Default
+        self.enabled = true   # Default
+    }
+}
+```
+
+**Computed initialization:**
+```
+class Square {
+    side: int
+    area: int
+
+    def __init__(self, side: int) {
+        self.side = side
+        self.area = side * side   # Computed from input
+    }
+}
+```
+
+**Validation (clamping, since we have no exceptions):**
+```
+class PositiveInt {
+    value: int
+
+    def __init__(self, v: int) {
+        if (v < 0) {
+            self.value = 0   # Clamp to valid range
+        } else {
+            self.value = v
+        }
+    }
+}
+```
+
+**Failure:** Our constructors cannot fail. Real languages handle this via exceptions (Java, Python), `Result`/`Option` (Rust), or factory methods. We keep it simple — constructors always succeed.
+
+---
+
+### The `self` Parameter
+
+`self` is a **pointer** to the object the method was called on. It is always the first parameter of every method — explicit, like Python:
+
+```python
+# Thirdlang / Python style — explicit self
+def get_x(self) -> int {
+    return self.x
+}
+
+# Call: p.get_x()  →  compiled as: Point__get_x(p)
+```
+
+| Language | Self/This |
+|---|---|
+| Python | `def method(self):` — explicit |
+| Rust | `fn method(&self)` — explicit |
+| Java / C++ | `this` — implicit |
+| Thirdlang | `def method(self)` — explicit |
+
+Explicit `self` makes it clear: **methods are just functions that receive the object as their first argument**.
+
+---
+
+### Methods & Field Access
+
+Methods compile to regular functions with the naming convention `ClassName__methodName` — avoiding collisions between classes and making ownership clear.
+
+**Field access via `getelementptr` (GEP):**
+
+GEP calculates the memory address of a struct field without reading memory — it is pointer arithmetic that knows struct layouts:
+
+```llvm
+; return self.x
+%x_ptr = getelementptr %Point, ptr %self, i32 0, i32 0  ; pointer to field 0
+%x     = load i64, ptr %x_ptr
+ret i64 %x
+
+; self.x = 42
+%x_ptr = getelementptr %Point, ptr %self, i32 0, i32 0
+store i64 42, ptr %x_ptr
+```
+
+**Method call `p.get_x()` → `call @Point__get_x(ptr %p)`** — the object is passed as the first argument.
+
+> **Important:** When you pass an object as a parameter, you pass a **pointer** — not a copy. Modifying `other.x` inside a method modifies the original object. This is **reference semantics**.
+
+---
+
+### Method Patterns
+
+**Calling methods on `self`** — methods can call other methods on the same object:
+```
+class Calculator {
+    value: int
+
+    def __init__(self) { self.value = 0 }
+
+    def add(self, n: int) {
+        self.value = self.value + n
+    }
+
+    def double(self) {
+        self.add(self.value)   # Call another method on self
+    }
+}
+```
+
+**Returning self's type** — enables builder pattern:
+```
+class Builder {
+    value: int
+
+    def __init__(self) { self.value = 0 }
+
+    def set_value(self, v: int) -> Builder {
+        self.value = v
+        return self   # Return the same object
+    }
+}
+
+b = new Builder()
+b.set_value(10)
+```
+
+**Method naming convention** (`ClassName__methodName` in LLVM):
+
+| Method | LLVM Function |
+|---|---|
+| `Point.__init__` | `@Point____init__` |
+| `Point.get_x` | `@Point__get_x` |
+| `Counter.increment` | `@Counter__increment` |
+
+This avoids name collisions between classes and lets the JIT find the right function at call sites.
+
+---
+
+### Destructors & `delete`
+
+The **destructor** (`__del__`) is called automatically when you `delete` an object:
+
+```
+delete p
+```
+
+Behind the scenes:
+1. Call `Point__del(p)` — runs any cleanup code.
+2. Call `free(p)` — returns memory to the OS.
+
+```llvm
+; delete p
+call void @Point__del(ptr %p)   ; destructor (if defined)
+call void @free(ptr %p)         ; free heap memory
+```
+
+After `delete`, `p` still holds the old address — but accessing it is **undefined behavior**.
+
+---
+
+### LLVM Codegen for Classes — Summary
+
+| Thirdlang | LLVM IR |
+|---|---|
+| `class Point { x: int }` | `%Point = type { i64 }` |
+| `new Point(10)` | `call @malloc` + `call @Point____init__` |
+| `p.x` | `getelementptr` + `load` |
+| `p.x = 5` | `getelementptr` + `store` |
+| `p.method()` | `call @Point__method(ptr %p)` |
+| `delete p` | `call @Point____del__` + `call @free` |
+
+**Three-pass class compilation:**
+1. **Pass 1** — Register all class types (struct layouts) before any method bodies.
+2. **Pass 2** — Declare all method signatures (enables cross-method calls).
+3. **Pass 3** — Compile method bodies.
+
+---
+
+### Complete Codegen Example
+
+Tracing `Counter` from source to LLVM IR:
+
+```
+class Counter {
+    count: int
+    def __init__(self) { self.count = 0 }
+    def increment(self) -> int {
+        self.count = self.count + 1
+        return self.count
+    }
+}
+c = new Counter()
+c.increment()
+```
+
+Generated IR:
+
+```llvm
+%Counter = type { i64 }
+
+define void @Counter____init__(ptr %self) {
+entry:
+    %count_ptr = getelementptr %Counter, ptr %self, i32 0, i32 0
+    store i64 0, ptr %count_ptr
+    ret void
+}
+
+define i64 @Counter__increment(ptr %self) {
+entry:
+    %count_ptr = getelementptr %Counter, ptr %self, i32 0, i32 0
+    %count = load i64, ptr %count_ptr
+    %new_count = add i64 %count, 1
+    store i64 %new_count, ptr %count_ptr
+    %result = load i64, ptr %count_ptr
+    ret i64 %result
+}
+
+define i64 @__main() {
+entry:
+    %raw = call ptr @malloc(i64 8)
+    call void @Counter____init__(ptr %raw)
+    %result = call i64 @Counter__increment(ptr %raw)
+    ret i64 %result
+}
+```
+
+---
+
+### Memory Layout Trace
+
+Tracing `new Point(10, 20)` followed by `delete p` at the address level:
+
+**`new Point(10, 20)`:**
+1. `malloc(16)` → returns pointer `0x1000`
+2. `Point____init__(0x1000, 10, 20)` — sets `x=10` at offset 0, `y=20` at offset 8
+3. `p` holds `0x1000`
+
+**`delete p`:**
+1. `Point____del__(0x1000)` — runs destructor cleanup
+2. `free(0x1000)` — returns memory to OS
+3. `p` still holds `0x1000` — but it is **invalid** (dangling pointer)
+
+---
+
+### Best Practices (Manual Memory)
+
+1. **Delete what you allocate** — every `new` has a matching `delete`.
+```
+p = new Point(1, 2)
+# ... use p ...
+delete p
+```
+
+2. **One owner** — have one clear owner responsible for deletion:
+```
+def make_point() -> Point {
+    return new Point(1, 2)   # Caller owns this
+}
+p = make_point()
+delete p   # Caller is responsible
+```
+
+3. **Null after delete** (in languages that support it):
+```
+delete p
+p = null   # Mark as invalid — prevents use-after-free
+```
+
+---
+
+### Memory Safety Bugs
+
+Languages without GC (C, C++) require explicit `new`/`delete`, introducing high-risk bugs:
+
+| Bug | Description | Code |
+|---|---|---|
+| **Memory Leak** | Forgot `delete`; memory consumed until exit | `p = new Point(1,2)` — never freed |
+| **Use After Free** | Access after `delete` — undefined behavior | `delete p; p.x` |
+| **Double Free** | `delete` twice — corrupts allocator | `delete p; delete p` |
+| **Dangling Pointer** | Two refs to same object; one deletes it | `q = p; delete p; q.x` |
+
+```cpp
+// Memory Leak
+def leak() {
+    p = new Point(1, 2)
+    // forgot delete p — memory lost until program exits
+}
+
+// Use After Free — undefined behavior
+p = new Point(1, 2)
+delete p
+p.x           // BUG
+
+// Double Free — undefined behavior
+delete p
+delete p      // BUG
+
+// Dangling Pointer
+q = p         // q and p point to same object
+delete p
+q.x           // BUG — q points to freed memory
+```
+
+---
+
+### Memory Management Approaches
+
+| Approach | Pros | Cons |
+|---|---|---|
+| **Manual (C, C++)** | Fast, predictable, teaches fundamentals | Error-prone |
+| **Garbage Collection (Java, Python)** | Safe, convenient | Runtime overhead, GC pauses |
+| **Reference Counting (Swift, Python)** | Predictable cleanup | Cycle leaks, overhead |
+| **Ownership (Rust)** | Safe with no runtime cost | Complex ownership rules |
 
 ---
 
@@ -468,8 +944,6 @@ Classes provide four core benefits:
 4. **Fix** — Change the code.
 5. **Verify** — Re-run the test.
 
-**Common symptoms and remedies:**
-
 | Symptom | Action |
 |---|---|
 | Parse error | Simplify input; inspect lexer tokens |
@@ -486,38 +960,55 @@ Classes provide four core benefits:
 
 ---
 
-### Memory Safety Bugs (Manual Memory Management)
+### Testing the Pipeline
 
-Languages without garbage collection (C, C++) require explicit `new`/`delete`, introducing high-risk classes of bugs:
+Test at multiple levels:
 
-| Bug | Description | Example |
-|---|---|---|
-| **Memory Leak** | Forgot `delete`; memory consumed until program exits | `p = new Point(1,2)` — never freed |
-| **Use After Free** | Accessing memory after `delete` — **undefined behavior** | `delete p; p.x` |
-| **Double Free** | Calling `delete` twice — corrupts memory allocator | `delete p; delete p` |
-| **Dangling Pointer** | Two variables point to the same object; one deletes it — the other points to dead memory | `q = p; delete p; q.x` |
+| Level | What to Test |
+|---|---|
+| **Unit** | Individual functions — parser output, type checker rules |
+| **Integration** | Multiple components — parse + typecheck + codegen |
+| **End-to-end** | Full programs from source to result |
+| **Snapshot** | IR and error message output — catch regressions |
 
-```cpp
-// Memory Leak
-def leak() {
-    p = new Point(1, 2)
-    // Oops — forgot delete p!
-}  // Memory lost forever
+Start with integration tests for full programs, then add unit tests for complex logic. Add a regression test for every bug fixed.
 
-// Use After Free
-p = new Point(1, 2)
-delete p
-p.x   // BUG: undefined behavior
+---
 
-// Double Free
-delete p
-delete p  // BUG: undefined behavior
+## X. Language Progression
 
-// Dangling Pointer
-q = p
-delete p
-q.x   // BUG: q now points to freed memory
-```
+The four stages of building a language from scratch:
+
+| Feature | Calculator | Firstlang | Secondlang | Thirdlang |
+|---|---|---|---|---|
+| Grammar size | ~18 lines | ~70 lines | ~77 lines | ~140 lines |
+| Type System | None | Dynamic | Static | Static + Classes |
+| Variables | No | Yes | Yes | Yes |
+| Functions | No | Yes | Yes | Yes + Methods |
+| Classes | No | No | No | Yes |
+| Memory | Stack | Stack | Stack | Stack + Heap |
+| Execution | Interpreter / VM / JIT | Interpreter | LLVM JIT | LLVM JIT |
+
+Each stage adds one layer of abstraction:
+1. **Calculator** — Learn the basics: parsing, AST, evaluation.
+2. **Firstlang** — Add programming: variables, functions, control flow.
+3. **Secondlang** — Add types: static checking, LLVM compilation.
+4. **Thirdlang** — Add OOP: classes, objects, heap memory management.
+
+---
+
+### What to Explore Next
+
+| Direction | Topics |
+|---|---|
+| **Language Features** | Inheritance (vtables, dynamic dispatch), interfaces/traits, generics (`List<T>`), closures, pattern matching, algebraic data types |
+| **Type System** | Nullability (`Point?`), reference vs owned types, Hindley-Milner full inference |
+| **Memory Management** | Garbage collection (mark-and-sweep, generational), reference counting, Rust-style ownership |
+| **Execution Models** | AOT compilation to executables, bytecode VMs, transpilation to JS/C/WASM |
+| **Optimizations** | Inlining, escape analysis (stack-allocate short-lived objects), devirtualization |
+| **Tooling** | Debuggers, formatters, Language Server Protocol (LSP) for IDE support |
+
+The concepts you've learned — grammars, ASTs, type systems, code generation — appear everywhere: SQL, GraphQL, YAML, regex, CSS, template engines. You now have the foundation to understand, modify, or create any of them.
 
 ---
 
