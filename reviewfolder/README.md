@@ -139,11 +139,17 @@ If the left side were `(3 + 4)`, we'd recursively evaluate it first. This is why
 ### State & Functions
 
 A calculator is **stateless** — input goes in, output comes out, nothing persists. A real language is a **state machine**:
-- **Variables** — Named storage (memory).
+- **Variables(memory)** — Named storage (`n`).
 - **Conditionals** — Branching (`if`/`else`).
 - **Loops** — Repetition (`while`).
+- **Functions** (`fib`) - Abstraction and reuse
+- **Parameters** (passing `n`) - Data flow
+- **Operators** (`<`, `-`) - Computation
+- **Recursion** (`fib` calls `fib`) - Self-reference
+- **Call stack** (tracks each frame) - Memory management
 
 The AST becomes a *program to execute*, not just an expression to evaluate.
+
 
 ---
 
@@ -160,7 +166,9 @@ For `add(3, 4)`:
 
 > **Call stack analogy:** A stack of sticky notes. Each call writes variables on a new note and puts it on top. Returning tears it off. This is why `inner()`'s variables don't overwrite `outer()`'s — they're on different notes.
 
-Each frame is just a `HashMap` pushed and popped like any stack. **Grammar grows**, **AST nodes multiply**, but execution is still recursive tree traversal — now with scoped state.
+Each **Frame** is just a `HashMap` pushed and popped like any stack. **Grammar grows**, **AST nodes multiply**, but execution is still recursive tree traversal — now with scoped state.
+
+
 
 ---
 
