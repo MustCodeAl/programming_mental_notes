@@ -361,6 +361,8 @@ store i64 5, i64* %x.addr    ; write (mutate)
 
 LLVM's **`mem2reg` pass** promotes these stack slots to fast registers automatically.
 
+**Why store parameters too?** For `add(%a, %b)`, the pattern is: (1) `alloca` stack space for `%a.addr`/`%b.addr`, (2) `store` the incoming parameters into those slots, (3) `load` the values back, (4) `add i64` the loaded values, (5) `ret` the result. This looks wasteful — why not use `%a` and `%b` directly? Because in LLVM IR, SSA values like `%a` are immutable, but in most source languages variables *can* change. Storing every variable in a stack slot up front handles mutability uniformly, and `mem2reg` cleans it up afterward when a variable is never actually reassigned.
+
 #### Basic Blocks & Branching
 
 Conditionals require separate **basic blocks** (`entry`, `then`, `else`, `merge`). Each block ends with a **terminator** — either `ret` (return) or `br` (branch):
@@ -401,6 +403,10 @@ Recursive functions use the standard `call` instruction:
 %result = call i64 @fib(i64 %n_minus_1)
 ```
 
+#### Function Calls & Return Values
+
+To compile a call: look up the function, compile each argument, then emit a `call` instruction. LLVM calls return either a **basic value** (an int or pointer you can use) or **nothing** (void). The pattern `try_as_basic_value().unwrap_basic()` extracts the basic-value case — safe here since our functions always return `int` — and `.into_int_value()` converts the result to the specific integer type needed downstream.
+
 ---
 
 ### LLVM State
@@ -422,10 +428,29 @@ Recursive functions use the standard `call` instruction:
 2. **Pass 2 — Compile Bodies** — Generate IR instructions for each function body using the alloca/load/store pattern.
 3. **Pass 3 — Create `@__main` Wrapper** — Wrap top-level expressions (e.g., `fib(10)`) in `__main` as the JIT entry point, then verify the module.
 
-**Full pipeline:**
-```
-Source → Parse → Type Check → Optimize → Codegen → LLVM IR → JIT → Execute
-```
+---
+
+### Running a Program: Source to Result
+
+What happens when you run `cargo run -- examples/fibonacci.sl`:
+
+1. **Parse** the source file → Typed AST (with `Unknown` types).
+2. **Type check** → Typed AST (all types resolved).
+3. **Optimize** (optional) → Simplified AST.
+4. **Compile** → LLVM IR.
+5. **JIT** → Native machine code.
+6. **Execute** → Result.
+
+All in a fraction of a second. Each step transforms the program into a different representation, getting closer and closer to something the CPU can execute directly.
+
+**Calling the JIT-compiled code:**
+1. Create a code generator — sets up the LLVM context, module, and builder (the workspace).
+2. Compile the program to IR.
+3. Create a JIT execution engine from the verified module.
+4. Get a pointer to `@__main` — our entry point.
+5. Call it and return the result.
+
+The JIT engine compiles IR to native machine code on the fly, then executes it — this is much faster than interpretation, because the CPU is running actual machine code, not walking a tree.
 
 > The `unsafe` block required when calling JIT output signals that we are invoking raw machine code — we must trust that our code generator produced valid IR.
 
@@ -434,6 +459,16 @@ Source → Parse → Type Check → Optimize → Codegen → LLVM IR → JIT →
 ### LLVM Optimization Passes
 
 After code generation, LLVM passes transform naive IR into efficient code. Passes are chained in a **pipeline string** (e.g., `"mem2reg,dce,instcombine,simplifycfg"`).
+
+**Why optimize ourselves if LLVM will do it anyway?**
+
+| Reason | Benefit |
+|---|---|
+| **Learning** | Implementing optimizations teaches how production compilers actually work |
+| **Simplicity** | A simpler AST means simpler, less error-prone code generation |
+| **Debug output** | Optimized IR is easier to read when printed for debugging |
+| **Specialized optimizations** | You may know language-specific facts LLVM cannot infer |
+| **Compile time** | A simpler AST means less work for LLVM, so compilation is faster |
 
 | Pass | What It Does |
 |---|---|
@@ -473,6 +508,28 @@ entry:
 }
 ```
 
+**Each pass in isolation** (simple, minimal examples):
+
+`mem2reg` — promotes an alloca'd variable straight to a value:
+```llvm
+; before                       ; after
+%x = alloca i64                %val = 42
+store i64 42, ptr %x
+%val = load i64, ptr %x
+```
+
+`dce` — drops instructions whose results are never read:
+```llvm
+; before                        ; after
+%unused = add i64 %a, %b        %result = mul i64 %c, %d
+%result = mul i64 %c, %d        ret i64 %result
+ret i64 %result
+```
+
+`instcombine` — simplifies arithmetic patterns: `sub i64 %x, 1` → `add i64 %x, -1`; `mul i64 %x, 2` → `shl i64 %x, 1` (shift left); constant-folds `add i64 3, 4` → `7`.
+
+`simplifycfg` — removes empty basic blocks, merges blocks with a single predecessor, and simplifies trivially-true/false branches.
+
 **LLVM preset pipelines:**
 
 | Level | Description |
@@ -491,6 +548,12 @@ thirdlang --ir examples/point.tl                   # Print unoptimized IR
 thirdlang --ir -O examples/point.tl                # Print optimized IR
 thirdlang --passes "default<O2>" examples/point.tl # LLVM O2 preset
 ```
+
+**Setting up the pass manager** requires:
+1. **Initialize Native Target** — required before creating a `TargetMachine`.
+2. **Get Target Triple** — the host machine description (e.g., `x86_64-apple-darwin`).
+3. **Create TargetMachine** — needed for target-specific optimizations.
+4. **`run_passes`** — takes the comma-separated pass list (or a preset like `"default<O2>"`) and applies it to the module.
 
 ---
 
@@ -677,6 +740,14 @@ def get_x(self) -> int {
 
 Explicit `self` makes it clear: **methods are just functions that receive the object as their first argument**.
 
+**In codegen,** `self` is just stored as a local variable pointer, exactly like any other parameter — there's no special-casing:
+```rust
+Expr::SelfRef => {
+    let ptr = self.variables.get("self").ok_or("'self' not in scope")?;
+    self.builder.build_load(ptr_type, *ptr, "self").unwrap()
+}
+```
+
 ---
 
 ### Methods & Field Access
@@ -785,10 +856,13 @@ After `delete`, `p` still holds the old address — but accessing it is **undefi
 | `p.method()` | `call @Point__method(ptr %p)` |
 | `delete p` | `call @Point____del__` + `call @free` |
 
-**Three-pass class compilation:**
-1. **Pass 1** — Register all class types (struct layouts) before any method bodies.
-2. **Pass 2** — Declare all method signatures (enables cross-method calls).
-3. **Pass 3** — Compile method bodies.
+**Class compilation happens in six phases:**
+1. **Declare libc functions** — `malloc` and `free`.
+2. **Create class struct types** — define an LLVM struct for each class.
+3. **Declare methods** — create function signatures (enables cross-method and forward calls).
+4. **Compile class bodies** — generate method implementations.
+5. **Compile top-level code** — generate the `@__main` wrapper.
+6. **Verify module** — check the IR is well-formed.
 
 ---
 
@@ -839,6 +913,16 @@ entry:
     ret i64 %result
 }
 ```
+
+> The code that runs isn't interpreted — it's real compiled machine code, the same as if you'd written it in C or Rust. Objects really live on the heap. Methods really jump to function addresses. When this calls `malloc`, it's calling the actual C `malloc`.
+
+**Performance considerations:**
+
+| What We Do | What Real Compilers Add |
+|---|---|
+| Direct field access via GEP (fast) | Inline method calls when possible |
+| Static method calls — no vtable lookup | Escape analysis (stack-allocate short-lived objects) |
+| Objects laid out contiguously in memory | Field alignment optimization, dead field elimination |
 
 ---
 
