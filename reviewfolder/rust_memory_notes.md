@@ -1,5 +1,69 @@
 1010 1011
 
+all the places in binary occupied added together to decimal:
+1+ 2 + 8 + 32 + 128 = 171
+
+
+160 + 8 + 2
+170 + 1
+
+
+
++ 8
+
+
+
+179
+
+
+1 0 1 1  - 0 0 0 0
+
+160 + 16
+176 + 1
+
+		1011 - 0011
+		
+				0xb3
+				
+
+
+`0x700000b3` (this is `[0x700000ab + 0x8]`)
+
+
+breaking down `0x700000ab` to decimal (`171`)
+
+
+| a	   | b    | 
+| :--- | :--- | 
+| 10   |  11  |
+| 1010 | 1011 | 
+
+ 
+				
+
+
+| 1 | 0 | 1  | 0 | 1 | 0 | 1 | 1 |
+| :--- | :--- | :--- | :--- | :---  | :--- | :--- | :---  |
+| 128  |  0   |  32  | 0    |    8  |  0   |  2   |   1   | 
+
+
+ ( add the places used together to decimal )  1+ 2 + 8 + 32 + 128 = 171
+
+
+
+
+this is when you are adding to the stack
+
+171 + 8 would be `0x700000b3`
+
+
+
+----
+
+
+
+1010 1011
+
 1
 + 2
 + 8
@@ -32,6 +96,8 @@
 
 				
 `0x700000b3` (this is `[0x700000ab + 0x8]`)
+
+
 
 this is when you are adding to the stack
 
