@@ -152,6 +152,28 @@ The AST becomes a *program to execute*, not just an expression to evaluate.
 
 ---
 
+#### State machine
+
+
+- **The Concise Definition:**
+      **State Machine:** A mathematical model of computation representing a system that can be in exactly one of a finite number of conditions (states) at any given time. The machine changes from one state to another (a transition) in response to specific inputs or events.
+
+- **The Programming Definition:**
+      **State Machine:** A system that maintains a "memory" of its current condition and changes that condition based on incoming events. Unlike a stateless system (like a basic calculator), a state machine's output depends on its accumulated history—which in a programming language is tracked via variables, memory heaps, and the call stack.
+
+- **The Bullet-Point Breakdown:**
+     **State Machine Core Concepts:**
+     * **State:** The current condition or snapshot of the system's memory (e.g., current variable values, active call stack).
+     * **Inputs/Events:** The actions or instructions fed into the system (e.g., executing the next line of code).
+     * **Transitions:** The rules that dictate how the system moves from one state to the next based on the input.
+
+So, if you pause a program in a debugger, you are looking at its current state. The call stack tells you how the program got to this state and what local data it currently has access to within that specific function frame.
+
+In computer science terms, adding a stack to a finite state machine turns it into a **Pushdown Automaton**—allowing it to handle nesting, recursion, and scoped memory, which is exactly why the notes mention it as a core requirement for a "real language."
+
+
+---
+
 ### Function Call Sequence
 
 For `add(3, 4)`:
