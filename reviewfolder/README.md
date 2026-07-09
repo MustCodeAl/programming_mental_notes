@@ -150,9 +150,13 @@ A calculator is **stateless** — input goes in, output comes out, nothing persi
 
 The AST becomes a *program to execute*, not just an expression to evaluate.
 
+
 ---
 
 #### State machine
+
+If you pause a program in a debugger, you are looking at its current state. The call stack tells you how the program got to this state and what local data it currently has access to within that specific function frame.
+In computer science terms, adding a stack to a finite state machine turns it into a **Pushdown Automaton**—allowing it to handle nesting, recursion, and scoped memory.
 
 
 - **The Concise Definition:**
@@ -166,10 +170,6 @@ The AST becomes a *program to execute*, not just an expression to evaluate.
      * **State:** The current condition or snapshot of the system's memory (e.g., current variable values, active call stack).
      * **Inputs/Events:** The actions or instructions fed into the system (e.g., executing the next line of code).
      * **Transitions:** The rules that dictate how the system moves from one state to the next based on the input.
-
-So, if you pause a program in a debugger, you are looking at its current state. The call stack tells you how the program got to this state and what local data it currently has access to within that specific function frame.
-
-In computer science terms, adding a stack to a finite state machine turns it into a **Pushdown Automaton**—allowing it to handle nesting, recursion, and scoped memory, which is exactly why the notes mention it as a core requirement for a "real language."
 
 
 ---
