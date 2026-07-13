@@ -1,10 +1,21 @@
 # Programming & Compiler Mental Notes
 
+### Grammar
+
+A ***formal grammar*** is a set of rules that define what makes valid code in a programming language. Think of it like the grammar of English: “The cat sat” is valid, but “Cat the sat” is not.
+
+For programming languages, a grammar specifies:
+
+* **What tokens are valid** - keywords like `def`, `if`, `return` ; *operators* like `+`, `-`, `*`; *literals* like `42`, `true`
+* **How tokens can be combined** - `1 + 2` is valid, `+ + 1` is not
+* **The structure of programs** - functions contain statements, statements contain expressions
+
 ---
 
 ## I. Hardware Fundamentals
 
 ### The CPU
+If you want to create a “computer” from scratch, you need to start by defining an **abstract model** for your computer. This *abstract model* is also referred to as ***Instruction Set Architecture (ISA)***
 
 A **CPU** is an implementation of an **Instruction Set Architecture (ISA)** — an abstract model defining data types, registers, hardware support, and I/O. Together these make up **Machine Language**, the lowest-level language of computing.
 
@@ -20,21 +31,30 @@ The CPU continuously runs a **fetch-decode-execute** loop:
 
 ### Opcodes in Practice
 
+
+Instructions are comprised of instruction code (aka operation code, in short **opcode** or *p-code*) which are directly executed by the *CPU*. An *opcode* can either **have operand(s)** or **no operand**. For example, in an 8-bit machine where instructions are 8 bits, an *opcode* load might be defined by the 4 bits `0011` followed by the second 4 bits as operand with `0101`, making up the instruction `00110101` in Machine Language. The opcode for incrementing by `1` of the previously loaded value could be defined by `1000` with *no operand*.
+
+
 In an 8-bit machine where instructions are 8 bits:
 - `LOAD 0101` → `00110101` — the first 4 bits (`0011`) are the opcode for *load*, the second 4 bits (`0101`) are the operand.
 - `INCREMENT` → `1000` — the opcode for *increment by 1*, no operand needed.
 
-Since opcodes are the atoms of computing, they are catalogued in an **opcode table** (e.g., the [x86 opcode reference](https://www.felixcloutier.com/x86/)).
+Since opcodes are the atoms of computing, they are presented in an **opcode table** (e.g., the [x86 opcode reference](https://www.felixcloutier.com/x86/)).
 
 ---
 
 ### Assembly Language
+
+
+Since it’s hard to remember the opcodes by their bit-patterns, we can assign abstract symbols to opcodes matching their operations by name. This way, we can create ***Assembly language*** from the Machine Language. 
 
 Because bit-patterns are hard to remember, **Assembly Language** assigns abstract human-readable symbols to opcodes:
 
 ```
 00110101  →  LOAD 0101
 ```
+
+In the previous Machine Language example above, `00110101` (means load the binary 0101), we can define the symbol `LOAD` referring to `0011` as a higher level abstraction so that `00110101` can be written as `LOAD 0101`.
 
 A utility program called an **Assembler** translates Assembly back to Machine Language.
 
@@ -83,10 +103,16 @@ Machine Language  →  Assembly  →  IR  →  Bytecode  →  Source Language
 
 ### The Compiler
 
+A compiler is any program that translates (maps, encodes) a language A to language B. Each compiler has two major components:
+
+
 A **compiler** is any program that translates Language A → Language B. Its two core components:
 
-- **Frontend** — Maps source code strings to an **Abstract Syntax Tree (AST)**.
+- **Frontend** — Maps source code strings to a structured format called an **Abstract Syntax Tree (AST)**.
 - **Backend (Code Generator)** — Translates the AST to Bytecode, IR, or Assembly.
+
+Most often, when we talk about compiler, we mean Ahead-Of-Time (AOT) compiler where the translation happens before execution. Another form of translation is Just-In-Time (JIT) compilation where translation happens right at the time of the execution.
+
 
 | Translation Type | When It Happens | Examples |
 |---|---|---|
@@ -121,6 +147,21 @@ Walking through `1 + 2`:
 
 > **AST analogy:** Think of source code as a sentence and the AST as its grammatical diagram. Just as "The cat sat" is diagrammed into subject/verb, `1 + 2` is diagrammed into left/operator/right. The AST captures **structure**, not just text.
 
+We need a systematic way to turn any AST into LLVM IR.
+
+The answer is recursive tree traversal. We already do this in the interpreter - walk the tree, evaluate each node. For code generation, we walk the tree and emit instructions for each node instead of computing values.
+
+Two common patterns help structure this:
+
+* Builder pattern - Used for LLVM IR generation
+* Visitor pattern - for AST transformations
+
+### Builder Pattern
+Think of the LLVM builder like a cursor in a text editor. You position it somewhere in your code, then “type” instructions at that position. The builder keeps track of where you are and ensures instructions are added in the right place.
+
+Let’s compare our interpreter’s recursive evaluation to the new JIT approach.
+
+Interpreter: Walk tree, compute values
 ---
 
 ### The Interpreter & Recursion
@@ -206,7 +247,9 @@ A working REPL with variables, functions, conditionals, operators, recursion, an
 
 ## IV. Bytecode & Virtual Machines
 
-**Bytecode** sits between source and assembly — lower-level than source, higher-level than machine code. It emulates an instruction set with a new, simplified encoding, and is executed by a **VM**.
+Bytecode is another technique to translate source code to Machine Code is emulating the Instruction Set with a new (human-friendly) encoding (perhaps easier than assembly). 
+
+**Bytecode** is such an intermediate language/representation, which sits between source and assembly — lower-level than source, higher-level than assembly language. It emulates an instruction set with a new, simplified encoding, and is executed by a **VM**.
 
 ### Why Bytecode?
 
@@ -222,13 +265,17 @@ A working REPL with variables, functions, conditionals, operators, recursion, an
 
 This is how Python (CPython), Java (JVM), and Ruby (YARV) work: compile source to bytecode once, run the bytecode interpreter wherever you need it.
 
+***Is Python (or a language X) Compiled or Interpreted?***
+
+Being AOT compiled, JIT compiled or interpreted is implementation-dependent. For example, the standard Python implementation is CPython which compiles a Python source code (in CPython VM) to CPython Bytecode (contents of .pyc) and interprets the Bytecode. However, another implementation of Python is PyPy which (more or less) compiles a Python source code (in PyPy VM) to PyPy Bytecode and JIT compiles the PyPy Bytecode to the Machine Code (and is usually faster than CPython interpreter).
+
 ---
 
 ### The Stack Machine
 
 A **stack machine** has two components:
-- A **stack array** for intermediate values.
-- An **Instruction Pointer (IP)** and **Stack Pointer (SP)**.
+- A **stack array** for intermediate values. Keeping the Bytecode instructions that supports pushing and poping instructions
+- An **Instruction Pointer (IP)** and **Stack Pointer (SP)**. Guiding which instruction was executed and what is next.
 
 **Why stacks?** They handle *any* nesting automatically. For `(1 + 2) * (3 + 4)`:
 - Push 1, push 2, add → stack: `[3]`
@@ -251,6 +298,8 @@ The VM reads instructions left-to-right with the IP:
 2. **Decode** — Match on the opcode
 3. **Execute** — Manipulate the stack
 4. **Repeat** — Increment IP; continue until out of instructions
+
+
 
 ---
 
