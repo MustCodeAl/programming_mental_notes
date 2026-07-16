@@ -251,6 +251,9 @@ Bytecode is another technique to translate source code to Machine Code is emulat
 
 **Bytecode** is such an intermediate language/representation, which sits between source and assembly — lower-level than source, higher-level than assembly language. It emulates an instruction set with a new, simplified encoding, and is executed by a **VM**.
 
+
+
+
 ### Why Bytecode?
 
 | Approach | Trade-off |
@@ -269,12 +272,49 @@ This is how Python (CPython), Java (JVM), and Ruby (YARV) work: compile source t
 
 Being AOT compiled, JIT compiled or interpreted is implementation-dependent. For example, the standard Python implementation is CPython which compiles a Python source code (in CPython VM) to CPython Bytecode (contents of .pyc) and interprets the Bytecode. However, another implementation of Python is PyPy which (more or less) compiles a Python source code (in PyPy VM) to PyPy Bytecode and JIT compiles the PyPy Bytecode to the Machine Code (and is usually faster than CPython interpreter).
 
+
+#### Bytecode Structure
+* `instructions` - A flat array of bytes. Opcodes and their arguments, all mixed together.
+* `constants` - A table of literal values. Instead of encoding 42 in the instruction stream, we store it in the constants table and reference it by index.
+
+```rust
+pub struct Bytecode {
+    pub instructions: Vec<u64>,// 64 bit instructions 
+    pub constants: Vec<Node>,
+}
+```
+
 ---
 
 ### The Stack Machine
 
-A **stack machine** has two components:
-- A **stack array** for intermediate values. Keeping the Bytecode instructions that supports pushing and poping instructions
+Machine to execute our bytecode:  Our VM is a **Stack Machine** - it keeps intermediate values on a stack.
+
+We’ve seen two ways to execute code: interpret the AST directly, or JIT compile to native machine code. There’s a third approach that sits in between: **compile to bytecode, then interpret that.**
+
+```rust
+const STACK_SIZE: usize = 2048;
+
+pub struct VM {
+    bytecode: Bytecode,
+    stack: [Node; STACK_SIZE], // nodes are leafs in the abstract syntax tree
+    stack_ptr: usize, // points to the next free space
+}
+```
+```rust
+pub enum OpCode {
+    OpConstant(u16), // pointer to constant table
+    OpPop,           // pop is needed for execution
+    OpAdd,
+    OpSub,
+    OpPlus,
+    OpMinus,
+}
+```
+
+A **stack machine** has three components:
+- **Bytecode** which is the program to execute
+- A memory **stack array** for Keeping the Bytecode instructions that supports pushing and poping instructions. Also for intermediate values. we use a fixed array for speed. 
 - An **Instruction Pointer (IP)** and **Stack Pointer (SP)**. Guiding which instruction was executed and what is next.
 
 **Why stacks?** They handle *any* nesting automatically. For `(1 + 2) * (3 + 4)`:
@@ -284,7 +324,18 @@ A **stack machine** has two components:
 
 Every operation pops its inputs and pushes its output. The stack naturally tracks what's "in progress."
 
+Think of bytecode as a simplified assembly language designed for our VM. 
+
+* OpConstant(index)	Push a constant onto the stack
+* OpAdd 	Pop two values, push their sum
+* OpSub	Pop two values, push their difference
+* OpPop	Pop and discard the top value
+
+Real assembly has hundreds of instructions. 
+
 **VM execution of `1 + 2` (fetch-decode-execute):**
+
+These four carry the arithmetic ( `OpSub` not used in this example):
 
 ```
 OpConstant(1)  →  push 1                  [stack: 1   ]
@@ -293,7 +344,7 @@ OpAdd          →  pop 2, pop 1, push 3    [stack: 3   ]
 OpPop          →  return 3
 ```
 
-The VM reads instructions left-to-right with the IP:
+The VM reads instructions left-to-right with the **Instruction Pointer** (`ip`):
 1. **Fetch** — Read next byte from `bytecode.instructions[ip]`
 2. **Decode** — Match on the opcode
 3. **Execute** — Manipulate the stack
