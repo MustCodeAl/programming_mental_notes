@@ -101,6 +101,154 @@ Machine Language  →  Assembly  →  IR  →  Bytecode  →  Source Language
 
 ---
 
+
+## Building a Parser
+
+A parser takes raw source code (a string) and converts it into a structured **Abstract Syntax Tree (AST)** that a computer can evaluate or compile. Think of source code as a sentence and the AST as its grammatical diagram. It captures *structure*, not just text. 
+
+Here is the step-by-step process of building one from scratch using Rust and the `pest` crate:
+
+### 1. Setting Up the Lexer/Grammar
+First, you need rules that define what makes valid code. Using a parser generator (like the `pest` crate in Rust), you define a grammar file (e.g., `grammar.pest`). The tool uses this grammar to validate the text and tokenize the raw string into an iterator of parsed "pairs" or tokens (e.g., pulling out operators, numbers, and nested expressions).
+
+ The `pest` parser generator uses this grammar to validate the text and tokenize the raw string into an iterator of parsed "pairs" (tokens). 
+
+```rust
+#[derive(pest_derive::Parser)]
+#[grammar = "grammar.pest"]
+struct CalcParser;
+
+```
+
+### 2. Defining the Abstract Syntax Tree (AST)
+The AST captures the *meaning* and *structure* of the code, not just the raw text. In Rust, this is typically done using `enum`s to represent different node types:
+- **Terminal Nodes (Leaves):** e.g., `Node::Int(i32)` for raw numbers.
+- **Unary Expressions:** e.g., `Node::UnaryExpr { op, child }` for operations like `-5`.
+- **Binary Expressions:** e.g., `Node::BinaryExpr { op, lhs, rhs }` for operations like `1 + 2`. *(Note: `Box<Node>` is used for the children to allow recursive nesting).*
+
+ The tree naturally encodes the order of operations through its nesting.
+
+```rust
+pub enum Operator {
+    Plus,
+    Minus,
+}
+
+pub enum Node {
+    // Terminal Nodes (Leaves)
+    Int(i32),
+    // Unary Expressions (e.g., -5)
+    UnaryExpr {
+        op: Operator,
+        child: Box<Node>,
+    },
+    // Binary Expressions (e.g., 1 + 2)
+    BinaryExpr {
+        op: Operator,
+        lhs: Box<Node>,
+        rhs: Box<Node>,
+    },
+}
+
+```
+
+> **Note:** `Box<Node>` is required for the children to allow recursive nesting. Without `Box`, Rust wouldn't be able to calculate the size of the `Node` enum at compile time.
+
+### 3. The Main Parsing Loop
+
+The main entry point (often just `parse(source: &str)`) takes the raw string, feeds it to the parser generator, and loops through the resulting top-level tokens. When it finds a top-level expression, it passes that token to a recursive builder function to construct the AST.
+
+
+```rust
+pub fn parse(source: &str) -> std::result::Result<Vec<Node>, pest::error::Error<Rule>> {
+    let mut ast = vec![];
+    // Tokenize the string using the 'Program' rule
+    let pairs = CalcParser::parse(Rule::Program, source)?;
+    
+    // Iterate through top-level expressions
+    for pair in pairs {
+        if let Rule::Expr = pair.as_rule() {
+            ast.push(build_ast_from_expr(pair));
+        }
+    }
+    Ok(ast)
+}
+
+```
+
+### 4. Parsing Expressions & Associativity
+
+This is the core logic that converts generic `pest` tokens into your custom AST nodes:
+- **Unary Expressions:** Grab the operator and the single child term, then construct the Unary node.
+- **Binary Expressions:** Handling chained operations (like `1 + 2 + 3`) requires **left-associativity** so it evaluates as `(1 + 2) + 3`. Instead of using pure recursion (which might result in right-associativity), this is often handled using a `loop`:
+    1. Parse the initial Left-Hand Side (LHS), operator, and Right-Hand Side (RHS).
+    2. Build the first `BinaryExpr` node.
+    3. **The Loop:** If there is another operator immediately following in the token stream, take the expression you *just built* and make it the **new LHS**, grab the next number as the RHS, and build a new, nested `BinaryExpr`. 
+
+
+```rust
+Rule::BinaryExpr => {
+    let mut pair = pair.into_inner();
+    
+    // 1. Parse the initial Left-Hand Side (LHS)
+    let lhspair = pair.next().unwrap();
+    let mut lhs = /* ... code to parse LHS (could be Unary or Term) ... */;
+    
+    // 2. Grab Operator and initial Right-Hand Side (RHS)
+    let op = pair.next().unwrap();
+    let rhspair = pair.next().unwrap();
+    let mut rhs = build_ast_from_term(rhspair);
+    
+    // 3. Build the first BinaryExpr node
+    let mut retval = parse_binary_expr(op, lhs, rhs);
+    
+    // 4. The Loop: Handle chained operators (e.g., + 3 + 4)
+    loop {
+        let pair_buf = pair.next();
+        if let Some(op) = pair_buf {
+            // The expression we just built becomes the *new* LHS
+            lhs = retval; 
+            rhs = build_ast_from_term(pair.next().unwrap());
+            // Build a new, nested BinaryExpr
+            retval = parse_binary_expr(op, lhs, rhs);
+        } else {
+            return retval; // No more operators, return the final tree
+        }
+    }
+}
+
+```
+
+### 5. Parsing Terms (The Leaves)
+
+When the parser drills down to a basic term (`Rule::Term`), it hits the bottom of the tree. It expects one of two things:
+
+1. **A raw number:** It parses the string into an `i32` and returns a `Node::Int`.
+2. **A nested expression:** If it hits parentheses, it recurses back up to the expression parsing logic to evaluate the inside of the parentheses first.
+
+```rust
+fn build_ast_from_term(pair: pest::iterators::Pair<Rule>) -> Node {
+    let pair = pair.into_inner().next().unwrap();
+    match pair.as_rule() {
+        // Resolve raw strings into actual integers
+        Rule::Int => {
+            let int: i32 = pair.as_str().parse().unwrap();
+            Node::Int(int)
+        }
+        // Recurse back up for nested expressions like (1 + 2)
+        Rule::Expr => build_ast_from_expr(pair),
+        unknown => panic!("Unknown term: {:?}", unknown),
+    }
+}
+
+```
+
+
+
+
+---
+
+
 ### The Compiler
 
 A compiler is any program that translates (maps, encodes) a language A to language B. Each compiler has two major components:
