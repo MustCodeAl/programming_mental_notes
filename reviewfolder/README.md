@@ -178,8 +178,13 @@ pub fn parse(source: &str) -> std::result::Result<Vec<Node>, pest::error::Error<
     
     // Iterate through top-level expressions
     for pair in pairs {
-        if let Rule::Expr = pair.as_rule() {
+        if let Rule::Expr = pair.as_rule() { // every line is an expression
             ast.push(build_ast_from_expr(pair));
+// expr is could be a term
+// (which could be a data type or unary / binary expression with parathesis),
+// unary - operator followed by term,
+// or binary - which has a term followed by operator and a term 
+// binary can additionally have any numbers of operator and term combos,
         }
     }
     Ok(ast)
