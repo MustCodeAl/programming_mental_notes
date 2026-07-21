@@ -129,6 +129,17 @@ The AST captures the *meaning* and *structure* of the code, not just the raw tex
  The tree naturally encodes the order of operations through its nesting.
 
 ```rust
+
+// these are potential leaves in an ast
+// think of an ast as a composite design pattern where
+// the leaves are the core data types such int
+// the composits are the structs that have child/inner nodes or other structs
+// and parse allows you work on composits and leaves the exact same way
+// parse and will figure out the method depending on the component
+// think of program like the main container
+
+
+
 pub enum Operator {
     Plus,
     Minus,
@@ -176,9 +187,10 @@ pub fn parse(source: &str) -> std::result::Result<Vec<Node>, pest::error::Error<
 
 ```
 
-### 4. Parsing Expressions & Associativity
+### 4. Parsing Expressions & Associativity (the composits)
 
-This is the core logic that converts generic `pest` tokens into your custom AST nodes:
+This is the core logic that converts generic `pest` tokens into your custom AST nodes by 
+looking at the rule:
 - **Unary Expressions:** Grab the operator and the single child term, then construct the Unary node.
 - **Binary Expressions:** Handling chained operations (like `1 + 2 + 3`) requires **left-associativity** so it evaluates as `(1 + 2) + 3`. Instead of using pure recursion (which might result in right-associativity), this is often handled using a `loop`:
     1. Parse the initial Left-Hand Side (LHS), operator, and Right-Hand Side (RHS).
@@ -220,7 +232,7 @@ fn parse_binary_expr(pair: pest::iterators::Pair<Rule>, lhs: Node, rhs: Node) ->
 ```rust
 
 
-fn build_ast_from_expr(pair: pest::iterators::Pair<Rule> ) {
+fn build_ast_from_expr(pair: pest::iterators::Pair<Rule> ) -> Node {
 match pair.as_rule() {
      Rule::Expr => build_ast_from_expr(pair.into_inner().next().unwrap()),
      Rule::UnaryExpr => {
@@ -236,34 +248,37 @@ match pair.as_rule() {
          // 1. Parse the initial Left-Hand Side (LHS)
          let lhspair = pair.next().unwrap();
          // code to parse LHS (could be Unary or Term)
-         let mut lhs = match lhspair.as_rule() {
-                     Rule::UnaryExpr => {
+         let mut lhs_built_term = match lhspair.as_rule() { 
+
+                     Rule::UnaryExpr => { // dont forget unary expr is also a term
                          let mut inner = lhspair.into_inner();
                          let op = inner.next().unwrap();
                          let child = inner.next().unwrap();
-                         let child = build_ast_from_term(child);
-                         parse_unary_expr(op, child)
+                         let child = build_ast_from_term(child); // we have to process child term without op
+                                                                 // because it only checks data types and expressions
+                         parse_unary_expr(op, child) 
                      }
-                     _ => build_ast_from_term(lhspair),
+                     _ => build_ast_from_term(lhspair), // means its an expression
                  };
          
          // 2. Grab Operator and initial Right-Hand Side (RHS)
+          // we are assuming its an operator 
          let op = pair.next().unwrap();
-         let rhspair = pair.next().unwrap();
-         let mut rhs = build_ast_from_term(rhspair);
+         let rhspair = pair.next().unwrap(); // we are assuming its not an operator
+         let mut rhs_built_term = build_ast_from_term(rhspair);
          
-         // 3. Build the first BinaryExpr node
-         let mut retval = parse_binary_expr(op, lhs, rhs);
+         // 3. Build the first BinaryExpr node by using the op we assumeed lhs and rhs we built from terms
+         let mut binary_expr_retval = parse_binary_expr(op, lhs_built_term, rhs_built_term;
          
          // 4. The Loop: Handle chained operators (e.g., + 3 + 4)
          loop {
              let pair_buf = pair.next();
              if let Some(op) = pair_buf {
                  // The expression we just built becomes the *new* LHS
-                 lhs = retval; 
-                 rhs = build_ast_from_term(pair.next().unwrap());
+                 lhs_binary_expr = binary_expr_retval; 
+                 adjacent_rhs_binary_expr = build_ast_from_term(pair.next().unwrap());
                  // Build a new, nested BinaryExpr
-                 retval = parse_binary_expr(op, lhs, rhs);
+                 retval = parse_binary_expr(op, lhs_binary_expr, adjacent_rhs_binary_expr);
              } else {
                  return retval; // No more operators, return the final tree
              }
