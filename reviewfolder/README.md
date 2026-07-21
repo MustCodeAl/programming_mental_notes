@@ -210,7 +210,7 @@ fn parse_unary_expr(pair: pest::iterators::Pair<Rule>, child: Node) -> Node {
     }
 }
 
-// look at struct definition to understand the other of the parameters
+// look at struct definition to understand the order of the parameters
 fn parse_binary_expr(pair: pest::iterators::Pair<Rule>, lhs: Node, rhs: Node) -> Node {
 // will create a new node to insert into a syntax tree 
     Node::BinaryExpr {
