@@ -869,9 +869,38 @@ To compile a call: look up the function, compile each argument, then emit a `cal
 
 ### The Three-Pass Compilation Process
 
-1. **Pass 1 — Declare Functions** — Announce all function signatures before compiling any body. Enables mutual recursion via forward references.
+The Prestage stage:
+
+- **`Context::create()`** - The top-level container. All LLVM objects belong to a context. It manages memory and ensures thread safety.
+- **`context.create_module("addition")`** - Creates a module (like a compilation unit). Our `add` function will live here.
+- **`context.i32_type()`** - Gets the 32-bit integer type. LLVM is explicitly typed - we need to declare that our function works with `i32`.
+
+
+
+1. **Pass 1 — Declare Functions** — Announce all function signatures before compiling any body. Enables mutual recursion via forward references.          
+     
+- **`i32_type.fn_type(&[i32_type.into(), i32_type.into()], false)`** - Creates a function type: returns `i32`, takes two `i32` parameters. The `false` means it's not variadic (doesn't take variable arguments like `printf`).
+- **`module.add_function("add", fn_type, None)`** - Adds a function called "add" with this signature to our module.
+- **`context.append_basic_block(add_fn, "entry")`** - Creates a basic block named "entry". A basic block is a sequence of instructions with no branches in the middle - execution flows straight through.
+- **`context.create_builder()`** - The builder is our "cursor" for adding instructions. We position it at a basic block, then build instructions there.
+- **`builder.position_at_end(entry)`** - Point the builder at our entry block. New instructions will go here.
+
+
 2. **Pass 2 — Compile Bodies** — Generate IR instructions for each function body using the alloca/load/store pattern.
+
+- **`add_fn.get_nth_param(0)`** - Get the first parameter. LLVM functions have an array of parameters, indexed from 0.
+- **`.unwrap().into_int_value()`** - Parameters come as generic "basic values." We know ours are integers, so we convert them.
+- **`builder.build_int_add(x, y, "result")`** - This emits an `add` instruction. The `"result"` is just a name for the output (helps when reading IR).
+- **`builder.build_return(Some(&sum))`** - Emit a `ret` instruction to return our sum.
+
+
+
 3. **Pass 3 — Create `@__main` Wrapper** — Wrap top-level expressions (e.g., `fib(10)`) in `__main` as the JIT entry point, then verify the module.
+
+- **`module.create_jit_execution_engine(OptimizationLevel::None)`** - Creates a JIT compiler. LLVM takes our IR and compiles it to native x86/ARM code *right now*, in memory.
+- **`execution_engine.get_function::<unsafe extern "C" fn(i32, i32) -> i32>("add")`** - Look up our compiled function. The type signature tells Rust how to call it.
+- **`add.call(1, 2)`** - Call the native function! This jumps directly to machine code - no interpretation, no overhead.
+
 
 ---
 
