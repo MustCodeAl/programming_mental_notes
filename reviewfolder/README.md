@@ -120,6 +120,75 @@ struct CalcParser;
 
 ```
 
+
+Grammar rules are built from expressions (hence "parsing expression grammar"). These expressions are a terse, formal description of how to parse an input string.
+
+Expressions are composable: they can be built out of other expressions and nested inside of each other to produce arbitrarily complex rules (although you should break very complicated expressions into multiple rules to make them easier to manage).
+
+PEG expressions are suitable for both high-level meaning, like "a function signature, followed by a function body", and low-level meaning, like "a semicolon, followed by a line feed". The combining form "followed by", the sequence operator, is the same in either case.
+
+
+
+| Syntax | Meaning | Example |
+|--------|---------|---------|
+| `"text"` | Match exact text | `"def"` matches the keyword def |
+| `~` | Sequence (then) | `"if" ~ "(" ~ Expr ~ ")"` matches `if` followed by `(` |
+| `\|` | Choice (or) | `"true" \| "false"` matches either |
+| `*` | Zero or more ([Kleene star](https://en.wikipedia.org/wiki/Kleene_star)) | `Stmt*` matches any number of statements |
+| `+` | One or more | `ASCII_DIGIT+` matches one or more digits |
+| `?` | Optional | `ReturnType?` matches zero or one return type |
+| `{ }` | Rule definition | `Add = { "+" }` defines a rule |
+| `_{ }` | Silent rule | `_{ Expr }` matches but does not appear in AST |
+| `@{ }` | Atomic rule | `@{ ASCII_DIGIT+ }` matches as a single token |
+| `SOI` | Start of input | Beginning of the source code |
+| `EOI` | End of input | End of the source code |
+
+
+ Cheat sheet
+
+| Syntax           | Meaning                           | Syntax                  | Meaning              |
+|:----------------:|:---------------------------------:|:-----------------------:|:--------------------:|
+| `foo =  { ... }` | [regular rule]                    | `baz = @{ ... }`        | [atomic]             |
+| `bar = _{ ... }` | [silent]                          | `qux = ${ ... }`        | [compound-atomic]    |
+| `#tag = ...`     | [tags]                            | `plugh = !{ ... }`      | [non-atomic]         |
+| `"abc"`          | [exact string]                    | `^"abc"`                | [case insensitive]   |
+| `'a'..'z'`       | [character range]                 | `ANY`                   | [any character]      |
+| `foo ~ bar`      | [sequence]                        | <code>baz \| qux</code> | [ordered choice]     |
+| `foo*`           | [zero or more]                    | `bar+`                  | [one or more]        |
+| `baz?`           | [optional]                        | `qux{n}`                | [exactly *n*]        |
+| `qux{m, n}`      | [between *m* and *n* (inclusive)] |                         |                      |
+| `&foo`           | [positive predicate]              | `!bar`                  | [negative predicate] |
+| `PUSH(baz)`      | [match and push]                  | `PUSH_LITERAL("a")`     | [push without match] |
+| `POP`            | [match and pop]                   | `PEEK`                  | [match without pop]  |
+| `DROP`           | [pop without matching]            | `PEEK_ALL`              | [match entire stack] |
+
+
+
+
+##### example calculcator
+
+```pest
+num = @{ int ~ ("." ~ ASCII_DIGIT*)? ~ (^"e" ~ int)? }
+int = { ("+" | "-")? ~ ASCII_DIGIT+ }
+
+operation = _{ add | subtract | multiply | divide | power }
+    add      = { "+" }
+    subtract = { "-" }
+    multiply = { "*" }
+    divide   = { "/" }
+    power    = { "^" }
+
+expr = { term ~ (operation ~ term)* }
+term = _{ num | "(" ~ expr ~ ")" }
+
+calculation = _{ SOI ~ expr ~ EOI }
+
+WHITESPACE = _{ " " | "\t" }
+```
+
+
+
+
 ### 2. Defining the Abstract Syntax Tree (AST)
 The AST captures the *meaning* and *structure* of the code, not just the raw text. In Rust, this is typically done using `enum` to represent different node types:
 - **Terminal Nodes (Leaves):** e.g., `Node::Int(i32)` for raw numbers.
@@ -127,6 +196,28 @@ The AST captures the *meaning* and *structure* of the code, not just the raw tex
 - **Binary Expressions:** e.g., `Node::BinaryExpr { op, lhs, rhs }` for operations like `1 + 2`. *(Note: `Box<Node>` is used for the children to allow recursive nesting).*
 
  The tree naturally encodes the order of operations through its nesting.
+
+```pest
+Program = _{ SOI ~ Expr ~ EOF }
+
+Expr = { BinaryExpr | UnaryExpr | Term }
+
+Term = { Int | "(" ~ Expr ~ ")" }
+
+UnaryExpr = { Operator ~ Term }
+
+// Allow expressions to start with a unary expression (e.g., -1 + 2)
+BinaryExpr = { (UnaryExpr | Term) ~ (Operator ~ Term)+ }
+
+Operator = { "+" | "-" }
+
+Int = @{ ASCII_DIGIT+ }
+
+WHITESPACE = _{ " " | "\t" | "\r" | "\n" }
+
+EOF = _{ EOI | ";" }
+```
+
 
 ```rust
 
