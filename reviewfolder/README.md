@@ -540,7 +540,7 @@ If the left side were `(3 + 4)`, we'd recursively evaluate it first. This is why
 
 A calculator is **stateless** — input goes in, output comes out, nothing persists. A real language is a **state machine**:
 
-- **Variables** — Named storage (`n`).
+- **Variables** — Named storage (`n`). 
 - **Functions** (`fib`) — Abstraction and reuse.
 - **Parameters** (passing `n`) — Data flow.
 - **Conditionals** (`if`/`else`) — Branching.
@@ -549,6 +549,156 @@ A calculator is **stateless** — input goes in, output comes out, nothing persi
 - **Call stack** (tracks each frame) — Memory management.
 
 The AST becomes a *program to execute*, not just an expression to evaluate.
+
+
+---
+
+### Variables
+**Variables** - let us store values and refer to them by name. Without variables, we could only work with literal values - every computation would need to repeat its inputs. Variables give us memory.
+
+If we later change a variable, code that uses that variable automatically uses the new value. Variables make code reusable and readable.
+
+
+
+The Environment (Storage), Where do variables live? In a HashMap inside a “frame”
+
+Variables can be local (inside a function) or global (outside all functions):
+
+Variables can be reassigned
+
+
+
+
+This simple mechanism - storing and looking up names - is the foundation of all programming:
+
+Parameters are just variables that get their values from function calls
+Loop counters are variables that change each iteration
+Object fields (in Thirdlang) are variables attached to objects
+The environment is one of the most important data structures in any interpreter.
+
+
+### Functions
+Functions are the heart of any programming language. Without them, we’d have to copy-paste code every time we wanted to reuse it. With functions, we can:
+
+Name a piece of computation (so we can refer to it later)
+Parameterize it with inputs (so it can work with different values)
+Reuse it multiple times (write once, call anywhere)
+
+Functions are also the key to abstraction - hiding complexity behind a simple name. When you call fibonacci(10), you don’t need to think about how Fibonacci is computed. The function encapsulates that knowledge.
+
+- How Function Calls Work
+When we evaluate a function call like add(3, 4), several things happen in sequence. Understanding this sequence is key to understanding how programming languages work.
+
+Here’s the process:
+
+Look up the function by name - Find the Function value we stored when we defined add
+Evaluate the arguments - Compute 3 and 4 (trivial here, but could be complex expressions)
+Create a new frame - Make a fresh environment for this call’s local variables
+Bind parameters - Associate parameter names with argument values (a = 3, b = 4)
+Execute the function body - Run the statements in the function
+Return the result - Pop the frame and give the result back to the caller
+
+
+
+The call stack is what makes function calls work. Each “frame” on the stack represents one function call in progress. 
+
+The stack grows when functions are called and shrinks when they return. This is why we call it a stack - last in, first out.
+
+
+One Frame Per Call
+Each call to foo has its own x. The first call’s x = 5 doesn’t interfere with the second call’s x = 10 because they’re in different frames.
+
+This becomes especially important for recursion, which we’ll see in the recursion chapter. In recursive calls, the same function is on the stack multiple times, each with its own set of variables.
+
+
+
+### Control FLow
+
+Real programs need to think. They need to make decisions: “if the user is logged in, show the dashboard; otherwise, show the login page.” They need to repeat: “while there are items in the cart, add up their prices.”
+
+Control flow gives our language these abilities. Without it, we can only write straight-line code. With it, we can write programs that respond to their inputs.
+
+###### Conditionals: If/Else
+The if expression evaluates a condition and chooses which code to run:
+
+How It Works
+The interpreter needs to:
+
+Evaluate the condition - Compute x > 0 to get true or false
+Choose a branch - If true, execute the then branch; if false, execute the else branch
+Return the result - Whatever the chosen branch produces
+
+###### Loops: While
+A while loop repeats its body as long as a condition is true:
+
+How It Works
+The interpreter uses an actual loop - Rust’s loop construct - and checks the condition at the start of each iteration:
+
+The key insight: after executing the body, we go back to the top and check the condition again. This creates the repetition.
+
+
+###### Control Flow in Functions
+Combining these constructs is where real programs take shape.
+
+Nested conditionals - When one condition isn’t enough:
+
+###### Return in Loops
+return exits the function immediately, even from deep inside a loop. This is useful for “search” patterns:
+
+##### Control Flow as Branching
+Both if and while are about changing the flow of execution. Without them, we execute line by line. With them, we can:
+
+Skip code (the branch not taken in if)
+Repeat code (the body of while)
+Exit early (return from inside a loop)
+In compiled languages, these become branch instructions - the CPU actually jumps to different locations in memory. We’ll see this when we compile to LLVM IR in Secondlang, where if becomes br (branch) instructions.
+
+
+####  Recursion
+Recursion is when a function calls itself. At first, this seems like a paradox - how can a function call itself when it’s still running? But with the call stack we built in the functions chapter, it just works.
+
+Think of recursion like Russian nesting dolls (matryoshka). Each doll contains a smaller version of itself, until you reach the smallest doll that contains nothing. To solve a problem recursively, you solve a smaller version of the same problem, until you reach a problem so small it’s trivial to solve.
+
+The Key Insight
+A recursive function has two parts:
+
+Base case - A condition where we return directly, without recursion. This is our “smallest doll” - the problem we can solve without any more work.
+
+Recursive case - We call ourselves with a “smaller” problem, then combine the result with our current work.
+
+Every recursive function must have both. Without a base case, the recursion never stops - you keep opening dolls forever, eventually crashing (stack overflow). Without a recursive case, there’s no recursion at all - just a regular function.
+
+##### Why Recursion Works in Firstlang
+Our interpreter properly handles recursion because of three design decisions:
+
+Functions are stored globally - When factorial runs, it can look up factorial by name and find itself. This lookup returns the function definition, which we can then call.
+
+Each call gets its own frame - When we call factorial(3) from inside factorial(4), we push a new frame. The n in the new frame is 3, completely independent of the n = 4 in the outer frame.
+
+Return propagates values correctly - When factorial(1) returns 1, that value goes back to factorial(2), which uses it in 2 * 1 = 2, and so on up the stack.
+
+If we had used a single global n variable instead of stack frames, recursion would fail miserably - each call would overwrite n.
+
+
+Mutual Recursion: Functions can call each other recursively. This is called mutual recursion:
+
+A Warning: Stack Overflow: Every recursive call uses memory for its stack frame. Very deep recursion exhausts available stack space
+
+>> Some languages implement tail call optimization to make certain recursive functions use constant stack space. We won’t implement that here, but it’s a fascinating optimization.
+
+
+
+
+##### When to Use Recursion
+Recursion is natural for problems with recursive structure:
+
+Trees (each subtree is a smaller tree)
+Mathematical sequences (Fibonacci, factorial)
+Divide-and-conquer algorithms (merge sort, quicksort)
+Parsing nested structures (JSON, HTML, our AST!)
+For simple loops, iteration is usually clearer. But for inherently recursive problems, recursion is often more natural.
+
+
 
 
 ---
@@ -758,11 +908,25 @@ let x = 1 + 2   // x inferred as Int — no annotation needed
 Key mechanisms:
 
 - **Unification** — Checks if two types are compatible and finds a common type. Resolving `Unknown` with a concrete type is how the compiler *learns* what an unknown type should be.
-- **Type Environment** — A `HashMap<String, Type>` mapping names to types. Extended on declaration, queried on reference, scoped to allow shadowing.
+- **Type Environment** — A `HashMap<String, Type>` mapping names to types. Also called symbol table or context
+
+The environment is:
+
+**Extended** when we declare a variable or enter a function (adding new bindings)
+**Queried** when we reference a variable (looking up its type)
+**Scoped** - inner scopes can shadow outer bindings
+
 
 ---
 
 ### Two-Pass Function Type Checking
+
+Functions are trickier because we need to handle:
+
+Parameters (types come from annotations)
+Local variables (types are inferred)
+Return value (must match declared return type)
+
 
 Functions can call each other (mutual recursion), requiring two passes:
 
@@ -1071,7 +1235,14 @@ thirdlang --passes "default<O2>" examples/point.tl # LLVM O2 preset
 
 ### Why Classes?
 
-Without classes, related data is **scattered** — easy to mix up, verbose to pass around, with no encapsulation:
+Without classes, related data is **scattered** this works, but there are problems:
+
+No semantic grouping - Nothing says x1 and y1 belong together. They’re just two independent integers.
+Easy to mix up - What if you accidentally use x1 with y2? The compiler won’t catch it.
+Can’t pass as a unit - You can’t write def distance(p1, p2). You need def distance(x1, y1, x2, y2).
+No encapsulation - The distance formula is scattered across your code. If you want to change it, you need to find every place you computed it.
+We need a way to group related data and attach behavior to that data. and thats what classes gives us
+
 
 ```
 # Without classes — error-prone
@@ -1082,6 +1253,9 @@ p1.distance(p2)
 ```
 
 > **Classes analogy:** Think of a filing cabinet. Without classes you have loose papers (`x1`, `y1`). Classes are folders that group related papers together — and know what operations to perform on them.
+
+
+
 
 ---
 
