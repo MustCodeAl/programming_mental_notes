@@ -554,150 +554,211 @@ The AST becomes a *program to execute*, not just an expression to evaluate.
 ---
 
 ### Variables
-**Variables** - let us store values and refer to them by name. Without variables, we could only work with literal values - every computation would need to repeat its inputs. Variables give us memory.
 
-If we later change a variable, code that uses that variable automatically uses the new value. Variables make code reusable and readable.
+Variables let us store values and refer to them by name. Without variables, every computation would need to repeat its literal inputs — variables give us **memory**.
 
+Reassigning a variable means any code referencing it automatically uses the new value, which makes code reusable and readable.
 
+**Where variables live:** the *environment* (storage) — a `HashMap` inside a *frame*.
 
-The Environment (Storage), Where do variables live? In a HashMap inside a “frame”
+- **Local** variables exist inside a function.
+- **Global** variables exist outside all functions.
+- Variables can be **reassigned**.
 
-Variables can be local (inside a function) or global (outside all functions):
+This simple mechanism — storing and looking up names — underlies all programming:
 
-Variables can be reassigned
+| Concept | Role |
+|---|---|
+| Parameters | Variables bound from function call arguments |
+| Loop counters | Variables that change each iteration |
+| Object fields | Variables attached to an object (in Thirdlang) |
 
+> The environment is one of the most important data structures in any interpreter.
 
-
-
-This simple mechanism - storing and looking up names - is the foundation of all programming:
-
-Parameters are just variables that get their values from function calls
-Loop counters are variables that change each iteration
-Object fields (in Thirdlang) are variables attached to objects
-The environment is one of the most important data structures in any interpreter.
-
+---
 
 ### Functions
-Functions are the heart of any programming language. Without them, we’d have to copy-paste code every time we wanted to reuse it. With functions, we can:
 
-Name a piece of computation (so we can refer to it later)
-Parameterize it with inputs (so it can work with different values)
-Reuse it multiple times (write once, call anywhere)
+Functions are the heart of any programming language. Without them, code must be copy-pasted every time it's reused. Functions let us:
 
-Functions are also the key to abstraction - hiding complexity behind a simple name. When you call fibonacci(10), you don’t need to think about how Fibonacci is computed. The function encapsulates that knowledge.
+1. **Name** a computation, to refer to it later
+2. **Parameterize** it with inputs, so it works with different values
+3. **Reuse** it — write once, call anywhere
 
-- How Function Calls Work
-When we evaluate a function call like add(3, 4), several things happen in sequence. Understanding this sequence is key to understanding how programming languages work.
-
-Here’s the process:
-
-Look up the function by name - Find the Function value we stored when we defined add
-Evaluate the arguments - Compute 3 and 4 (trivial here, but could be complex expressions)
-Create a new frame - Make a fresh environment for this call’s local variables
-Bind parameters - Associate parameter names with argument values (a = 3, b = 4)
-Execute the function body - Run the statements in the function
-Return the result - Pop the frame and give the result back to the caller
+**Parameters**: names for the inputs a function expects. When we bind *parameters*, we are associating names with argument values
 
 
 
-The call stack is what makes function calls work. Each “frame” on the stack represents one function call in progress. 
+Functions enable **abstraction**: calling `fibonacci(10)` hides *how* Fibonacci is computed behind a simple name.
 
-The stack grows when functions are called and shrinks when they return. This is why we call it a stack - last in, first out.
+#### How Function Calls Work
 
+Evaluating `add(3, 4)` triggers a fixed sequence:
 
-One Frame Per Call
-Each call to foo has its own x. The first call’s x = 5 doesn’t interfere with the second call’s x = 10 because they’re in different frames.
+1. **Look up** the function by name
+2. **Evaluate** the arguments (`3`, `4`)
+3. **Create** a new frame for local variables
+4. **Bind** parameters to arguments (`a = 3`, `b = 4`)
+5. **Execute** the function body
+6. **Return** the result and pop the frame
 
-This becomes especially important for recursion, which we’ll see in the recursion chapter. In recursive calls, the same function is on the stack multiple times, each with its own set of variables.
+### The Call Stack 
 
-
-
-### Control FLow
-
-Real programs need to think. They need to make decisions: “if the user is logged in, show the dashboard; otherwise, show the login page.” They need to repeat: “while there are items in the cart, add up their prices.”
-
-Control flow gives our language these abilities. Without it, we can only write straight-line code. With it, we can write programs that respond to their inputs.
-
-###### Conditionals: If/Else
-The if expression evaluates a condition and chooses which code to run:
-
-How It Works
-The interpreter needs to:
-
-Evaluate the condition - Compute x > 0 to get true or false
-Choose a branch - If true, execute the then branch; if false, execute the else branch
-Return the result - Whatever the chosen branch produces
-
-###### Loops: While
-A while loop repeats its body as long as a condition is true:
-
-How It Works
-The interpreter uses an actual loop - Rust’s loop construct - and checks the condition at the start of each iteration:
-
-The key insight: after executing the body, we go back to the top and check the condition again. This creates the repetition.
+**Call Stack**: Runtime data structure tracking function calls. Each call pushes a frame; return pops it.
 
 
-###### Control Flow in Functions
-Combining these constructs is where real programs take shape.
+Each **frame** on the stack represents one in-progress function call. The stack **grows** on call and **shrinks** on return — last in, first out (LIFO).
 
-Nested conditionals - When one condition isn’t enough:
+**One frame per call:** two calls to `foo` each get their own `x`. Call 1's `x = 5` never interferes with call 2's `x = 10`, because they live in separate frames. This isolation is essential for recursion, where the same function appears on the stack multiple times, each with its own variables.
 
-###### Return in Loops
-return exits the function immediately, even from deep inside a loop. This is useful for “search” patterns:
+---
 
-##### Control Flow as Branching
-Both if and while are about changing the flow of execution. Without them, we execute line by line. With them, we can:
+### Control Flow
 
-Skip code (the branch not taken in if)
-Repeat code (the body of while)
-Exit early (return from inside a loop)
-In compiled languages, these become branch instructions - the CPU actually jumps to different locations in memory. We’ll see this when we compile to LLVM IR in Secondlang, where if becomes br (branch) instructions.
+Programs need to **decide** ("if logged in, show dashboard") and **repeat** ("while items remain, sum their prices"). Without control flow, code only runs straight-line, top to bottom.
+
+#### Conditionals: `if` / `else`
+
+An `if` expression evaluates a condition and picks a branch:
+
+1. **Evaluate** the condition (e.g. `x > 0`)
+2. **Choose** a branch — `then` if true, `else` if false
+3. **Return** whatever that branch produces
+
+#### Loops: `while`
+
+A `while` loop repeats its body while a condition holds true, using Rust's `loop` construct with a condition check each iteration:
+
+> After the body runs, execution returns to the top and re-checks the condition — this is what creates repetition.
+
+#### Control Flow in Functions
+
+- **Nested conditionals** — for when one condition isn't enough
+- **`return` in loops** — exits the function immediately, even from deep inside a loop; useful for "search" patterns
+
+#### Control Flow as Branching
+
+Both `if` and `while` change the flow of execution, letting code:
+
+- **Skip** code (untaken `if` branch)
+- **Repeat** code (`while` body)
+- **Exit early** (`return` inside a loop)
+
+In compiled languages, these become branch instructions — the CPU jumps to different memory locations. (In Secondlang, `if` compiles to LLVM IR's `br` instruction.)
+
+---
+
+## Recursion
+
+Recursion is when a function calls itself. It seems paradoxical — how can a function call itself mid-execution? — but the call stack makes it work cleanly.
+
+> **Analogy:** Russian nesting dolls (matryoshka). Each doll contains a smaller version of itself, down to the smallest doll, which contains nothing.
+
+### The Key Insight
+
+Every recursive function needs two parts:
+
+| Part | Purpose |
+|---|---|
+| **Base case** | Returns directly, no further recursion — the "smallest doll" |
+| **Recursive case** | Calls itself on a smaller problem, then combines the result |
+
+- No base case → recursion never stops → **stack overflow**
+- No recursive case → not actually recursion, just a regular function
+
+### Why Recursion Works in Firstlang
+
+Three design decisions make it work:
+
+1. **Functions are stored globally** — `factorial` can look itself up by name mid-call.
+2. **Each call gets its own frame** — `factorial(3)` called from within `factorial(4)` has an `n` fully independent of the outer `n = 4`.
+3. **Return values propagate correctly** — `factorial(1)` returns `1` → used by `factorial(2)` as `2 * 1 = 2` → and so on up the stack.
+
+> Using a single global `n` instead of per-call frames would break recursion: each call would overwrite the shared `n`.
+
+**Mutual recursion:** functions can call each other recursively.
+
+**⚠️ Stack overflow risk:** every recursive call consumes stack memory; very deep recursion exhausts it.
+
+> Some languages implement **tail call optimization** to run certain recursive functions in constant stack space — not implemented here, but a notable optimization.
+
+### When to Use Recursion
+
+Recursion fits problems with recursive structure:
+
+- **Trees** (each subtree is a smaller tree)
+- **Mathematical sequences** (Fibonacci, factorial)
+- **Divide-and-conquer algorithms** (merge sort, quicksort)
+- **Parsing nested structures** (JSON, HTML, an AST)
+
+For simple loops, iteration is usually clearer — but for inherently recursive problems, recursion is more natural.
 
 
-####  Recursion
-Recursion is when a function calls itself. At first, this seems like a paradox - how can a function call itself when it’s still running? But with the call stack we built in the functions chapter, it just works.
 
-Think of recursion like Russian nesting dolls (matryoshka). Each doll contains a smaller version of itself, until you reach the smallest doll that contains nothing. To solve a problem recursively, you solve a smaller version of the same problem, until you reach a problem so small it’s trivial to solve.
+### Operators
 
-The Key Insight
-A recursive function has two parts:
-
-Base case - A condition where we return directly, without recursion. This is our “smallest doll” - the problem we can solve without any more work.
-
-Recursive case - We call ourselves with a “smaller” problem, then combine the result with our current work.
-
-Every recursive function must have both. Without a base case, the recursion never stops - you keep opening dolls forever, eventually crashing (stack overflow). Without a recursive case, there’s no recursion at all - just a regular function.
-
-##### Why Recursion Works in Firstlang
-Our interpreter properly handles recursion because of three design decisions:
-
-Functions are stored globally - When factorial runs, it can look up factorial by name and find itself. This lookup returns the function definition, which we can then call.
-
-Each call gets its own frame - When we call factorial(3) from inside factorial(4), we push a new frame. The n in the new frame is 3, completely independent of the n = 4 in the outer frame.
-
-Return propagates values correctly - When factorial(1) returns 1, that value goes back to factorial(2), which uses it in 2 * 1 = 2, and so on up the stack.
-
-If we had used a single global n variable instead of stack frames, recursion would fail miserably - each call would overwrite n.
-
-
-Mutual Recursion: Functions can call each other recursively. This is called mutual recursion:
-
-A Warning: Stack Overflow: Every recursive call uses memory for its stack frame. Very deep recursion exhausts available stack space
-
->> Some languages implement tail call optimization to make certain recursive functions use constant stack space. We won’t implement that here, but it’s a fascinating optimization.
+ An operator - it tells us what to do. Values and operands are the things we operate on.
 
 
 
-
-##### When to Use Recursion
-Recursion is natural for problems with recursive structure:
-
-Trees (each subtree is a smaller tree)
-Mathematical sequences (Fibonacci, factorial)
-Divide-and-conquer algorithms (merge sort, quicksort)
-Parsing nested structures (JSON, HTML, our AST!)
-For simple loops, iteration is usually clearer. But for inherently recursive problems, recursion is often more natural.
-
+| Operator                  | Example                                                 | Explanation                                                           | Overloadable?  |
+| ------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------- | -------------- |
+| `!`                       | `ident!(...)`, `ident!{...}`, `ident![...]`             | Macro expansion                                                       |                |
+| `!`                       | `!expr`                                                 | Bitwise or logical complement                                         | `Not`          |
+| `!=`                      | `expr != expr`                                          | Nonequality comparison                                                | `PartialEq`    |
+| `%`                       | `expr % expr`                                           | Arithmetic remainder                                                  | `Rem`          |
+| `%=`                      | `var %= expr`                                           | Arithmetic remainder and assignment                                   | `RemAssign`    |
+| `&`                       | `&expr`, `&mut expr`                                    | Borrow                                                                |                |
+| `&`                       | `&type`, `&mut type`, `&'a type`, `&'a mut type`        | Borrowed pointer type                                                 |                |
+| `&`                       | `expr & expr`                                           | Bitwise AND                                                           | `BitAnd`       |
+| `&=`                      | `var &= expr`                                           | Bitwise AND and assignment                                            | `BitAndAssign` |
+| `&&`                      | `expr && expr`                                          | Short-circuiting logical AND                                          |                |
+| `*`                       | `expr * expr`                                           | Arithmetic multiplication                                             | `Mul`          |
+| `*=`                      | `var *= expr`                                           | Arithmetic multiplication and assignment                              | `MulAssign`    |
+| `*`                       | `*expr`                                                 | Dereference                                                           | `Deref`        |
+| `*`                       | `*const type`, `*mut type`                              | Raw pointer                                                           |                |
+| `+`                       | `trait + trait`, `'a + trait`                           | Compound type constraint                                              |                |
+| `+`                       | `expr + expr`                                           | Arithmetic addition                                                   | `Add`          |
+| `+=`                      | `var += expr`                                           | Arithmetic addition and assignment                                    | `AddAssign`    |
+| `,`                       | `expr, expr`                                            | Argument and element separator                                        |                |
+| `-`                       | `- expr`                                                | Arithmetic negation                                                   | `Neg`          |
+| `-`                       | `expr - expr`                                           | Arithmetic subtraction                                                | `Sub`          |
+| `-=`                      | `var -= expr`                                           | Arithmetic subtraction and assignment                                 | `SubAssign`    |
+| `->`                      | `fn(...) -> type`, <code>&vert;...&vert; -> type</code> | Function and closure return type                                      |                |
+| `.`                       | `expr.ident`                                            | Field access                                                          |                |
+| `.`                       | `expr.ident(expr, ...)`                                 | Method call                                                           |                |
+| `.`                       | `expr.0`, `expr.1`, and so on                           | Tuple indexing                                                        |                |
+| `..`                      | `..`, `expr..`, `..expr`, `expr..expr`                  | Right-exclusive range literal                                         | `PartialOrd`   |
+| `..=`                     | `..=expr`, `expr..=expr`                                | Right-inclusive range literal                                         | `PartialOrd`   |
+| `..`                      | `..expr`                                                | Struct literal update syntax                                          |                |
+| `..`                      | `variant(x, ..)`, `struct_type { x, .. }`               | “And the rest” pattern binding                                        |                |
+| `...`                     | `expr...expr`                                           | (Deprecated, use `..=` instead) In a pattern: inclusive range pattern |                |
+| `/`                       | `expr / expr`                                           | Arithmetic division                                                   | `Div`          |
+| `/=`                      | `var /= expr`                                           | Arithmetic division and assignment                                    | `DivAssign`    |
+| `:`                       | `pat: type`, `ident: type`                              | Constraints                                                           |                |
+| `:`                       | `ident: expr`                                           | Struct field initializer                                              |                |
+| `:`                       | `'a: loop {...}`                                        | Loop label                                                            |                |
+| `;`                       | `expr;`                                                 | Statement and item terminator                                         |                |
+| `;`                       | `[...; len]`                                            | Part of fixed-size array syntax                                       |                |
+| `<<`                      | `expr << expr`                                          | Left-shift                                                            | `Shl`          |
+| `<<=`                     | `var <<= expr`                                          | Left-shift and assignment                                             | `ShlAssign`    |
+| `<`                       | `expr < expr`                                           | Less than comparison                                                  | `PartialOrd`   |
+| `<=`                      | `expr <= expr`                                          | Less than or equal to comparison                                      | `PartialOrd`   |
+| `=`                       | `var = expr`, `ident = type`                            | Assignment/equivalence                                                |                |
+| `==`                      | `expr == expr`                                          | Equality comparison                                                   | `PartialEq`    |
+| `=>`                      | `pat => expr`                                           | Part of match arm syntax                                              |                |
+| `>`                       | `expr > expr`                                           | Greater than comparison                                               | `PartialOrd`   |
+| `>=`                      | `expr >= expr`                                          | Greater than or equal to comparison                                   | `PartialOrd`   |
+| `>>`                      | `expr >> expr`                                          | Right-shift                                                           | `Shr`          |
+| `>>=`                     | `var >>= expr`                                          | Right-shift and assignment                                            | `ShrAssign`    |
+| `@`                       | `ident @ pat`                                           | Pattern binding                                                       |                |
+| `^`                       | `expr ^ expr`                                           | Bitwise exclusive OR                                                  | `BitXor`       |
+| `^=`                      | `var ^= expr`                                           | Bitwise exclusive OR and assignment                                   | `BitXorAssign` |
+| <code>&vert;</code>       | <code>pat &vert; pat</code>                             | Pattern alternatives                                                  |                |
+| <code>&vert;</code>       | <code>expr &vert; expr</code>                           | Bitwise OR                                                            | `BitOr`        |
+| <code>&vert;=</code>      | <code>var &vert;= expr</code>                           | Bitwise OR and assignment                                             | `BitOrAssign`  |
+| <code>&vert;&vert;</code> | <code>expr &vert;&vert; expr</code>                     | Short-circuiting logical OR                                           |                |
+| `?`                       | `expr?`                                                 | Error propagation                                                     |                |
 
 
 
