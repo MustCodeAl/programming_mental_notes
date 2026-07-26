@@ -109,7 +109,44 @@ A parser takes raw source code (a string) and converts it into a structured **Ab
 Here is the step-by-step process of building one from scratch using Rust and the `pest` crate:
 
 ### 1. Setting Up the Lexer/Grammar
+
+**Grammar rules are built from expressions** (hence "parsing expression grammar"). These expressions are a terse, formal description of how to parse an input string.
+
+**Expressions are composable**: they can be built out of other expressions and nested inside of each other to produce arbitrarily complex rules (although you should break very complicated expressions into multiple rules to make them easier to manage).
+
+**PEG expressions** are suitable for both *high-level meaning*, like "a function signature, followed by a function body", and *low-level meaning*, like "a semicolon, followed by a line feed". The combining form "followed by", the sequence operator, is the same in either case.
+
+---
+
+###### Looking at macros first helps with understanding grammars and pest grammar:
+
+
+| Within Macros |  Explanation |
+|---------|---------|
+| `$x:ty`  | Macro capture (here a `$x` is the capture and `ty` means `x` must be type). |
+|  `$x:block`   | A block `{}` of statements or expressions, e.g., `{ let x = 5; }` |
+|  `$x:expr`    | An expression, e.g., `x`, `1 + 1`, `String::new()` or `vec![]` |
+|  `$x:ident`   | An identifier, for example in `let x = 0;` the identifier is `x`. |
+|  `$x:item`    | An item, like a function, struct, module, etc. |
+|  `$x:lifetime` | A lifetime (e.g., `'a`, `'static`, etc.). |
+|  `$x:literal` | A literal (e.g., `3`, `"foo"`, `b"bar"`, etc.). |
+|  `$x:meta`    | A meta item; the things that go inside `#[…]` and `#![…]` attributes. |
+|  `$x:pat`     | A pattern, e.g., `Some(x)`, `(17, 'a')` or <code>x&vert;x</code>. |
+|  `$x:pat_param`| Subset of patterns without top-level &vert;, e.g., `Some(x)` or `x`. |
+|  `$x:path`    | A path (e.g., `foo`, `::std::mem::replace`, `transmute::<_, int>`). |
+|  `$x:stmt`    | A statement, e.g., `let x = 1 + 1;`, `String::new();` or `vec![];` |
+|  `$x:tt`      | A single token tree, [see here](https://stackoverflow.com/a/40303308) for more details. |
+|  `$x:ty`      | A type, e.g., `String`, `usize` or `Vec<u8>`. |
+|  `$x:vis`    | A visibility modifier;  `pub`, `pub(crate)`, etc. |
+
+---
+
+#### Pest 
 First, you need rules that define what makes valid code. Using a parser generator (like the `pest` crate in Rust), you define a grammar file (e.g., `grammar.pest`). The tool uses this grammar to validate the text and tokenize the raw string into an iterator of parsed "pairs" or tokens (e.g., pulling out operators, numbers, and nested expressions).
+
+
+
+
 
  The `pest` parser generator uses this grammar to validate the text and tokenize the raw string into an iterator of parsed "pairs" (tokens). 
 
@@ -121,11 +158,10 @@ struct CalcParser;
 ```
 
 
-Grammar rules are built from expressions (hence "parsing expression grammar"). These expressions are a terse, formal description of how to parse an input string.
 
-Expressions are composable: they can be built out of other expressions and nested inside of each other to produce arbitrarily complex rules (although you should break very complicated expressions into multiple rules to make them easier to manage).
 
-PEG expressions are suitable for both high-level meaning, like "a function signature, followed by a function body", and low-level meaning, like "a semicolon, followed by a line feed". The combining form "followed by", the sequence operator, is the same in either case.
+
+
 
 
 
