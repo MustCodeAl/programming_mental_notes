@@ -6,8 +6,9 @@
 
 ## 🗺️ How to Use These Notes
 
-These notes work best as a reference rather than a book that must be read strictly front
-to back:
+These notes are organized as a **first-pass curriculum** and a **long-term reference**.
+On the first read, move top to bottom; afterward, use the goal index to jump directly to
+the layer you are building or debugging:
 
 - 🏗️ **Building a language:** follow grammar → AST → interpreter → types → IR → code
   generation → runtime.
@@ -23,17 +24,18 @@ to back:
 The document is arranged as a dependency ladder. Read these phases **in order** on a
 first pass; use the goal index afterward as a reference.
 
-| Phase                          | Build understanding in this order                                 | Why it comes here                                       |
-| ------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------- |
-| **1 · Foundations**            | grammar vocabulary → CPU → assembly → memory → translation levels | Establish what languages eventually control             |
-| **2 · Front end**              | hand-built parser → Pest PEGs → AST → evaluation                  | Turn text into trusted structure                        |
-| **3 · Execution**              | recursion → bytecode → VM/runtime → Lua case study                | Give the structure behavior and state                   |
-| **4 · Semantics**              | types → optimization concepts                                     | Define meaning before transforming it                   |
-| **5 · Native backend**         | LLVM IR → Inkwell tests → object layout/codegen → debugging       | Emit native code and prove it is valid                  |
-| **6 · Safe systems work**      | low-level memory → idiomatic Rust → patterns → algorithms         | Build reusable low-level implementation habits          |
-| **7 · Connected systems**      | system design → networking → `smoltcp` → Actix/Wasm/DOM           | Move from local programs to bounded external interfaces |
-| **8 · Read programs backward** | x64 reversing → OS → executables/ABI → bare metal → concurrency   | Use the earlier models to recover hidden behavior       |
-| **9 · Daily practice**         | terminal/tooling → practical workflow → progression map           | Apply and extend everything above                       |
+| Phase                           | Build understanding in this order                                   | Why it comes here                                  |
+| ------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
+| **1 · Foundations**             | grammar → CPU/memory → translation levels → CS concept map          | Establish what software eventually controls        |
+| **2 · Language front end**      | hand-built parser → Pest PEGs → AST                                 | Turn text into trusted structure                   |
+| **3 · Execution & runtimes**    | recursion → bytecode → hosted runtime → Lua case study              | Give syntax behavior, state, calls, and allocation |
+| **4 · Semantics & native code** | types → optimization → LLVM → Inkwell → classes → debugging         | Define meaning, emit native code, and verify it    |
+| **5 · Safe implementation**     | low-level memory → idiomatic Rust → patterns → FP → algorithms → ML | Build reliable tools and reusable reasoning habits |
+| **6 · Machine & OS boundary**   | processes/VM → executables/linking/ABI → bare metal → concurrency   | Explain how compiled artifacts actually run        |
+| **7 · Connected systems**       | system design → sockets/protocols → `smoltcp` → QUIC                | Move from one process to bounded distributed state |
+| **8 · UI & applications**       | browser engine → Actix/Wasm/DOM → SDL → Bevy/Diesel/Tauri           | Apply the earlier models at host and UI boundaries |
+| **9 · Read programs backward**  | x64 triage → CTF/Nightmare → authorized memory-tooling labs         | Recover hidden behavior using all prior layers     |
+| **10 · Daily practice**         | terminal/Git/builds → Python automation → workflow → progression    | Make the knowledge repeatable                      |
 
 > 🧭 **First-pass rule:** when a later section mentions an unfamiliar earlier concept,
 > follow its link backward, learn that prerequisite, then return. The later sections
@@ -42,27 +44,37 @@ first pass; use the goal index afterward as a reference.
 
 ### Jump to a Goal
 
-| Goal                       | Start here                                                                   | Then continue to                                                                      |
-| -------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| 🧱 Build a parser          | [Grammar](#-grammar)                                                         | [Building a Parser](#-building-a-parser)                                              |
-| 🦗 Design a PEG grammar    | [Pest in Practice](#-pest-peg-parsing-in-practice)                           | [Execution Pipeline](#-iii-the-execution-pipeline--ast)                               |
-| 🌳 Build an interpreter    | [Execution Pipeline](#-iii-the-execution-pipeline--ast)                      | [Bytecode & VMs](#-iv-bytecode--virtual-machines)                                     |
-| 🏠 Build a hosted runtime  | [Hosted Runtime Design](#-hosted-language-runtime-design-in-rust)            | [Minimal Lua Interpreter](#-building-a-minimal-lua-interpreter-in-rust)               |
-| 🏷️ Add static types        | [Types & Type Inference](#-v-types--type-inference)                          | [LLVM IR](#-vii-llvm-ir--advanced-code-generation)                                    |
-| 🏭 Test LLVM codegen       | [Inkwell Test Patterns](#-testing-llvm-codegen-with-inkwell)                 | [Compiler Debugging](#compiler-pipeline-debugging)                                    |
-| 🧠 Understand memory       | [Memory Layout](#memory-layout)                                              | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) |
-| 🖥️ Understand the OS       | [Processes & the Kernel](#-operating-systems-from-the-bottom-up)             | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         |
-| 🔍 Reverse x64 Windows     | [x64 Windows Reversing](#-practical-x64-windows-reverse-engineering)         | [Calling Conventions](#6-calling-conventions)                                         |
-| 🧩 Reverse a binary or VM  | [Reverse Engineering](#reverse-engineering--debugging-compiled-binaries)     | [Reversing a Binary](#7-reversing-a-binary-bytecode-vm-or-language)                   |
-| 🦀 Write safer Rust tools  | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools) | [Networking](#-networking-protocols--wire-formats)                                    |
-| 🧮 Practice algorithms     | [Algorithms in Rust](#-algorithms-in-idiomatic-rust)                         | [Compiler Applications](#13-where-algorithms-appear-in-language-tools)                |
-| 🏗️ Design a service        | [System Design in Rust](#-system-design-patterns-in-rust)                    | [Networking](#-networking-protocols--wire-formats)                                    |
-| 🔩 Write low-level Rust    | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)  | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         |
-| 🧱 Design Rust APIs        | [Rust Patterns & Recipes](#-practical-rust-patterns--cookbook-recipes)       | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          |
-| 📡 Embed a TCP/IP stack    | [smoltcp](#-embedded-networking-with-smoltcp)                                | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)           |
-| 🕸 Build Rust web code     | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)         | [Networking](#-networking-protocols--wire-formats)                                    |
-| 🌳 Control the browser DOM | [DOM from Rust](#14-the-dom-is-a-host-owned-object-graph)                    | [Wasm Ownership](#17-dom-event-listeners-need-lifetime-design)                        |
-| ⌨️ Master developer tools  | [Developer Tooling](#-developer-tooling-the-missing-semester)                | [Practical Workflow](#-practical-low-level-workflow)                                  |
+| Goal                        | Start here                                                                            | Then continue to                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 🧱 Build a parser           | [Grammar](#-grammar)                                                                  | [Building a Parser](#-building-a-parser)                                              |
+| 🦗 Design a PEG grammar     | [Pest in Practice](#-pest-peg-parsing-in-practice)                                    | [Execution Pipeline](#-iii-the-execution-pipeline--ast)                               |
+| 🌳 Build an interpreter     | [Execution Pipeline](#-iii-the-execution-pipeline--ast)                               | [Bytecode & VMs](#-iv-bytecode--virtual-machines)                                     |
+| 🏠 Build a hosted runtime   | [Hosted Runtime Design](#-hosted-language-runtime-design-in-rust)                     | [Minimal Lua Interpreter](#-building-a-minimal-lua-interpreter-in-rust)               |
+| 🏷️ Add static types         | [Types & Type Inference](#-v-types--type-inference)                                   | [LLVM IR](#-vii-llvm-ir--advanced-code-generation)                                    |
+| 🏭 Test LLVM codegen        | [Inkwell Test Patterns](#-testing-llvm-codegen-with-inkwell)                          | [Compiler Debugging](#compiler-pipeline-debugging)                                    |
+| 🧠 Understand memory        | [Memory Layout](#memory-layout)                                                       | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) |
+| 🖥️ Understand the OS        | [Processes & the Kernel](#-operating-systems-from-the-bottom-up)                      | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         |
+| 🔍 Reverse x64 Windows      | [x64 Windows Reversing](#-practical-x64-windows-reverse-engineering)                  | [Calling Conventions](#6-calling-conventions)                                         |
+| 🧩 Reverse a binary or VM   | [Reverse Engineering](#reverse-engineering--debugging-compiled-binaries)              | [Reversing a Binary](#7-reversing-a-binary-bytecode-vm-or-language)                   |
+| 🦀 Write safer Rust tools   | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          | [Networking](#-networking-protocols--wire-formats)                                    |
+| 🐍 Translate Python to Rust | [Rust/Python Idioms](#9-rust-and-python-similar-task-different-contract)              | [Functional Rust](#λ-functional-programming-in-rust)                                  |
+| λ Learn functional Rust     | [Functional Rust](#λ-functional-programming-in-rust)                                  | [Algorithms](#-algorithms-in-idiomatic-rust)                                          |
+| 🧮 Practice algorithms      | [Algorithms in Rust](#-algorithms-in-idiomatic-rust)                                  | [Compiler Applications](#13-where-algorithms-appear-in-language-tools)                |
+| 🤖 Understand ML            | [Machine Learning](#-machine-learning-foundations)                                    | [System Design](#-system-design-patterns-in-rust)                                     |
+| 🏗️ Design a service         | [System Design in Rust](#-system-design-patterns-in-rust)                             | [Networking](#-networking-protocols--wire-formats)                                    |
+| 🔩 Write low-level Rust     | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)           |
+| 🧱 Design Rust APIs         | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          | [Rust Patterns & Recipes](#-practical-rust-patterns--cookbook-recipes)                |
+| 📡 Embed a TCP/IP stack     | [smoltcp](#-embedded-networking-with-smoltcp)                                         | [QUIC with Quinn](#-quic-networking-with-quinn)                                       |
+| ⚡ Learn QUIC               | [QUIC with Quinn](#-quic-networking-with-quinn)                                       | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       |
+| 🕸 Build Rust web code      | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
+| 🌳 Control the browser DOM  | [DOM from Rust](#14-the-dom-is-a-host-owned-object-graph)                             | [Wasm Ownership](#17-dom-event-listeners-need-lifetime-design)                        |
+| 🌐 Understand a browser     | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  |
+| 🎮 Build a native loop      | [SDL3](#-native-event-loops--multimedia-with-sdl3)                                    | [Bevy](#1-bevy-data-oriented-application-structure)                                   |
+| 🚀 Ship a Rust service      | [Zero to Production](#4-zero-to-production-service-engineering)                       | [Actix Web](#2-actix-web-application-shape)                                           |
+| 🧰 Build applied Rust apps  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       | [Practical Workflow](#-practical-low-level-workflow)                                  |
+| 🛡️ Study memory tooling     | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) | [Authorized Memory Labs](#19-authorized-memory-inspection--tooling-labs)              |
+| ⌨️ Master developer tools   | [Developer Tooling](#-developer-tooling-the-missing-semester)                         | [Practical Workflow](#-practical-low-level-workflow)                                  |
+| 🐍 Automate repetitive work | [Practical Python Automation](#-practical-python-automation)                          | [Practical Workflow](#-practical-low-level-workflow)                                  |
 
 ### Reading Conventions
 
@@ -290,6 +302,161 @@ VM's language becomes **platform-agnostic**.
 The most famous example: the **Java Virtual Machine (JVM)**. Any valid Java Bytecode
 runs on any platform with a **Java Runtime Environment (JRE)**, regardless of where it
 was compiled.
+
+---
+
+## 🧭 A Computer Science Concept Map
+
+The archived
+[Carl Cheo computer-science overview](https://web.archive.org/web/20240228005454/https://carlcheo.com/compsci)
+groups beginner concepts into algorithms/data structures, artificial intelligence,
+architecture, concurrency, security, and development methodology. The analogies are
+useful entry points; the tables below tighten them into contracts that transfer to
+language implementation and reverse engineering.
+
+### 1. The Major Areas Reinforce Each Other
+
+| Area                           | Central question                                     | Language/reversing connection                       |
+| ------------------------------ | ---------------------------------------------------- | --------------------------------------------------- |
+| Algorithms and data structures | How is information represented and transformed?      | ASTs, symbol tables, graphs, worklists              |
+| Artificial intelligence        | How can a system search, learn, or choose?           | optimizers, heuristics, autotuning                  |
+| Computer architecture          | What physically executes an operation?               | instruction sets, caches, ABI, memory layout        |
+| Concurrency                    | What can overlap, and how is shared state protected? | parallel passes, runtimes, event loops              |
+| Security                       | What does an input or caller have permission to do?  | parser limits, sandboxing, binary analysis          |
+| Development methodology        | How is uncertain work divided and validated?         | compiler stages, tests, reproducible investigations |
+
+> 🧠 **Learning rule:** an analogy starts a model; an invariant finishes it. Ask what
+> the analogy hides—costs, edge cases, ownership, failure, or adversarial behavior.
+
+### 2. Complexity Describes Growth
+
+Big-O notation describes an **asymptotic upper bound**. It is often used for worst-case
+time, but Big-O itself does not mean “worst case”; best, average, and amortized behavior
+must be named separately.
+
+| Growth       | Example               | What happens as input doubles |
+| ------------ | --------------------- | ----------------------------- |
+| `O(1)`       | indexed array access  | roughly unchanged             |
+| `O(log n)`   | binary search         | one extra step                |
+| `O(n)`       | scan every token      | roughly doubles               |
+| `O(n log n)` | comparison sort       | a little more than doubles    |
+| `O(n²)`      | compare every pair    | roughly quadruples            |
+| `O(2ⁿ)`      | enumerate all subsets | roughly squares the work      |
+
+For a compiler, complexity is only part of the cost:
+
+```text
+total cost ≈ algorithmic growth
+           × constant work per item
+           × allocation/cache behavior
+           × number of repeated passes
+```
+
+### 3. Data Structures Encode Operations
+
+| Structure              | Strength                         | Language-tool example                   |
+| ---------------------- | -------------------------------- | --------------------------------------- |
+| contiguous array/`Vec` | iteration and indexed access     | tokens, bytecode, constant pools        |
+| linked structure       | stable links, local insertion    | intrusive runtime lists in rare cases   |
+| stack                  | last-in-first-out                | parser states, calls, expression eval   |
+| queue                  | first-in-first-out               | BFS, event processing                   |
+| hash table             | expected fast key lookup         | symbols, interners, caches              |
+| tree                   | hierarchy or ordered partition   | syntax, scopes, search indexes          |
+| graph                  | arbitrary relationships          | control flow, call graph, dependencies  |
+| heap/priority queue    | repeatedly select best candidate | schedulers, Dijkstra, best-first search |
+
+Choose a structure from the operations and invariants, not from its familiarity.
+
+### 4. Search Strategies Trade Certainty for Speed
+
+| Strategy            | Decision rule                                  | Typical weakness                      |
+| ------------------- | ---------------------------------------------- | ------------------------------------- |
+| greedy              | take the best immediate choice                 | local choice may block global optimum |
+| hill climbing       | move to a better neighboring state             | local maxima and plateaus             |
+| random restart      | run local search from several initial states   | more work; still no general guarantee |
+| simulated annealing | sometimes accept worse moves, less often later | schedule-sensitive and approximate    |
+| dynamic programming | reuse overlapping subproblem results           | state space may still be too large    |
+| exhaustive search   | inspect every candidate                        | combinatorial explosion               |
+
+Compiler register allocation, instruction selection, inlining, and layout can all use
+heuristics because globally optimal solutions may be too expensive. Record when a pass
+is exact, approximate, or nondeterministic.
+
+### 5. Computability Is Not Complexity
+
+| Question        | Meaning                                                    |
+| --------------- | ---------------------------------------------------------- |
+| **Computable?** | Can any algorithm solve the problem for every valid input? |
+| **Decidable?**  | Can an algorithm always halt with yes/no?                  |
+| **Tractable?**  | Can it be solved with acceptable resources?                |
+| **Verifiable?** | Can a proposed answer be checked efficiently?              |
+
+The **halting problem** shows that no general algorithm can decide whether every
+arbitrary program will halt. A practical analyzer can still prove termination for a
+restricted language or return **unknown** when its proof is insufficient.
+
+```rust
+enum Analysis<T> {
+    Proven(T),
+    Disproven { reason: String },
+    Unknown { limit_reached: bool },
+}
+```
+
+This three-way result is more honest than treating “not proven” as “false.”
+
+### 6. Concurrency Is Not Parallelism
+
+| Concept        | Precise idea                                    |
+| -------------- | ----------------------------------------------- |
+| concurrency    | tasks have overlapping lifetimes/progress       |
+| parallelism    | work executes at the same physical instant      |
+| race condition | behavior depends on an uncontrolled ordering    |
+| mutex          | one holder at a time enters a critical section  |
+| semaphore      | a bounded number of permits guard a resource    |
+| deadlock       | tasks wait in a cycle that cannot make progress |
+
+A compiler can be concurrent without being parallel—for example, an event loop can
+interleave file reads and diagnostics on one thread. Parallel compilation needs actual
+simultaneous workers and data dependencies that permit them to run safely.
+
+### 7. Security Is Boundary Engineering
+
+| Principle          | Concrete question                                        |
+| ------------------ | -------------------------------------------------------- |
+| least privilege    | What is the smallest capability this component needs?    |
+| defense in depth   | Which independent checks contain one failure?            |
+| complete mediation | Is every sensitive operation authorized?                 |
+| secure defaults    | Is the safe behavior selected without extra setup?       |
+| fail closed        | Does an error deny access rather than silently allow it? |
+| auditability       | Can important decisions be reconstructed later?          |
+
+Cryptography provides tools for confidentiality, integrity, authentication, and
+signatures; it does not automatically make the surrounding parser, protocol, key
+storage, randomness, or authorization correct. Use established cryptographic libraries
+and protocols rather than inventing production cryptography.
+
+### 8. Methodology Is a Feedback Loop
+
+| Style              | Useful when                                   | Main risk                                 |
+| ------------------ | --------------------------------------------- | ----------------------------------------- |
+| sequential plan    | requirements and interfaces are stable        | late discovery invalidates earlier work   |
+| iterative delivery | uncertainty is high and feedback is available | unmanaged scope and architectural drift   |
+| prototype          | testing a risky idea or interface             | prototype accidentally becomes production |
+| experiment         | comparing measurable hypotheses               | weak controls produce misleading results  |
+
+The compiler pipeline benefits from small, testable increments:
+
+```text
+define one contract
+→ implement one stage
+→ inspect its artifact
+→ test boundaries and failures
+→ connect it to the next stage
+```
+
+> ➡️ **Next:** the parser section applies this map to the first concrete language stage:
+> source text becomes a bounded, structured AST.
 
 ---
 
@@ -4084,6 +4251,105 @@ into a struct.
 | Cast bytes directly to a struct      | Parse layout, alignment, and endianness explicitly    |
 | Recurse over attacker input          | Enforce a depth limit or use an explicit stack        |
 
+### 9. Rust and Python: Similar Task, Different Contract
+
+The
+[Programming Idioms Rust/Python comparison](https://programming-idioms.org/cheatsheet/Rust/Python)
+is useful because it holds the **task** constant while changing the language. Do not
+translate syntax alone: ownership, errors, integers, strings, iteration, and concurrency
+have different contracts.
+
+| Concern   | Python tendency                       | Rust tendency                                    |
+| --------- | ------------------------------------- | ------------------------------------------------ |
+| typing    | values checked dynamically            | types checked before execution                   |
+| ownership | garbage-collected object references   | ownership, borrowing, and deterministic drop     |
+| errors    | exceptions                            | `Result<T, E>` and `?`                           |
+| absence   | `None`, often checked dynamically     | `Option<T>` forces explicit handling             |
+| integers  | arbitrary precision by default        | fixed-width types; explicit big integers         |
+| strings   | Unicode string abstraction            | UTF-8 `String`/`str`; indexing by byte forbidden |
+| iteration | iterable/generator protocol           | zero-cost `Iterator` adaptors                    |
+| maps      | insertion-ordered `dict`              | choose `HashMap` or ordered `BTreeMap`           |
+| mutation  | object mutability is runtime behavior | binding/reference mutability is explicit         |
+
+#### Iteration with Index and Value
+
+```python
+for index, value in enumerate(items):
+    print(index, value)
+```
+
+```rust
+for (index, value) in items.iter().enumerate() {
+    println!("{index}: {value}");
+}
+```
+
+`iter()` borrows values, `iter_mut()` allows mutation, and `into_iter()` consumes the
+collection. That choice is part of the API, not incidental syntax.
+
+#### Parse, Filter, and Collect Errors
+
+Python commonly raises on the first invalid conversion:
+
+```python
+values = [int(text) for text in fields if text.strip()]
+```
+
+Rust can make the same short-circuit contract explicit:
+
+```rust
+fn parse_nonempty(fields: &[String]) -> Result<Vec<i64>, std::num::ParseIntError> {
+    fields
+        .iter()
+        .filter(|text| !text.trim().is_empty())
+        .map(|text| text.parse::<i64>())
+        .collect()
+}
+```
+
+Because `Result` implements `FromIterator`, collecting stops on the first error. If all
+errors matter—such as compiler diagnostics—collect successes and diagnostics into
+separate typed outputs instead.
+
+#### Unicode Requires a Unit
+
+```python
+prefix = text[:5]
+```
+
+```rust
+fn first_five_scalars(text: &str) -> String {
+    text.chars().take(5).collect()
+}
+```
+
+| Unit             | Rust view/API                | Suitable for                        |
+| ---------------- | ---------------------------- | ----------------------------------- |
+| byte             | `as_bytes()`, byte ranges    | protocols, files, UTF-8 validation  |
+| Unicode scalar   | `chars()`                    | code points and many language rules |
+| grapheme cluster | Unicode-segmentation library | user-perceived characters           |
+
+Five bytes, five Unicode scalar values, and five visible characters are not equivalent.
+
+#### Maps Encode Ordering Expectations
+
+```rust
+use std::collections::{BTreeMap, HashMap};
+
+let fast_lookup: HashMap<&str, i32> = [("parse", 1), ("typecheck", 2)]
+    .into_iter()
+    .collect();
+
+let deterministic_output: BTreeMap<&str, i32> =
+    fast_lookup.into_iter().collect();
+```
+
+Use a deterministic map or sort keys before emitting compiler artifacts, diagnostics,
+snapshots, or protocol output that must be reproducible.
+
+> 🧠 **Translation habit:** ask “what behavior does this idiom promise?” before asking
+> “what Rust syntax looks like the Python syntax?”
+
 ---
 
 ## 🧱 Practical Rust Patterns & Cookbook Recipes
@@ -4416,6 +4682,182 @@ and never concatenate untrusted text into a shell program.
 | Dependencies | Is the crate current, maintained, and necessary?             |
 | Security     | Which bytes, paths, URLs, and arguments are untrusted?       |
 | Testing      | Are success, boundary, partial-failure, and cleanup tested?  |
+
+---
+
+## λ Functional Programming in Rust
+
+[`fp-core.rs`](https://github.com/JasonShin/fp-core.rs) presents functional-programming
+vocabulary and purely functional data structures for Rust. Most of the underlying ideas
+also appear directly in standard Rust through closures, iterators, algebraic data types,
+`Option`, `Result`, and immutable-by-default bindings.
+
+> λ **Mental model:** functional programming makes transformation and composition
+> primary. Rust adds explicit ownership, lifetimes, and controlled mutation to that
+> model.
+
+### 1. Pure Core, Imperative Shell
+
+A **pure** function depends only on its arguments and does not mutate external state.
+The same input therefore produces the same output.
+
+```rust
+#[derive(Clone, Copy)]
+struct Token {
+    kind: TokenKind,
+    width: usize,
+}
+
+fn total_width(tokens: &[Token]) -> usize {
+    tokens.iter().map(|token| token.width).sum()
+}
+```
+
+| Pure core                           | Imperative shell                        |
+| ----------------------------------- | --------------------------------------- |
+| AST transformations                 | reading files                           |
+| type rules                          | printing diagnostics                    |
+| byte decoding from a supplied slice | receiving network packets               |
+| optimization over an explicit IR    | timers, randomness, database operations |
+
+Push I/O and nondeterminism to narrow adapters. A pure compiler core is easier to test,
+cache, parallelize, and compare with another implementation.
+
+### 2. Higher-Order Functions and Closures
+
+A **higher-order function** accepts or returns another function. A closure can capture
+state from its environment.
+
+```rust
+fn retain_matching<T>(
+    values: Vec<T>,
+    mut predicate: impl FnMut(&T) -> bool,
+) -> Vec<T> {
+    values
+        .into_iter()
+        .filter(|value| predicate(value))
+        .collect()
+}
+
+fn at_least(minimum: i64) -> impl Fn(&i64) -> bool {
+    move |value| *value >= minimum
+}
+```
+
+The returned closure **partially applies** `minimum`: it turns a two-input idea into a
+reusable one-input predicate.
+
+### 3. Composition Is Typed Pipelining
+
+```rust
+fn compose<A, B, C>(
+    first: impl Fn(A) -> B,
+    second: impl Fn(B) -> C,
+) -> impl Fn(A) -> C {
+    move |input| second(first(input))
+}
+
+let trim = |text: String| text.trim().to_owned();
+let length = |text: String| text.len();
+let trimmed_length = compose(trim, length);
+
+assert_eq!(trimmed_length("  AST  ".to_owned()), 3);
+```
+
+| Pipeline stage | Type               |
+| -------------- | ------------------ |
+| trim           | `String -> String` |
+| length         | `String -> usize`  |
+| composition    | `String -> usize`  |
+
+Compiler passes compose similarly, but fallibility and diagnostics often make the real
+type `Input -> Result<Output, Error>`.
+
+### 4. Algebraic Data Types Carry Meaning
+
+Rust enums are **sum types**: a value is one variant. Structs and tuples are **product
+types**: a value contains all fields.
+
+```rust
+enum Expr {
+    Integer(i64),
+    Name(SymbolId),
+    Call {
+        callee: Box<Expr>,
+        arguments: Vec<Expr>,
+    },
+}
+```
+
+```text
+Expr = Integer(i64)
+     + Name(SymbolId)
+     + Call(Expr × List<Expr>)
+```
+
+This algebra explains exhaustiveness, representation choices, serialization tags, and
+why an enum often models runtime or protocol state better than several booleans.
+
+### 5. `map`, `and_then`, and Context
+
+| Operation   | Shape                           | Meaning                        |
+| ----------- | ------------------------------- | ------------------------------ |
+| `map`       | `F<A>` + `(A -> B)` → `F<B>`    | transform a value in context   |
+| `and_then`  | `F<A>` + `(A -> F<B>)` → `F<B>` | chain a context-producing step |
+| `unwrap_or` | `F<A>` + fallback → `A`         | leave the context deliberately |
+
+```rust
+fn identifier_length(source: &str) -> Result<usize, FrontendError> {
+    lex_one_identifier(source)
+        .map(|token| token.text.len())
+}
+
+fn resolve_identifier(
+    source: &str,
+    symbols: &SymbolTable,
+) -> Result<SymbolId, FrontendError> {
+    lex_one_identifier(source)
+        .and_then(|token| symbols.resolve(token.text).map_err(FrontendError::from))
+}
+```
+
+`Option` carries possible absence; `Result` carries possible failure. Their combinators
+preserve that context without nested control flow.
+
+### 6. Monoids Describe Safe Reduction
+
+A monoid has an associative combine operation and an identity element.
+
+| Type/operation       | Identity   | Compiler use          |
+| -------------------- | ---------- | --------------------- |
+| integers under `+`   | `0`        | instruction counts    |
+| strings under append | empty      | generated text        |
+| sets under union     | empty set  | data-flow facts       |
+| lists under concat   | empty list | collected diagnostics |
+
+Associativity permits chunked or parallel reduction, but floating-point addition is not
+mathematically associative at machine precision. Deterministic builds must define
+reduction order where rounding matters.
+
+### 7. Referential Transparency Enables Reasoning
+
+If an expression can be replaced by its value without changing behavior, it is
+referentially transparent. That supports:
+
+| Technique                        | Required caution                              |
+| -------------------------------- | --------------------------------------------- |
+| memoization                      | inputs must capture every dependency          |
+| common subexpression elimination | operation must be safe to reuse               |
+| lazy evaluation                  | effects and resource lifetime change timing   |
+| parallel evaluation              | operations must not depend on hidden ordering |
+| property-based testing           | generators must respect input invariants      |
+
+Functional terminology is useful, but do not force abstractions where ownership becomes
+opaque. Prefer ordinary iterators and explicit enums until a more general abstraction
+demonstrably improves the code.
+
+> ➡️ **Next:** algorithms apply these transformation, reduction, and invariant ideas to
+> concrete problems with measurable resource costs.
 
 ---
 
@@ -5143,2144 +5585,193 @@ while worklist is not empty:
 
 ---
 
-## 🏢 System Design Patterns in Rust
+## 🤖 Machine Learning Foundations
 
-[DesignDeck](https://deckly.dev/designdeck/) presents system-design decisions as a
-connected set of trade-offs: traffic, data, consistency, caching, partitioning,
-messaging, and failure handling. This section translates several of those decisions
-into Rust-shaped interfaces.
+The [Machine Learning Glossary](https://ml-cheatsheet.readthedocs.io/en/latest/index.html)
+organizes the field around linear/logistic regression, calculus, linear algebra,
+forward propagation, backpropagation, activations, losses, optimizers, regularization,
+and model architectures. The goal here is a systems-level mental model, not a substitute
+for a statistics course or a production ML framework.
 
-> 🏗️ **Design principle:** begin with **quantities, guarantees, and failure behavior**;
-> only then choose components.
-
-### 1. Start with Quantities and Guarantees
-
-Before drawing services and databases, write down:
-
-| Design input       | Questions to answer                                      |
-| ------------------ | -------------------------------------------------------- |
-| Traffic            | Peak reads and writes per second?                        |
-| Payloads           | Typical and maximum request/response sizes?              |
-| Storage            | Daily growth and retention period?                       |
-| Latency            | Acceptable median and tail latency?                      |
-| Reliability        | Availability, recovery time, and recovery point targets? |
-| Consistency        | What does each operation guarantee?                      |
-| Message behavior   | Is loss, duplication, or reordering acceptable?          |
-| Security           | Where are trust and authorization boundaries?            |
-| Dependency failure | What happens when a dependency is slow or unavailable?   |
-
-Useful rough estimates:
+### 1. Learning Means Fitting a Parameterized Function
 
 ```text
-bandwidth        ≈ requests/second × bytes/request
-daily storage    ≈ writes/second × bytes/write × 86,400
-concurrent work  ≈ arrival rate × average service time
-```
-
-These are estimates, not capacity promises. Validate them with measurement and leave
-headroom for bursts, retries, replication, metadata, indexes, and uneven partitions.
-
-### 2. Cache-Aside
-
-In cache-aside, the application checks the cache, loads a miss from the source of truth,
-and then fills the cache. The cache does not independently query storage.
-
-```text
-read:
-    cache hit  ──→ return
-    cache miss ──→ read database ──→ populate cache ──→ return
-
-write:
-    update database ──→ invalidate or update cache
-```
-
-A small interface keeps policy separate from storage:
-
-```rust
-trait KeyValue<K, V> {
-    type Error;
-
-    fn get(&self, key: &K) -> Result<Option<V>, Self::Error>;
-    fn put(&mut self, key: K, value: V) -> Result<(), Self::Error>;
-}
-
-fn cache_aside<K, V, E>(
-    cache: &mut impl KeyValue<K, V, Error = E>,
-    source: &impl KeyValue<K, V, Error = E>,
-    key: &K,
-) -> Result<Option<V>, E>
-where
-    K: Clone,
-    V: Clone,
-{
-    if let Some(value) = cache.get(key)? {
-        return Ok(Some(value));
-    }
-
-    let Some(value) = source.get(key)? else {
-        return Ok(None);
-    };
-
-    cache.put(key.clone(), value.clone())?;
-    Ok(Some(value))
-}
-```
-
-| Cache decision   | Question                                                  |
-| ---------------- | --------------------------------------------------------- |
-| Staleness        | How long may an old value remain visible?                 |
-| Negative caching | Should missing values be cached?                          |
-| Stampede control | What protects a hot key during a miss?                    |
-| Fill failure     | Does cache failure fail the request or only reduce speed? |
-| Write policy     | Write-through, write-back, or invalidation?               |
-| Eviction         | LRU, LFU, FIFO, or a domain-specific policy?              |
-
-The database remains the source of truth unless the design explicitly chooses a
-different consistency model.
-
-### 3. Token-Bucket Rate Limiting
-
-A token bucket allows controlled bursts while enforcing a long-term rate. Tokens refill
-over time up to a fixed capacity; each accepted operation spends tokens.
-
-```rust
-use std::time::Instant;
-
-#[derive(Debug)]
-struct TokenBucket {
-    capacity: f64,
-    available: f64,
-    refill_per_second: f64,
-    last_update: Instant,
-}
-
-impl TokenBucket {
-    fn new(capacity: u32, refill_per_second: f64, now: Instant) -> Option<Self> {
-        if capacity == 0 || !refill_per_second.is_finite() || refill_per_second <= 0.0 {
-            return None;
-        }
-
-        Some(Self {
-            capacity: f64::from(capacity),
-            available: f64::from(capacity),
-            refill_per_second,
-            last_update: now,
-        })
-    }
-
-    fn try_take(&mut self, amount: u32, now: Instant) -> bool {
-        let elapsed = now.saturating_duration_since(self.last_update);
-        self.available = (self.available + elapsed.as_secs_f64() * self.refill_per_second)
-            .min(self.capacity);
-        self.last_update = now;
-
-        let amount = f64::from(amount);
-        if amount > self.available {
-            return false;
-        }
-
-        self.available -= amount;
-        true
-    }
-}
-```
-
-| Rate-limit decision | Choices to define                                 |
-| ------------------- | ------------------------------------------------- |
-| Identity            | User, IP, token, tenant, endpoint, or resource    |
-| Scope               | Per process or coordinated across replicas        |
-| Store failure       | Fail open, fail closed, or use a local fallback   |
-| Over-limit action   | Reject, queue, or degrade                         |
-| Client feedback     | Retry timing, remaining quota, and reset metadata |
-
-A leaky-bucket queue smooths output at a regular rate. It is useful when work can wait;
-a token bucket is useful when short bursts are legitimate.
-
-### 4. Circuit Breakers, Timeouts, and Backoff
-
-A circuit breaker prevents repeated calls to a dependency that is already failing:
-
-```rust
-use std::time::Instant;
-
-#[derive(Clone, Copy, Debug)]
-enum CircuitState {
-    Closed { consecutive_failures: u32 },
-    Open { retry_after: Instant },
-    HalfOpen,
-}
-```
-
-State transitions:
-
-```text
-Closed --failure threshold--> Open
-Open   --cooldown elapsed---> HalfOpen
-HalfOpen --probe succeeds---> Closed
-HalfOpen --probe fails------> Open
-```
-
-Use the patterns together:
-
-| Resilience pattern      | Responsibility                                  |
-| ----------------------- | ----------------------------------------------- |
-| **Timeout**             | Limit one attempt                               |
-| **Retry budget**        | Limit total extra work                          |
-| **Exponential backoff** | Increase spacing between attempts               |
-| **Jitter**              | Prevent synchronized retry storms               |
-| **Circuit breaker**     | Stop calls during sustained dependency failure  |
-| **Load shedding**       | Reject low-priority work before global collapse |
-
-Retry only operations that are safe to repeat, or attach an idempotency key. Never let
-every layer retry independently without a shared budget; multiplicative retries can
-turn a small outage into overload.
-
-### 5. Delivery Is Not Processing
-
-Networks and processes can fail between any two observable steps. Messages may be
-delayed, duplicated, dropped, or reordered.
-
-| Delivery model   | What the consumer must expect                     |
-| ---------------- | ------------------------------------------------- |
-| At most once     | Loss is possible; duplicates are suppressed       |
-| At least once    | Duplicates are possible; retry covers some losses |
-| Effectively once | Deduplication makes repeated processing harmless  |
-
-Exactly-once network delivery is not a general guarantee. Systems usually approach
-exactly-once **effects** through idempotency, durable deduplication, and atomic state
-changes.
-
-```rust
-use std::collections::HashSet;
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct EventId(u128);
-
-#[derive(Debug)]
-struct Event {
-    id: EventId,
-    delta: i64,
-}
-
-fn apply_once(
-    event: &Event,
-    processed: &mut HashSet<EventId>,
-    total: &mut i64,
-) -> Result<bool, &'static str> {
-    if processed.contains(&event.id) {
-        return Ok(false);
-    }
-
-    let next = total.checked_add(event.delta).ok_or("total overflow")?;
-    *total = next;
-    processed.insert(event.id);
-    Ok(true)
-}
-```
-
-This in-memory example explains the invariant but is not crash safe. In a real system,
-the deduplication record and business update must be committed atomically in durable
-storage, or a crash can occur between them.
-
-An **event log** retains ordered records for replay and multiple consumers. A **queue**
-typically distributes work so one consumer handles each message. Choose based on replay,
-fan-out, ordering, and retention needs.
-
-### 6. Consistent Hashing and Partition Movement
-
-Ordinary `hash(key) % node_count` remaps most keys when the number of nodes changes.
-Consistent hashing places keys and nodes in a hash space so adding or removing a node
-moves a smaller portion of the data.
-
-```text
-hash ring:
-0 ───── node A ───── node B ───── node C ───── max
-          ↑ key x                  ↑ key y
-```
-
-Virtual nodes give each physical node multiple positions, which can improve balance.
-Jump consistent hashing is another option when a compact computation is preferable to
-maintaining a ring.
-
-| Partition concern | Required decision                                         |
-| ----------------- | --------------------------------------------------------- |
-| Hash stability    | Is the mapping stable across versions and languages?      |
-| Hot keys          | How are skewed workloads isolated or replicated?          |
-| Replication       | How many owners does each partition have?                 |
-| Membership        | How are node changes proposed and observed?               |
-| Rebalancing       | Can reads and writes continue while data moves?           |
-| Recovery          | How are partially moved partitions detected and repaired? |
-
-If the key is a compiler module, bytecode package, or analysis artifact, stable
-partitioning can also support distributed builds and content-addressed caches.
-
-### 7. Consistency Is Per Operation
-
-Do not label an entire system merely "strong" or "eventual." State what each operation
-guarantees:
-
-| Consistency guarantee        | Meaning                                                |
-| ---------------------------- | ------------------------------------------------------ |
-| Read-your-writes             | A client observes its own completed writes             |
-| Monotonic reads              | A client does not move backward to older state         |
-| Causal ordering              | Causally related events are observed in order          |
-| Linearizable compare-and-set | The update behaves as one atomic real-time operation   |
-| Bounded staleness            | Reads lag by no more than a defined time/version bound |
-| Eventual convergence         | Replicas agree once updates and failures stop          |
-
-The CAP trade-off matters during a network partition: a distributed system cannot
-simultaneously guarantee both availability for every request and linearizable
-consistency across the partition. Different operations may make different choices.
-
-### 8. System-Design Review Checklist
-
-| Area            | Review criterion                                                |
-| --------------- | --------------------------------------------------------------- |
-| Data ownership  | Source of truth and derived copies are explicit                 |
-| Remote calls    | Every call has a timeout                                        |
-| Resource bounds | Queues, retries, bodies, fan-out, and concurrency are capped    |
-| Overload        | Degraded and rejected behavior is defined                       |
-| Idempotency     | Repeated messages are safe or durably detected                  |
-| Versioning      | Wire formats and stored schemas carry versions                  |
-| Deployment      | Migration, rollback, and mixed-version behavior are defined     |
-| Observability   | Saturation, errors, tail latency, and dropped work are measured |
-| Privacy         | Logs and cache keys exclude secrets and sensitive data          |
-| Failure testing | Slowness and partial failure are tested                         |
-| Recovery        | Recovery point and recovery time objectives are stated          |
-| Simplicity      | Operators can explain the important failure modes               |
-
----
-
-## 🌐 Networking, Protocols & Wire Formats
-
-Networking is low-level I/O plus a shared language. A protocol has **syntax** (frame
-layout), **semantics** (what messages mean), and **state** (which messages are valid
-now). That makes protocol design closely related to compiler design.
-
-> 🌐 **Mental model:** a network protocol is a language spoken over an unreliable,
-> partial-I/O boundary.
-
-### 1. Layered Mental Model
-
-```text
-Application protocol   your messages, grammar, state machine
-Transport              TCP stream or UDP datagrams
-Network                IP addressing and routing
-Link                   local network frames
-Physical               electrical/radio/optical signals
-```
-
-An application usually reads and writes through a socket; the OS networking stack
-handles the lower layers.
-
-| Concept          | TCP                                   | UDP                                    |
-| ---------------- | ------------------------------------- | -------------------------------------- |
-| Abstraction      | Ordered byte stream                   | Individual datagrams                   |
-| Delivery         | Retransmitted while connection lives  | Best effort                            |
-| Boundaries       | Not preserved                         | Preserved per datagram                 |
-| Connection state | Yes                                   | No transport connection                |
-| Typical use      | Web, shells, databases, file transfer | DNS, telemetry, games, real-time media |
-
-TCP does **not** deliver "messages." One `write` may be split across many reads, and
-several writes may arrive in one read. Your protocol must provide framing.
-
-### 2. Common Framing Strategies
-
-| Strategy          | Example                | Trade-off                       |
-| ----------------- | ---------------------- | ------------------------------- |
-| Fixed size        | exactly 32 bytes       | Simple, wastes space            |
-| Delimiter         | line ending `\n`       | Human-readable, escaping needed |
-| Length prefix     | `u32 length` + payload | Efficient, must bound length    |
-| Type-length-value | tag + length + value   | Extensible                      |
-| Self-describing   | JSON/CBOR-like value   | Flexible, more overhead         |
-
-Example binary frame:
-
-```text
-0               1               2               3
-+---------------+---------------+---------------+---------------+
-| version (u8)  | kind (u8)     | payload length (u16, BE)       |
-+---------------+---------------+---------------+---------------+
-| payload ...                                                   |
-+---------------------------------------------------------------+
-```
-
-```rust
-#[derive(Debug)]
-struct Frame<'a> {
-    version: u8,
-    kind: u8,
-    payload: &'a [u8],
-}
-
-fn decode_frame(bytes: &[u8]) -> Result<Frame<'_>, &'static str> {
-    let header = bytes.get(..4).ok_or("short header")?;
-    let length = u16::from_be_bytes([header[2], header[3]]) as usize;
-    if length > 4096 {
-        return Err("payload too large");
-    }
-    let payload = bytes.get(4..4 + length).ok_or("short payload")?;
-    if bytes.len() != 4 + length {
-        return Err("trailing data");
-    }
-    Ok(Frame {
-        version: header[0],
-        kind: header[1],
-        payload,
-    })
-}
-```
-
-### 3. Reading a Length-Prefixed TCP Frame
-
-`read_exact` loops until the requested buffer is filled or an error occurs. It is
-appropriate for a fixed header and a validated payload length.
-
-```rust
-use std::io::{self, Read};
-use std::net::TcpStream;
-
-const MAX_FRAME: usize = 64 * 1024;
-
-fn read_frame(stream: &mut TcpStream) -> io::Result<Vec<u8>> {
-    let mut header = [0u8; 4];
-    stream.read_exact(&mut header)?;
-
-    let length = u32::from_be_bytes(header) as usize;
-    if length > MAX_FRAME {
-        return Err(io::Error::new(
-            io::ErrorKind::InvalidData,
-            "frame exceeds limit",
-        ));
-    }
-
-    let mut payload = vec![0u8; length];
-    stream.read_exact(&mut payload)?;
-    Ok(payload)
-}
-```
-
-Real services should also use timeouts, connection limits, authentication when needed,
-and resource budgets. Portable code should not assume every operating system reports
-socket timeouts with exactly the same error kind.
-
-### 4. A Safe Loopback Protocol Lab
-
-Bind test services to loopback so they are not exposed to the local network:
-
-```rust
-use std::io::{self, Read, Write};
-use std::net::{TcpListener, TcpStream};
-
-fn handle(mut stream: TcpStream) -> io::Result<()> {
-    let mut request = [0u8; 4];
-    stream.read_exact(&mut request)?;
-
-    let response = match &request {
-        b"PING" => b"PONG",
-        _ => b"NOPE",
-    };
-
-    stream.write_all(response)?;
-    Ok(())
-}
-
-fn main() -> io::Result<()> {
-    let listener = TcpListener::bind("127.0.0.1:0")?;
-    println!("listening on {}", listener.local_addr()?);
-
-    for incoming in listener.incoming() {
-        match incoming {
-            Ok(stream) => {
-                if let Err(error) = handle(stream) {
-                    eprintln!("connection error: {error}");
-                }
-            }
-            Err(error) => eprintln!("accept error: {error}"),
-        }
-    }
-    Ok(())
-}
-```
-
-| Lab concept        | What the example demonstrates                     |
-| ------------------ | ------------------------------------------------- |
-| Endpoint           | An address combined with a port                   |
-| Server lifecycle   | Listen, accept, read, write, close                |
-| Partial I/O        | Use helpers that complete or report failure       |
-| Protocol semantics | Map a request to a defined response               |
-| Error isolation    | One connection failure need not stop the listener |
-
-### 5. Socket Lifecycle and Client/Server Roles
-
-[Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/) frames a socket
-as an operating-system handle used for network I/O. On Unix-like systems it is a file
-descriptor, so familiar resource and blocking-I/O ideas apply.
-
-Typical TCP server:
-
-```text
-resolve local address
+input features x
     ↓
-socket → bind → listen → accept
-                         ↓
-                    read/write
-                         ↓
-                       close
-```
-
-Typical TCP client:
-
-```text
-resolve remote address
+model f(x; parameters θ)
     ↓
-socket → connect → read/write → close
+prediction ŷ
+    ↓ compare with target y
+loss L(ŷ, y)
+    ↓ optimizer updates θ
 ```
 
-Rust wraps the resource in `TcpStream`, `TcpListener`, and `UdpSocket`. Their destructors
-close the underlying socket when ownership ends, but protocol shutdown may still need an
-explicit `shutdown`.
+| Term           | Meaning                                     |
+| -------------- | ------------------------------------------- |
+| feature        | measured or derived model input             |
+| label/target   | desired output used for supervised learning |
+| parameter      | value learned during training               |
+| hyperparameter | configuration chosen outside training       |
+| inference      | compute a prediction with fixed parameters  |
+| training       | adjust parameters to reduce an objective    |
+| epoch          | one pass over the training data             |
+| batch          | subset used for one update                  |
 
-```rust
-use std::io::{self, Read, Write};
-use std::net::{Shutdown, TcpStream};
-use std::time::Duration;
+### 2. Split Data by Purpose
 
-fn request(address: &str, bytes: &[u8]) -> io::Result<Vec<u8>> {
-    let mut stream = TcpStream::connect(address)?;
-    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
-    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
+| Split      | Used for                                | Must not be used for              |
+| ---------- | --------------------------------------- | --------------------------------- |
+| training   | fitting parameters                      | final performance claim           |
+| validation | selecting models and hyperparameters    | repeated unbiased final reporting |
+| test       | final estimate after choices are frozen | tuning                            |
 
-    stream.write_all(bytes)?;
-    stream.shutdown(Shutdown::Write)?;
+**Data leakage** occurs when training receives information that would not exist at real
+prediction time or indirectly sees validation/test targets. Split related samples by
+user, machine, project, time, or other dependency when random rows would leak context.
 
-    let mut response = Vec::new();
-    stream.take(64 * 1024).read_to_end(&mut response)?;
-    Ok(response)
-}
-```
+### 3. Linear Regression in Small Rust
 
-`shutdown(Write)` sends an end-of-stream signal for the writing direction while leaving
-the reading direction open. This is useful only when the application protocol defines
-end-of-stream as the request boundary. Many protocols keep the connection open and use
-lengths or delimiters instead.
-
-### 6. Names, Addresses, and Ports
-
-An endpoint combines an IP address with a transport port:
+For one feature:
 
 ```text
-IPv4 endpoint: 192.0.2.10:443
-IPv6 endpoint: [2001:db8::10]:443
+prediction = weight × x + bias
+error      = prediction - target
+MSE        = mean(error²)
 ```
 
-| Network name/value | Role                                           |
-| ------------------ | ---------------------------------------------- |
-| IP address         | Identifies an interface or routing destination |
-| Port               | Identifies a transport endpoint on a host      |
-| Host name          | Resolves to one or more IPv4/IPv6 addresses    |
-| Client local port  | Usually assigned ephemerally by the OS         |
-| Server port        | Bound to a known local address/service port    |
-
-Do not resolve a name and then use only the first address forever. Try the returned
-candidates according to policy:
-
 ```rust
-use std::io;
-use std::net::{TcpStream, ToSocketAddrs};
-use std::time::Duration;
+#[derive(Debug, Clone, Copy)]
+struct LinearModel {
+    weight: f64,
+    bias: f64,
+}
 
-fn connect_any(host: &str, port: u16) -> io::Result<TcpStream> {
-    let addresses = (host, port).to_socket_addrs()?;
-    let timeout = Duration::from_secs(3);
-    let mut last_error = None;
+impl LinearModel {
+    fn predict(self, x: f64) -> f64 {
+        self.weight * x + self.bias
+    }
 
-    for address in addresses {
-        match TcpStream::connect_timeout(&address, timeout) {
-            Ok(stream) => return Ok(stream),
-            Err(error) => last_error = Some(error),
+    fn train_step(&mut self, samples: &[(f64, f64)], rate: f64) {
+        if samples.is_empty() {
+            return;
         }
-    }
 
-    Err(last_error.unwrap_or_else(|| {
-        io::Error::new(io::ErrorKind::AddrNotAvailable, "name resolved to no addresses")
-    }))
+        let count = samples.len() as f64;
+        let (weight_gradient, bias_gradient) =
+            samples.iter().fold((0.0, 0.0), |(dw, db), &(x, target)| {
+                let error = self.predict(x) - target;
+                (dw + (2.0 / count) * error * x, db + (2.0 / count) * error)
+            });
+
+        self.weight -= rate * weight_gradient;
+        self.bias -= rate * bias_gradient;
+    }
 }
 ```
 
-Resolution is not authentication. A successful DNS lookup says where to connect, not
-whether the peer is trusted. Secure protocols still authenticate the remote identity.
+This example is intentionally small. Production training needs numerical checks,
+vectorized/tensor operations, reproducibility controls, efficient batching, and mature
+libraries.
 
-### 7. Encapsulation and Byte Order
-
-Each layer wraps the data from the layer above:
+### 4. Gradient Descent Is Local Iterative Optimization
 
 ```text
-[link header [IP header [TCP/UDP header [application frame]]]]
+θ(next) = θ(current) - learning_rate × ∇L(θ)
 ```
 
-On receipt, the layers remove their respective headers in reverse order. This
-separation lets the application use the same socket interface across different link
-technologies.
+| Symptom                     | Possible cause                                |
+| --------------------------- | --------------------------------------------- |
+| loss explodes               | rate too high, poor scaling, numerical issue  |
+| loss barely moves           | rate too low, saturation, weak features       |
+| training good/test poor     | overfitting or leakage                        |
+| training and test both poor | underfitting, bad representation, bad labels  |
+| results vary wildly         | seed, ordering, nondeterminism, small dataset |
 
-Multi-byte integers need a specified wire order. Network protocols commonly use
-big-endian, traditionally called **network byte order**:
+Feature normalization changes optimization geometry. It does not create information
+that the features do not contain.
 
-```rust
-let request_id = 0x1234_5678u32;
-let encoded = request_id.to_be_bytes();
-assert_eq!(encoded, [0x12, 0x34, 0x56, 0x78]);
+### 5. Classification and Regression Need Different Outputs
 
-let decoded = u32::from_be_bytes(encoded);
-assert_eq!(decoded, request_id);
-```
+| Task                      | Output                            | Common loss/metric examples            |
+| ------------------------- | --------------------------------- | -------------------------------------- |
+| regression                | continuous value                  | MSE, MAE, RMSE                         |
+| binary classification     | probability/logit for two classes | binary cross-entropy, precision/recall |
+| multiclass classification | class distribution/logits         | cross-entropy, top-k accuracy          |
+| ranking                   | relative ordering                 | pairwise/listwise objectives           |
+| clustering                | unlabeled grouping                | distance/internal validity measures    |
 
-Never transmit an in-memory Rust struct directly:
+Accuracy can be misleading on imbalanced data. A detector that predicts “safe” for
+99.9% of inputs can score highly while missing every rare failure. Choose metrics from
+the cost of false positives and false negatives.
 
-| In-memory property     | Wire-format problem                                     |
-| ---------------------- | ------------------------------------------------------- |
-| Padding                | Bytes may be unstable or uninitialized                  |
-| Alignment/layout       | Can vary by target and compiler settings                |
-| Integer representation | May use the wrong byte order                            |
-| Pointers/references    | Have no meaning in another process                      |
-| Enum representation    | Is unstable without an explicit representation contract |
-
-Serialize each field deliberately, or use a documented format and implementation.
-
-### 8. Partial I/O, EOF, and Blocking
-
-A successful socket read or write may transfer fewer bytes than requested.
-
-| Operation/result | Meaning                                                  |
-| ---------------- | -------------------------------------------------------- |
-| `read` → `Ok(0)` | TCP end-of-stream                                        |
-| `read_exact`     | Fill the buffer or report EOF/error                      |
-| `write_all`      | Continue until all bytes are accepted or an error occurs |
-| Timeout          | Bound waiting; does not create a message boundary        |
-
-Blocking sockets put the calling thread to sleep until progress or an error is possible.
-Non-blocking sockets instead report that the operation would block. An event loop uses
-an OS readiness facility to learn which sockets may make progress.
+### 6. Neural Networks Compose Differentiable Layers
 
 ```text
-blocking model:      one waiting thread per operation or connection
-readiness model:     poll/select/epoll/kqueue → operate on ready sockets
-completion model:    submit I/O → receive completion later
-async Rust:          futures + reactor/executor hide much of this bookkeeping
+input
+  → affine transform (weights × input + bias)
+  → activation
+  → more layers
+  → output
+  → loss
 ```
 
-Readiness is a hint, not a promise that an arbitrarily large operation will finish.
-Drain or fill only until the operation would block again, and keep per-connection
-buffers bounded.
-
-For TCP framing, test all of these:
-
-```text
-header split across reads
-payload split across reads
-header + payload + next frame in one read
-peer closes halfway through a frame
-declared length exceeds the limit
-write accepts only a prefix
-```
-
-### 9. UDP Is Message-Oriented but Not Reliable
-
-UDP preserves datagram boundaries, but an individual datagram may be lost, duplicated,
-or reordered. If reliability matters, the application protocol must define sequence
-numbers, acknowledgments, retransmission, deduplication, and congestion behavior—or use
-an existing transport that already does.
-
-```rust
-use std::io;
-use std::net::UdpSocket;
-use std::time::Duration;
-
-fn udp_exchange(server: &str, request: &[u8]) -> io::Result<Vec<u8>> {
-    let socket = UdpSocket::bind("127.0.0.1:0")?;
-    socket.connect(server)?;
-    socket.set_read_timeout(Some(Duration::from_secs(1)))?;
-    socket.send(request)?;
-
-    let mut buffer = vec![0u8; 1_200];
-    let received = socket.recv(&mut buffer)?;
-    buffer.truncate(received);
-    Ok(buffer)
-}
-```
-
-This example binds to loopback for a local lab. In a real UDP protocol:
-
-| UDP concern       | Defensive design                             |
-| ----------------- | -------------------------------------------- |
-| Fragmentation     | Keep datagrams within a conservative size    |
-| Authenticity      | Authenticate before acting                   |
-| Response matching | Use unpredictable request IDs                |
-| Amplification     | Bound response size relative to request size |
-| Retransmission    | Model timeout/retry as finite protocol state |
-
-### 10. Protocol State Machines
-
-A parser answers "is this frame shaped correctly?" A state machine answers "is this
-message valid now?"
-
-```rust
-enum Session {
-    AwaitHello,
-    Ready { user: String },
-    Closed,
-}
-
-enum Message {
-    Hello { user: String },
-    Data(Vec<u8>),
-    Goodbye,
-}
-
-fn transition(state: Session, message: Message) -> Result<Session, &'static str> {
-    match (state, message) {
-        (Session::AwaitHello, Message::Hello { user }) => {
-            Ok(Session::Ready { user })
-        }
-        (Session::Ready { user }, Message::Data(_)) => {
-            // Process data, then remain ready.
-            Ok(Session::Ready { user })
-        }
-        (Session::Ready { .. }, Message::Goodbye) => Ok(Session::Closed),
-        _ => Err("message is invalid in the current state"),
-    }
-}
-```
-
-A compiler is also a protocol state machine:
-
-```text
-source → parsed → typed → lowered → emitted
-```
-
-### 11. Reverse Engineering an Unknown Protocol Safely
-
-packet-analysis workflow generalizes well to your own local server, interoperability
-research, and authorized captures:
-
-1. identify the transport and endpoints;
-2. capture a baseline exchange;
-3. change one controllable input;
-4. compare packet lengths and changed byte regions;
-5. look for magic values, counters, timestamps, strings, and length prefixes;
-6. test byte order and compression hypotheses;
-7. infer the session state machine;
-8. write a decoder that rejects malformed input;
-9. validate against fresh captures you did not use to form the hypothesis.
-
-| Observed clue                          | Plausible interpretation                       |
-| -------------------------------------- | ---------------------------------------------- |
-| First 2/4 bytes match remaining length | Length-prefixed framing                        |
-| Many readable bytes                    | Text or lightly structured data                |
-| Tiny change affects most later bytes   | Compression, encryption, or integrity data     |
-| Repeated fixed prefix                  | Magic value, version, or header                |
-| Monotonically changing field           | Sequence number or timestamp                   |
-| Same message differs each time         | Nonce, timestamp, randomization, or encryption |
-
-Do not assume traffic is plaintext merely because a few bytes are readable. Do not
-attempt to defeat encryption or access systems without permission.
-
-### 12. Designing a Protocol for Your Own Language
-
-Suppose your language has a remote REPL. Separate framing, message syntax, and
-semantics:
-
-```text
-Frame:
-    version: u8
-    message_kind: u8
-    payload_length: u32 big-endian
-    payload: bytes
-
-Message kinds:
-    1 = Evaluate(source_utf8)
-    2 = Result(value)
-    3 = Diagnostic(code, span, message)
-    4 = Cancel(request_id)
-```
-
-| Protocol area       | Design requirement                               |
-| ------------------- | ------------------------------------------------ |
-| Versioning          | Include a version from the beginning             |
-| Integers            | Define widths and byte order                     |
-| Text                | Specify UTF-8 validity and normalization         |
-| Resource limits     | Cap frames, strings, collections, and nesting    |
-| Identifier domains  | Use newtypes for request IDs and session IDs     |
-| Extensibility       | Define optional/mandatory unknown-field behavior |
-| Authentication      | Authenticate before evaluating code              |
-| Sandboxing          | Bound CPU, memory, and execution time            |
-| Diagnostics         | Use structured fields, not scraped prose         |
-| Compatibility tests | Publish input bytes with expected decoded values |
-
-### 13. Networking Failure Modes
-
-| Failure mode               | Safer design                                         |
-| -------------------------- | ---------------------------------------------------- |
-| Assume full `read`/`write` | Loop with `read_exact`/`write_all` or buffered state |
-| Trust a length field       | Validate against protocol and resource limits        |
-| Omit timeouts              | Bound connect, read, write, and idle time            |
-| Recurse without a limit    | Enforce structural depth                             |
-| Treat TCP close as a frame | Use explicit framing semantics                       |
-| Parse before trust checks  | Place authentication/authorization deliberately      |
-| Trust client type tags     | Validate every tag, offset, and enum value           |
-| Log entire payloads        | Redact and cap diagnostic data                       |
-| Use host endianness        | Specify and encode a wire byte order                 |
-| Change layouts silently    | Version messages and define compatibility            |
-
-Tests should fragment a frame at every possible byte boundary, combine several frames
-into one read, truncate every field, and exercise maximum permitted sizes.
-
----
-
-## 📡 Embedded Networking with `smoltcp`
-
-[`smoltcp`](https://github.com/smoltcp-rs/smoltcp) is a standalone, event-driven TCP/IP
-stack designed for bare-metal and real-time systems. It can operate without heap
-allocation, making queues, socket buffers, timing, and packet work visible rather than
-hiding them behind an operating-system socket API.
-
-### 1. Stack Architecture
-
-```text
-application / language runtime
-          ↕ socket send and receive buffers
-SocketSet: TCP, UDP, ICMP, DHCP, DNS, raw sockets
-          ↕
-Interface: addressing, routes, neighbors, protocol state
-          ↕
-Device + RxToken / TxToken
-          ↕
-driver, TAP/TUN, loopback, Ethernet MAC, or radio
-```
-
-| Layer       | Owns or describes                                   |
-| ----------- | --------------------------------------------------- |
-| `Device`    | frame receive/transmit capability, MTU, medium      |
-| `Interface` | IP addresses, routes, neighbor/protocol state       |
-| `SocketSet` | heterogeneous sockets identified by stable handles  |
-| socket      | protocol state plus explicitly supplied buffers     |
-| application | when to poll, consume, produce, retry, and time out |
-
-This resembles a language runtime: the device is the host boundary, the interface is
-runtime-wide state, sockets are managed objects, and `poll` is the scheduler step.
-
-### 2. Memory Is Part of the Network Contract
-
-In hosted code, examples may provide `Vec<u8>` storage. In heapless code, the same
-buffer abstractions can borrow fixed slices.
-
-```rust
-use smoltcp::socket::tcp;
-
-static mut RX_BYTES: [u8; 1024] = [0; 1024];
-static mut TX_BYTES: [u8; 1024] = [0; 1024];
-
-// In real embedded code, obtain unique mutable access during initialization.
-// The surrounding platform code must ensure these buffers are never aliased.
-let socket = unsafe {
-    // SAFETY: initialization runs once before interrupts/tasks can access the buffers.
-    let rx = tcp::SocketBuffer::new(&mut *core::ptr::addr_of_mut!(RX_BYTES));
-    let tx = tcp::SocketBuffer::new(&mut *core::ptr::addr_of_mut!(TX_BYTES));
-    tcp::Socket::new(rx, tx)
-};
-```
-
-Prefer linker- or platform-provided single-init cells where available; the snippet makes
-the low-level ownership contract visible, not idealizes `static mut` as an everyday API.
-
-| Fixed resource              | Behavior when exhausted                          |
-| --------------------------- | ------------------------------------------------ |
-| TCP receive buffer          | advertised window shrinks; application must read |
-| TCP transmit buffer         | send capacity disappears until packets advance   |
-| UDP packet metadata/storage | datagram send/receive can fail                   |
-| neighbor cache              | entries are replaced or resolution is delayed    |
-| routes/addresses            | insertion may fail at configured capacity        |
-| reassembly storage          | oversized/excess fragmented packets are dropped  |
-
-> 🧭 **Invariant:** buffer size is observable protocol behavior. Treat it as a deliberate
-> capacity and backpressure decision, not an incidental allocation.
-
-### 3. Polling Makes Scheduling Explicit
-
-`Interface::poll(now, device, sockets)` transmits queued socket data and processes
-queued device packets. `poll_at` or `poll_delay` tells an event loop when protocol timers
-want attention.
-
-```rust
-use smoltcp::iface::{Interface, SocketSet};
-use smoltcp::phy::Device;
-use smoltcp::time::Instant;
-
-fn drive_once(
-    iface: &mut Interface,
-    device: &mut impl Device,
-    sockets: &mut SocketSet<'_>,
-    now: Instant,
-) {
-    let _changed = iface.poll(now, device, sockets);
-
-    // Inspect socket readiness and do a bounded amount of application work here.
-    // Then sleep/yield until the device is ready or iface.poll_at(...) is due.
-}
-```
-
-| Timing mistake                  | Consequence                                   |
-| ------------------------------- | --------------------------------------------- |
-| Poll too late                   | retransmissions and quality of service suffer |
-| Busy-poll continuously          | wasted CPU and energy                         |
-| Use a non-monotonic clock       | broken timeout/retransmission reasoning       |
-| Drain unlimited ingress         | other real-time work may starve               |
-| Ignore application backpressure | buffers fill and useful work is displaced     |
-
-The current interface API warns that a full `poll()` may process an unbounded number of
-queued ingress packets. In a cooperative or real-time scheduler, use
-`poll_ingress_single`, `poll_egress`, and `poll_maintenance` to create explicit yield
-points and bounded work.
-
-### 4. Socket State Is a Protocol State Machine
-
-```rust
-use smoltcp::iface::{SocketHandle, SocketSet};
-use smoltcp::socket::tcp;
-
-fn service_echo(
-    sockets: &mut SocketSet<'_>,
-    handle: SocketHandle,
-) -> Result<(), tcp::ListenError> {
-    let socket = sockets.get_mut::<tcp::Socket<'_>>(handle);
-
-    if !socket.is_open() {
-        socket.listen(7000)?;
-    }
-
-    if socket.can_recv() {
-        let _ = socket.recv(|bytes| {
-            let consumed = bytes.len();
-            // Parse or copy only what the bounded application budget permits.
-            (consumed, ())
-        });
-    }
-
-    Ok(())
-}
-```
-
-| Readiness/state query | Meaning for application logic            |
-| --------------------- | ---------------------------------------- |
-| `is_open()`           | socket is not fully closed               |
-| `is_active()`         | connection has active protocol state     |
-| `can_recv()`          | receive would produce application data   |
-| `may_recv()`          | peer may still send data in the future   |
-| `can_send()`          | transmit buffer currently has capacity   |
-| `may_send()`          | connection may still permit future sends |
-
-Do not equate `can_recv() == false` with EOF. Like a VM or coroutine, a socket can be
-temporarily unable to progress while remaining live.
-
-### 5. A Networked Language Runtime
-
-| Runtime feature       | `smoltcp` integration decision                       |
-| --------------------- | ---------------------------------------------------- |
-| remote REPL           | frame parser, source limit, authentication, timeout  |
-| debugger protocol     | request IDs, cancellation, bounded diagnostic output |
-| package transfer      | chunking, hash verification, storage budget          |
-| actor/message runtime | UDP loss policy or TCP backpressure                  |
-| embedded web endpoint | HTTP parser limits and one/many-connection policy    |
-| telemetry             | sampling, queue eviction, reconnect/backoff          |
-
-Keep protocol parsing independent from the socket. Feed it byte slices and test it with
-fragmentation, coalescing, truncation, invalid lengths, and capacity exhaustion. Then
-test the stack in a loopback or TAP-based lab you control.
-
-### 6. Test Faults, Not Only Happy Packets
-
-The upstream hosted examples support packet dropping, corruption, size limits, rate
-limits, and PCAP capture. These are valuable language-runtime tests too:
-
-| Injected condition | Runtime property to verify                     |
-| ------------------ | ---------------------------------------------- |
-| packet loss        | retry/timeout does not duplicate semantic work |
-| corruption         | checksums and parsers reject damaged input     |
-| tiny MTU           | fragmentation assumptions are not baked in     |
-| tiny socket buffer | backpressure reaches the producer              |
-| slow polling       | deadlines fail predictably                     |
-| connection reset   | pending requests finish with structured errors |
-
-Run raw-interface and fault-injection experiments only on an isolated lab interface or
-network you are authorized to control.
-
-> ➡️ **Next:** Actix shows an OS-hosted HTTP boundary; `wasm-bindgen` and `web-sys` show
-> a browser-hosted boundary. Compare their hidden resources with `smoltcp`'s explicit
-> buffers and polling.
-
----
-
-## 🕸 Rust Web Boundaries: Actix Web & wasm-bindgen
-
-Actix Web and `wasm-bindgen` sit on opposite sides of the web:
-
-```text
-browser JavaScript
-    ↕ wasm-bindgen glue
-Rust compiled to WebAssembly
-    ↕ HTTP / structured messages
-Actix Web service
-```
-
-Both are boundary-design problems. Bytes and dynamic values enter Rust, become typed
-data, pass through application logic, and are converted back into an external
-representation.
-
-### 1. Boundary Comparison
-
-| Concern            | Actix Web boundary                        | `wasm-bindgen` boundary                    |
-| ------------------ | ----------------------------------------- | ------------------------------------------ |
-| External peer      | HTTP client                               | JavaScript host                            |
-| Input conversion   | Extractors (`Path`, `Query`, `Json`)      | Generated JS/Wasm bindings                 |
-| Error form         | HTTP status + response body               | `Result<T, JsValue>` / JS exception        |
-| Shared state       | `web::Data<T>`                            | Exported Rust object or Wasm linear memory |
-| Trust boundary     | Network request                           | Host calls and JS values                   |
-| Main resource risk | Connections, bodies, tasks, backend calls | Copies, memory growth, handles, JS GC      |
-
----
-
-### 2. Actix Web Application Shape
-
-Current Actix Web 4 applications construct an `App` inside an `HttpServer` factory:
-
-```rust
-use actix_web::{get, web, App, HttpServer, Responder};
-
-#[get("/hello/{name}")]
-async fn hello(name: web::Path<String>) -> impl Responder {
-    let name = name.into_inner();
-    format!("Hello, {name}!")
-}
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    HttpServer::new(|| App::new().service(hello))
-        .bind(("127.0.0.1", 8080))?
-        .run()
-        .await
-}
-```
-
-The server factory may run once per worker. Create intentionally shared state outside
-the closure and clone its `web::Data` handle into each app.
-
-### 3. Extractors Turn Requests into Typed Inputs
-
-| Extractor       | Source in the HTTP request                  |
-| --------------- | ------------------------------------------- |
-| `web::Path<T>`  | Variables captured by the route             |
-| `web::Query<T>` | URL query string                            |
-| `web::Json<T>`  | JSON request body                           |
-| `web::Data<T>`  | Application state                           |
-| `HttpRequest`   | Headers, peer data, extensions, method, URI |
-| `web::Bytes`    | Buffered raw body                           |
-
-```rust
-use actix_web::{web, HttpResponse, Responder};
-use serde::{Deserialize, Serialize};
-use std::sync::atomic::{AtomicU64, Ordering};
-
-struct AppState {
-    next_job: AtomicU64,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-struct CreateJob {
-    source: String,
-}
-
-#[derive(Debug, Serialize)]
-struct JobAccepted {
-    id: u64,
-    source_bytes: usize,
-}
-
-async fn create_job(
-    state: web::Data<AppState>,
-    request: web::Json<CreateJob>,
-) -> impl Responder {
-    let id = state.next_job.fetch_add(1, Ordering::Relaxed);
-    web::Json(JobAccepted {
-        id,
-        source_bytes: request.source.len(),
-    })
-}
-
-fn configure(config: &mut web::ServiceConfig) {
-    config.service(
-        web::resource("/jobs")
-            .route(web::post().to(create_job)),
-    );
-}
-```
-
-> 🚧 **Extraction is parsing:** a handler should receive values that already satisfy
-> transport-level syntax, then perform application validation such as source-size,
-> authorization, and allowed-language checks.
-
-### 4. Bound Request Resources
-
-```rust
-use actix_web::web;
-
-fn json_config() -> web::JsonConfig {
-    web::JsonConfig::default()
-        .limit(32 * 1024)
-}
-```
-
-| Resource          | Boundary to define                              |
-| ----------------- | ----------------------------------------------- |
-| Request body      | Maximum compressed and decoded size             |
-| JSON nesting      | Parser/format limits when configurable          |
-| Path/query values | Length and allowed character policy             |
-| Connections       | Worker, backlog, keep-alive, and timeout policy |
-| Backend calls     | Timeout and retry budget                        |
-| Spawned tasks     | Concurrency limit and cancellation behavior     |
-| Response          | Maximum buffered or streamed output             |
-
-Do not hold a synchronous mutex guard across `.await`. Prefer an atomic for small
-independent counters, a short critical section for local compound state, or an
-async-aware/resource-specific client pool for I/O.
-
-### 5. Typed HTTP Errors
-
-```rust
-use actix_web::{http::StatusCode, HttpResponse, ResponseError};
-use std::fmt;
-
-#[derive(Debug)]
-enum ApiError {
-    InvalidSource,
-    Overloaded,
-}
-
-impl fmt::Display for ApiError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::InvalidSource => write!(formatter, "invalid source"),
-            Self::Overloaded => write!(formatter, "service overloaded"),
-        }
-    }
-}
-
-impl ResponseError for ApiError {
-    fn status_code(&self) -> StatusCode {
-        match self {
-            Self::InvalidSource => StatusCode::BAD_REQUEST,
-            Self::Overloaded => StatusCode::SERVICE_UNAVAILABLE,
-        }
-    }
-
-    fn error_response(&self) -> HttpResponse {
-        HttpResponse::build(self.status_code())
-            .body(self.to_string())
-    }
-}
-```
-
-| Error layer     | Suitable information                               |
-| --------------- | -------------------------------------------------- |
-| Internal error  | Source chain, operation, IDs, private diagnostics  |
-| Log/trace event | Correlation ID, sanitized context, latency         |
-| Client response | Stable code, safe message, appropriate HTTP status |
-
-Avoid exposing filesystem paths, database errors, backtraces, secrets, or parser
-internals to an untrusted client.
-
-### 6. Middleware and Handler Responsibilities
-
-| Concern                      | Best location                        |
-| ---------------------------- | ------------------------------------ |
-| Correlation/request ID       | Middleware                           |
-| Access logging and timing    | Middleware                           |
-| Authentication context       | Middleware/extractor                 |
-| Route-specific authorization | Handler or domain service            |
-| Input extraction             | Typed extractor                      |
-| Business rules               | Domain function independent of Actix |
-| HTTP response mapping        | Handler / `ResponseError`            |
-
-Body-consuming extractors need special care in middleware because the body is a stream.
-A middleware that consumes it must deliberately restore or replace what downstream
-handlers receive.
-
-### 7. Test the Service Without Opening a Port
-
-```rust
-use actix_web::{http::StatusCode, test, web, App};
-use std::sync::atomic::AtomicU64;
-
-#[actix_web::test]
-async fn accepts_a_job() {
-    let state = web::Data::new(AppState {
-        next_job: AtomicU64::new(1),
-    });
-
-    let app = test::init_service(
-        App::new()
-            .app_data(state)
-            .app_data(json_config())
-            .configure(configure),
-    )
-    .await;
-
-    let request = test::TestRequest::post()
-        .uri("/jobs")
-        .set_json(&CreateJob {
-            source: "1 + 2".to_owned(),
-        })
-        .to_request();
-
-    let response = test::call_service(&app, request).await;
-    assert_eq!(response.status(), StatusCode::OK);
-}
-```
-
-Test routing and HTTP conversion at the Actix layer, but keep most language parsing,
-type checking, and compilation tests independent of the web framework.
-
----
-
-### 8. What `wasm-bindgen` Generates
-
-WebAssembly itself has a deliberately small boundary based on numeric values, linear
-memory, functions, tables, imports, and exports. `wasm-bindgen` generates glue that maps
-more ergonomic Rust and JavaScript values across that lower-level interface.
-
-```text
-Rust source + #[wasm_bindgen]
-    ↓ rustc --target wasm32-unknown-unknown
-.wasm module
-    ↓ wasm-bindgen CLI/tooling
-processed Wasm + JavaScript/TypeScript bindings
-```
-
-| Layer                | Responsibility                                 |
-| -------------------- | ---------------------------------------------- |
-| Rust compiler        | Produce the Wasm module                        |
-| `wasm-bindgen` macro | Describe imported/exported boundary items      |
-| Binding generator    | Produce JS glue and metadata                   |
-| JavaScript loader    | Instantiate the module and satisfy imports     |
-| Wasm linear memory   | Store Rust stacks, heaps, strings, and buffers |
-
-### 9. Export Rust Functions and Types
-
-```rust
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-pub fn read_u32_be(bytes: &[u8]) -> Result<u32, JsValue> {
-    let bytes: [u8; 4] = bytes
-        .get(..4)
-        .ok_or_else(|| JsValue::from_str("expected four bytes"))?
-        .try_into()
-        .map_err(|_| JsValue::from_str("invalid byte slice"))?;
-
-    Ok(u32::from_be_bytes(bytes))
-}
-
-#[wasm_bindgen]
-pub struct Counter {
-    value: u32,
-}
-
-#[wasm_bindgen]
-impl Counter {
-    #[wasm_bindgen(constructor)]
-    pub fn new() -> Self {
-        Self { value: 0 }
-    }
-
-    pub fn increment(&mut self) -> u32 {
-        self.value = self.value.saturating_add(1);
-        self.value
-    }
-}
-```
-
-An exported Rust struct appears to JavaScript through a generated wrapper/handle. Its
-fields remain private unless explicitly exported through methods or accessors.
-
-### 10. Import JavaScript Functions
-
-```rust
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-extern "C" {
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(message: &str);
-}
-
-#[wasm_bindgen]
-pub fn announce(message: &str) {
-    log(message);
-}
-```
-
-An imported JavaScript function is an environmental dependency just like an OS system
-call or host function in a custom VM. Keep imports narrow so the module's capabilities
-are easy to audit and replace in tests.
-
-### 11. Value and Ownership Boundaries
-
-| Rust-side value      | Boundary behavior to remember                        |
-| -------------------- | ---------------------------------------------------- |
-| Numbers/booleans     | Converted directly when supported                    |
-| `String` / `&str`    | Encoded/decoded through Wasm memory                  |
-| `Vec<u8>` / `&[u8]`  | Typically copied to/from typed-array-compatible data |
-| `JsValue`            | Dynamic escape hatch; loses Rust type precision      |
-| Exported Rust struct | JavaScript wrapper holds a Rust-side allocation      |
-| Imported JS object   | Rust holds a generated handle to a host object       |
-| `Option<T>`          | Often maps to a nullable/optional host value         |
-
-> ⚠️ **Memory-view hazard:** Wasm memory can grow. JavaScript typed-array views into old
-> memory may become stale after growth, so reacquire views according to the generated
-> API instead of retaining them indefinitely.
-
-### 12. Error Design Across JavaScript
-
-Use `Result<T, JsValue>` when a Rust export can fail for a JavaScript caller:
-
-```rust
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen]
-pub fn checked_frame_size(length: u32) -> Result<u32, JsValue> {
-    const MAX_FRAME: u32 = 64 * 1024;
-    if length > MAX_FRAME {
-        return Err(JsValue::from_str("frame exceeds limit"));
-    }
-    Ok(length)
-}
-```
-
-| Boundary choice     | Trade-off                                       |
-| ------------------- | ----------------------------------------------- |
-| `JsValue` error     | Natural JS interop, weak Rust-side structure    |
-| Numeric error code  | Compact ABI, requires an external error table   |
-| Serialized error    | Stable schema, conversion overhead              |
-| Exported error type | Rich API, more bindings and lifetime management |
-
-Do not expose Rust panics as normal validation. Convert expected failure into `Result`
-and install deliberate panic diagnostics only for unexpected bugs.
-
-### 13. Using Wasm as a Language Target
-
-For your own language, WebAssembly can be:
-
-| Role                      | Architecture                                    |
-| ------------------------- | ----------------------------------------------- |
-| Compilation target        | Source → typed IR → Wasm                        |
-| Sandboxable plugin format | Host supplies a small import capability set     |
-| Browser runtime           | Language VM compiled to Wasm, UI supplied by JS |
-| Portable bytecode         | Server/CLI embeds a Wasm engine                 |
-
-| Wasm language-target contract | Decision to define                                |
-| ----------------------------- | ------------------------------------------------- |
-| Imports                       | Module and function names                         |
-| Representation                | Value and memory layouts                          |
-| Allocation                    | Ownership across host/module calls                |
-| Strings/errors                | Encoding and failure representation               |
-| Memory growth                 | Whether growth is permitted and view invalidation |
-| Resource limits               | Fuel, wall time, stack, and memory                |
-| Capabilities                  | Deterministic/nondeterministic host functions     |
-
-This is the same design work as an FFI ABI and a network protocol: **representation,
-ownership, versioning, and trust** must all be explicit.
-
-### 14. The DOM Is a Host-Owned Object Graph
-
-As the
-[`wasm-bindgen` DOM examples](https://wasm-bindgen.github.io/wasm-bindgen/examples/dom.html)
-demonstrate, the browser's Document Object Model is **not stored inside Wasm linear
-memory**. `web-sys` exposes typed Rust handles to JavaScript-managed objects.
-
-```text
-browser Window
-    └── Document
-        └── Node tree
-            ├── Element
-            │   └── HtmlElement / HtmlCanvasElement / ...
-            └── Text
-
-Rust/Wasm holds generated JS handles ──→ objects above
-Rust values, stack, heap, strings ─────→ Wasm linear memory
-```
-
-| Type          | Role                                              |
-| ------------- | ------------------------------------------------- |
-| `Window`      | browser global, timers, location, event target    |
-| `Document`    | element creation and document-wide lookup         |
-| `Node`        | common tree operations such as `append_child`     |
-| `Element`     | attributes, selectors, classes, element content   |
-| `HtmlElement` | HTML-specific style, focus, and common properties |
-| `EventTarget` | add/remove event listener boundary                |
-| `JsValue`     | dynamic JavaScript value and error carrier        |
-
-`web-sys` APIs are feature-gated. Enable only the browser types and methods your crate
-uses; a compile error about a missing method may mean a missing Cargo feature rather
-than a missing browser API.
-
-### 15. Create and Attach DOM Nodes
-
-```rust
-use wasm_bindgen::prelude::*;
-
-#[wasm_bindgen(start)]
-pub fn start() -> Result<(), JsValue> {
-    let window = web_sys::window()
-        .ok_or_else(|| JsValue::from_str("window is unavailable"))?;
-    let document = window
-        .document()
-        .ok_or_else(|| JsValue::from_str("document is unavailable"))?;
-    let body = document
-        .body()
-        .ok_or_else(|| JsValue::from_str("document has no body"))?;
-
-    let status = document.create_element("p")?;
-    status.set_id("compiler-status");
-    status.set_text_content(Some("Compiler ready 🦀"));
-    body.append_child(&status)?;
-    Ok(())
-}
-```
-
-Prefer `set_text_content` when displaying untrusted text. `set_inner_html` parses HTML,
-so using it with untrusted source, diagnostics, names, or network data can create an
-injection vulnerability.
-
-| Lookup/creation API | Result shape                 | Design response                 |
-| ------------------- | ---------------------------- | ------------------------------- |
-| `web_sys::window()` | `Option<Window>`             | host environment may differ     |
-| `window.document()` | `Option<Document>`           | worker has no `Document`        |
-| `get_element_by_id` | `Option<Element>`            | missing markup is expected      |
-| `query_selector`    | `Result<Option<Element>, _>` | selector may be invalid/missing |
-| `create_element`    | `Result<Element, JsValue>`   | browser operation may throw     |
-| `append_child`      | `Result<Node, JsValue>`      | tree mutation may fail          |
-
-### 16. Cast Only at a Checked Boundary
-
-A CSS selector returns a general `Element`. Use `JsCast::dyn_into` when an operation
-requires a more specific browser type.
-
-```rust
-use wasm_bindgen::{JsCast, JsValue};
-use web_sys::HtmlInputElement;
-
-fn source_text(document: &web_sys::Document) -> Result<String, JsValue> {
-    let element = document
-        .get_element_by_id("source")
-        .ok_or_else(|| JsValue::from_str("missing #source"))?;
-    let input = element
-        .dyn_into::<HtmlInputElement>()
-        .map_err(|_| JsValue::from_str("#source is not an input element"))?;
-    Ok(input.value())
-}
-```
-
-| Cast style              | Use                                             |
-| ----------------------- | ----------------------------------------------- |
-| `dyn_ref::<T>()`        | checked borrowed view; keep original handle     |
-| `dyn_into::<T>()`       | checked consuming conversion                    |
-| `unchecked_ref::<T>()`  | glue boundary only when type is already proven  |
-| `unchecked_into::<T>()` | rare; caller assumes the complete type contract |
-
-Unchecked casting is analogous to `unsafe`: keep it local and document what establishes
-the runtime JavaScript type.
-
-### 17. DOM Event Listeners Need Lifetime Design
-
-Browser callbacks are JavaScript functions, while Rust closures live in Wasm-managed
-state. Dropping a `Closure` while JavaScript still holds its callback is invalid.
-Calling `forget()` keeps it alive forever, which is acceptable only for a truly
-page-lifetime listener.
-
-```rust
-use wasm_bindgen::{closure::Closure, JsCast, JsValue};
-use web_sys::{EventTarget, MouseEvent};
-
-struct ClickListener {
-    target: EventTarget,
-    callback: Closure<dyn FnMut(MouseEvent)>,
-}
-
-impl ClickListener {
-    fn install(
-        target: EventTarget,
-        mut on_click: impl FnMut(MouseEvent) + 'static,
-    ) -> Result<Self, JsValue> {
-        let callback = Closure::new(move |event: MouseEvent| on_click(event));
-        target.add_event_listener_with_callback(
-            "click",
-            callback.as_ref().unchecked_ref(),
-        )?;
-        Ok(Self { target, callback })
-    }
-}
-
-impl Drop for ClickListener {
-    fn drop(&mut self) {
-        let _ = self.target.remove_event_listener_with_callback(
-            "click",
-            self.callback.as_ref().unchecked_ref(),
-        );
-    }
-}
-```
-
-The application must retain the `ClickListener` for as long as the UI is active. This
-RAII shape pairs registration with removal and works well inside a Rust application
-struct exported through `wasm-bindgen`.
-
-| Callback strategy        | Lifetime/result                                 |
-| ------------------------ | ----------------------------------------------- |
-| local `Closure`, dropped | listener becomes invalid                        |
-| `closure.forget()`       | page-lifetime leak by design                    |
-| store in app state       | listener lives with component/application       |
-| RAII listener wrapper    | automatically unregisters when owner is dropped |
-
-### 18. UI State Crosses Two Memory Managers
-
-```rust
-use std::{cell::Cell, rc::Rc};
-
-let clicks = Rc::new(Cell::new(0_u32));
-let callback_state = Rc::clone(&clicks);
-
-let listener = ClickListener::install(button.into(), move |_event| {
-    callback_state.set(callback_state.get().saturating_add(1));
-})?;
-```
-
-| Ownership edge                  | What keeps it alive                   |
-| ------------------------------- | ------------------------------------- |
-| Rust state captured by closure  | Wasm closure environment              |
-| `Closure` callback wrapper      | Rust owner or deliberate `forget()`   |
-| DOM node                        | browser DOM tree and JS references    |
-| Rust handle to DOM node         | generated JS reference table/glue     |
-| typed-array view of Wasm memory | JS value, but backing memory may grow |
-
-`Rc<Cell<T>>` is appropriate for small single-threaded browser state. Use
-`Rc<RefCell<T>>` for more complex mutable state, but keep borrows short and never call
-unknown JavaScript while a mutable `RefCell` borrow is held: JavaScript can re-enter
-Rust through another callback.
-
-### 19. DOM Work Is Also Performance Work
-
-| Expensive pattern                         | Better direction                                |
-| ----------------------------------------- | ----------------------------------------------- |
-| alternate layout reads and writes         | group reads, compute, then group writes         |
-| rebuild a large subtree for one text edit | mutate the smallest stable node                 |
-| copy huge buffers for every event         | batch, reuse, or expose bounded views carefully |
-| compile on every keystroke immediately    | debounce/cancel stale work                      |
-| block the main thread with language work  | use a Web Worker or incremental execution       |
-
-For a browser-hosted language:
-
-```text
-DOM input event
-    ↓ capture bounded source text
-debounced compile request
-    ↓ lexer → parser → type checker → Wasm/backend
-structured diagnostics
-    ↓ escape as text, map byte spans to source view
-small batched DOM update
-```
-
-Keep the compiler core independent of `web-sys`. A browser adapter should translate DOM
-events into plain Rust inputs and translate structured compiler results back into UI
-updates. That preserves CLI, test, server, and browser front ends over one language
-implementation.
-
-> ➡️ **Next:** practical reversing reads these boundaries in the opposite direction:
-> begin with externally visible behavior, then infer states, layouts, calls, and data
-> ownership.
-
----
-
-## 🔍 Practical x64 Windows Reverse Engineering
-
-This section draws from
-[0xZ0F's Reverse Engineering Course](https://github.com/0xZ0F/Z0FCourse_ReverseEngineering),
-which progresses from binary fundamentals through x64 assembly, tools, basic reversing,
-DLLs, and Windows internals. The course is Windows-focused, but the analysis habits
-transfer to other architectures and operating systems.
-
-Use these techniques only on binaries you own, intentionally vulnerable exercises,
-open-source programs, or targets you are explicitly authorized to analyze. Run unknown
-samples only in an isolated environment designed for that purpose.
-
-> 🔍 **Reversing habit:** separate **observation**, **hypothesis**, and **validation**.
-> Decompiler output is evidence, not ground truth.
-
-### 1. Reverse Engineering Is Model Building
-
-The goal is not to translate every instruction into English. The goal is to recover
-enough structure to explain relevant behavior.
-
-```text
-raw bytes
-    ↓ executable-format metadata
-instructions + data
-    ↓ control-flow and calling-convention analysis
-functions + variables + structures
-    ↓ behavior and state analysis
-high-level model
-```
-
-A productive model answers:
-
-| Model dimension | Question                                         |
+| Concept         | Role                                             |
 | --------------- | ------------------------------------------------ |
-| Inputs          | What enters the program?                         |
-| Transformation  | Which functions change it?                       |
-| State           | What memory, files, or globals are read/written? |
-| Decisions       | Which branches control behavior?                 |
-| Dependencies    | Which OS or library services are called?         |
-| Effects         | What output or side effect is produced?          |
-
-Reverse engineering is iterative. Names and types begin as guesses and become more
-precise as evidence accumulates.
-
-### 2. Start with Binary Triage
-
-Before debugging, collect facts without executing the target:
-
-| Question                        | Evidence to inspect                                 |
-| ------------------------------- | --------------------------------------------------- |
-| What format is it?              | PE headers, magic bytes, architecture               |
-| 32-bit or 64-bit?               | Machine type and optional-header format             |
-| Native or managed?              | Imports, metadata directories, runtime dependencies |
-| What does it import?            | DLL names and imported symbols                      |
-| What does it export?            | Export table and symbol names                       |
-| Are symbols/debug data present? | PDB path, symbol table, debug directory             |
-| Does it contain useful text?    | UTF-8/ASCII and UTF-16 strings                      |
-| Is it signed or versioned?      | Signature and version resources                     |
-| Does layout look ordinary?      | Sections, permissions, sizes, entropy               |
-
-Record a cryptographic hash before analysis so notes always refer to one exact file.
-
-#### PE Mental Model
-
-```text
-DOS header / stub
-    ↓ points to
-PE signature + COFF header
-    ↓
-optional header
-    ├── entry point
-    ├── image base
-    ├── alignment
-    └── data directories
-section table
-    ├── code
-    ├── read-only data
-    ├── writable data
-    ├── imports/exports
-    └── resources/relocations
-```
-
-The term **optional header** is historical; executable images rely on it.
-
-| PE coordinate/size  | Meaning                                      |
-| ------------------- | -------------------------------------------- |
-| **Raw/file offset** | Location in the file on disk                 |
-| **RVA**             | Offset from the loaded image base            |
-| **VA**              | Runtime address, normally `image_base + RVA` |
-| **Raw size**        | Bytes stored in the file for a section       |
-| **Virtual size**    | Bytes occupied by the section after loading  |
-
-Do not paste a runtime address into a file-offset field without converting it through
-the appropriate section mapping.
-
-### 3. x64 Register Roles
-
-Register names partly encode width:
-
-| 64-bit | Low 32 bits | Low 16 bits | Low 8 bits |
-| ------ | ----------- | ----------- | ---------- |
-| `RAX`  | `EAX`       | `AX`        | `AL`       |
-| `RBX`  | `EBX`       | `BX`        | `BL`       |
-| `RCX`  | `ECX`       | `CX`        | `CL`       |
-| `RDX`  | `EDX`       | `DX`        | `DL`       |
-
-| Register(s)              | Common Windows x64 role                  |
-| ------------------------ | ---------------------------------------- |
-| `RIP`                    | Address of the next instruction          |
-| `RSP`                    | Stack pointer                            |
-| `RBP`                    | Optional frame/base pointer              |
-| `RAX`                    | Integer return register and accumulator  |
-| `RCX`, `RDX`, `R8`, `R9` | First integer/pointer argument positions |
-| `XMM0`–`XMM3`            | First floating/vector argument positions |
-| `XMM0`                   | Floating-point return value              |
-
-Writing a 32-bit general register such as `EAX` clears the upper 32 bits of the
-corresponding 64-bit register. Writing only `AX` or `AL` does not.
-
-#### Volatile and Nonvolatile Registers on Windows x64
-
-| Category    | Registers                                      | Meaning at a call                       |
-| ----------- | ---------------------------------------------- | --------------------------------------- |
-| Volatile    | `RAX`, `RCX`, `RDX`, `R8`–`R11`                | Caller must assume they are overwritten |
-| Nonvolatile | `RBX`, `RBP`, `RDI`, `RSI`, `RSP`, `R12`–`R15` | Callee must restore them if used        |
-
-This classification is evidence. A function that stores a value in `RBX` and restores
-`RBX` before returning may be keeping that value alive across several calls.
-
-### 4. Flags, Comparisons, and Branches
-
-`cmp left, right` behaves like a subtraction used only to update flags:
-
-```text
-left - right → flags
-```
-
-| Flag   | Interpretation           |
-| ------ | ------------------------ |
-| **ZF** | Result was zero          |
-| **CF** | Unsigned carry or borrow |
-| **SF** | Result sign bit          |
-| **OF** | Signed overflow          |
-| **PF** | Parity of the low byte   |
-
-Signed and unsigned conditional jumps interpret flags differently:
-
-| Meaning          | Signed jump   | Unsigned jump |
-| ---------------- | ------------- | ------------- |
-| Equal            | `je` / `jz`   | `je` / `jz`   |
-| Not equal        | `jne` / `jnz` | `jne` / `jnz` |
-| Greater than     | `jg`          | `ja`          |
-| Greater or equal | `jge`         | `jae`         |
-| Less than        | `jl`          | `jb`          |
-| Less or equal    | `jle`         | `jbe`         |
-
-Choosing `jg` versus `ja` is a clue about whether the compiler treated a value as signed
-or unsigned.
-
-### 5. Read Instructions by Effect
-
-Group instruction variants by the effect that matters to the current question:
-
-| Family                     | Mental effect                      |
-| -------------------------- | ---------------------------------- |
-| `mov`, `movzx`, `movsx`    | Copy or extend a value             |
-| `lea`                      | Compute an address-like expression |
-| `add`, `sub`, `inc`, `dec` | Arithmetic/state update            |
-| `and`, `or`, `xor`, `test` | Bit manipulation or flag test      |
-| `cmp` + conditional jump   | Decision                           |
-| `push`, `pop`              | Stack update                       |
-| `call`, `ret`              | Function control flow              |
-| `shl`, `shr`, `sar`        | Shift or scale                     |
-| `imul`, `idiv`             | Signed multiply/divide             |
-
-Do not assume `lea` means "load a pointer." Compilers also use it for arithmetic such
-as:
-
-```asm
-lea eax, [rcx + rcx*4] ; eax = rcx * 5
-```
-
-Likewise, `xor eax, eax` is commonly a compact way to set `EAX` to zero.
-
-### 6. Windows x64 Calling Convention
-
-| Calling-convention concern | Windows x64 rule                                     |
-| -------------------------- | ---------------------------------------------------- |
-| Integer args 1–4           | `RCX`, `RDX`, `R8`, `R9`                             |
-| Float/vector args 1–4      | Corresponding `XMM0`–`XMM3` positions                |
-| Later arguments            | Passed on the stack                                  |
-| Shadow/home space          | Caller reserves 32 bytes                             |
-| Stack alignment            | Follows the ABI's 16-byte call-boundary rule         |
-| Integer return             | Commonly `RAX`                                       |
-| Floating return            | Commonly `XMM0`                                      |
-| C++ `this`                 | Usually occupies the first integer argument position |
-
-Conceptual call:
-
-```c
-result = transform(context, 10, buffer, length, flags);
-```
-
-Possible setup:
-
-```asm
-mov  rcx, context       ; argument 1
-mov  edx, 10            ; argument 2
-mov  r8, buffer         ; argument 3
-mov  r9d, length        ; argument 4
-mov  [rsp+20h], flags   ; argument 5, after shadow space
-call transform
-; integer-like result now in RAX
-```
-
-Registers may be prepared in any order. Follow definitions reaching the `call`, not the
-visual order of setup instructions.
-
-#### Inferring a Prototype
-
-At each call site, record:
-
-1. which argument registers are assigned;
-2. which stack slots are written;
-3. whether XMM registers are used;
-4. what values flow into each position;
-5. how the return register is used afterward;
-6. whether the same function is called elsewhere with different evidence.
-
-Then propose the narrowest type that explains all observed calls.
-
-### 7. Function Boundaries, Prologues, and Epilogues
-
-A traditional function may:
-
-```text
-save nonvolatile registers
-allocate stack space
-initialize local state
-perform work and calls
-restore stack/registers
-return
-```
-
-But optimized functions may omit a frame pointer, reuse stack slots, inline calls, split
-into hot/cold regions, or end with a tail call. Do not rely on one prologue byte
-pattern.
-
-| Boundary evidence       | Why it helps                                       |
-| ----------------------- | -------------------------------------------------- |
-| Direct call target      | Names a likely entry point                         |
-| Unwind metadata         | Describes a recoverable function range             |
-| Exported symbol         | Exposes a callable entry                           |
-| Cross-references        | Show other code treating the address as a function |
-| Stack setup/restoration | Suggests a coherent frame                          |
-| Return/tail-call region | Closes a connected control-flow graph              |
-
-### 8. Static and Dynamic Analysis Work Together
-
-| Static analysis                             | Dynamic analysis                           |
-| ------------------------------------------- | ------------------------------------------ |
-| Does not execute the target                 | Observes one concrete execution            |
-| Shows broad possible control flow           | Shows the path actually taken              |
-| Good for strings, imports, cross-references | Good for runtime values and indirect calls |
-| Can inspect unreachable or rare paths       | Can reveal decoded or generated data       |
-| May struggle with packing/indirection       | Can be timing- or environment-dependent    |
-
-A productive cycle:
-
-```text
-static hypothesis
-    ↓ choose breakpoint and input
-dynamic observation
-    ↓ rename/retype/comment
-better static model
-    ↓
-repeat
-```
-
-### 9. Debugger Controls and Their Meaning
-
-| Debugger control               | Effect                                           |
-| ------------------------------ | ------------------------------------------------ |
-| **Breakpoint**                 | Stop before a chosen instruction                 |
-| **Step into**                  | Execute and follow a call target                 |
-| **Step over**                  | Let a call finish and stop after it              |
-| **Step out**                   | Run until the current function returns           |
-| **Run to cursor**              | Continue to a selected location                  |
-| **Data breakpoint/watchpoint** | Stop when a memory range is accessed or modified |
-| **Conditional breakpoint**     | Stop only when a value/count matches a condition |
-
-Before stepping, write down what you expect to change. After stepping, compare the
-registers, flags, stack, and relevant memory to that prediction.
-
-#### High-Signal Breakpoint Locations
-
-| Location                   | Question it can answer                     |
-| -------------------------- | ------------------------------------------ |
-| Known imported function    | Which external service is being used?      |
-| Comparison before a branch | Which value decides the path?              |
-| State-variable write       | Who changes the state and when?            |
-| Function entry             | Which arguments arrive?                    |
-| Function return            | How does the caller use the result?        |
-| Parser/trust boundary      | How do raw bytes become structured values? |
-
-Breakpoints are most useful when tied to a question.
-
-### 10. Recovering Function Calls
-
-Suppose disassembly prepares a format string and values before calling a printing
-function. Work backward from the call:
-
-```text
-call known_print
-    ↑ argument 4 came from R9
-    ↑ argument 3 came from R8
-    ↑ argument 2 came from RDX
-    ↑ argument 1 came from RCX
-```
-
-Then inspect:
-
-| Call-site evidence     | What it reveals                                       |
-| ---------------------- | ----------------------------------------------------- |
-| String at a pointer    | Format, path, command, or semantic landmark           |
-| Register write width   | Likely integer width and zero/sign extension          |
-| Stack arguments        | Parameters beyond the first four                      |
-| XMM arguments          | Floating-point/vector parameters                      |
-| Variadic behavior      | Extra arguments interpreted through a format/contract |
-| Shadow/alignment setup | ABI mechanics rather than source variables            |
-
-This often reconstructs a recognizable call without understanding the whole function.
-
-### 11. Recovering Loops
-
-Source keywords disappear, so identify the control-flow shape:
-
-```text
-initialize
-    ↓
-loop header / condition ←──────────┐
-    ↓ true                         │
-body                              │
-    ↓                             │
-update ───────────────────────────┘
-    ↓ false
-exit
-```
-
-| Loop clue                   | Likely meaning             |
-| --------------------------- | -------------------------- |
-| Backward branch             | Control-flow cycle         |
-| Preheader initialization    | Initial counter or pointer |
-| Increment/decrement         | Induction-variable update  |
-| Comparison with a bound     | Loop termination condition |
-| Fixed-stride pointer move   | Array/record traversal     |
-| Repeated call/memory access | Loop body operation        |
-
-`for`, `while`, and `do-while` loops may compile to nearly identical control-flow
-graphs. Recover behavior first; choose high-level syntax later.
-
-Example:
-
-```asm
-xor  ebx, ebx       ; i = 0
-loop_start:
-mov  edx, ebx       ; use i
-call process_item
-inc  ebx            ; i += 1
-cmp  ebx, 10
-jl   loop_start     ; signed i < 10
-```
-
-Possible reconstruction:
-
-```c
-for (int i = 0; i < 10; i++) {
-    process_item(i);
-}
-```
-
-### 12. Recovering Structures from Offset Patterns
-
-Repeated accesses through one base register often describe fields:
-
-```asm
-mov eax, [rcx+08h]
-add eax, [rcx+0Ch]
-mov [rcx+10h], eax
-```
-
-Working hypothesis:
-
-```c
-struct Unknown {
-    unsigned char unknown_00[8];
-    int field_08;
-    int field_0c;
-    int field_10;
-};
-```
-
-| Structure evidence              | Inference it supports           |
-| ------------------------------- | ------------------------------- |
-| Access width                    | Field size                      |
-| Signed/unsigned branch          | Possible numeric interpretation |
-| Pointer dereference             | Pointer-like field              |
-| Constructor-like initialization | Initial layout and defaults     |
-| Repeated offsets                | Stable field positions          |
-| Type-specific imported API      | Likely semantic type            |
-| Array stride                    | Element size                    |
-
-Rename `field_08` only when evidence supports a semantic name. Until then, a stable
-offset-based name is more honest than a confident guess.
-
-### 13. Arrays and Indexing
-
-An address expression such as:
-
-```asm
-mov eax, [rcx + rdx*4]
-```
-
-suggests:
-
-```text
-base = RCX
-index = RDX
-element size = 4 bytes
-```
-
-Possible source:
-
-```c
-value = array[index];
-```
-
-Scale factors 1, 2, 4, and 8 directly fit x86 addressing modes. Other structure sizes
-may use several instructions or pointer increments.
-
-### 14. DLLs, Imports, and Exports
-
-A Windows DLL is a PE image intended to provide code or data to other modules.
-
-| DLL concept                    | Meaning                                              |
-| ------------------------------ | ---------------------------------------------------- |
-| **Export table**               | Names/ordinals made available to callers             |
-| **Import table**               | External symbols required from other DLLs            |
-| **Import address table (IAT)** | Runtime slots containing resolved function addresses |
-| **Module base**                | Address where the image is mapped                    |
-| **RVA**                        | Offset relative to the module base                   |
-| **Loader lock**                | Synchronization context affecting DLL initialization |
-
-For a normal imported call, code may call indirectly through an IAT slot:
-
-```asm
-call qword ptr [imported_function_slot]
-```
-
-The instruction references a slot in the current module; the loader places the actual
-library function address into that slot.
-
-When reconstructing an undocumented exported function:
-
-1. start from its export entry;
-2. inspect all known call sites;
-3. infer argument positions from the ABI;
-4. observe return-value use;
-5. identify referenced structures and globals;
-6. build a small prototype only after the evidence agrees.
-
-### 15. Tool-Agnostic Analysis Views
-
-Different tools use different names, but the useful views are consistent:
-
-| View               | Question it answers                                    |
-| ------------------ | ------------------------------------------------------ |
-| Hex/bytes          | What is physically encoded here?                       |
-| Disassembly        | Which instructions will execute?                       |
-| Decompiler         | What high-level model does the tool infer?             |
-| Control-flow graph | Where can execution branch or loop?                    |
-| Cross-references   | Who uses this function, string, or address?            |
-| Imports/exports    | Which module boundaries are visible?                   |
-| Memory map         | Which runtime regions exist and with what permissions? |
-| Registers/flags    | What is the current CPU state?                         |
-| Stack              | Who called whom, and what values are nearby?           |
-| Breakpoints/trace  | What happened during this run?                         |
-
-Treat a decompiler as an editable hypothesis generator. Correct its types, function
-boundaries, names, and signatures as evidence improves.
-
-### 16. A Repeatable Authorized Lab
-
-Use a tiny program you compile yourself:
-
-```c
-#include <stdio.h>
-
-static int sum_positive(const int *items, int count) {
-    int total = 0;
-    for (int i = 0; i < count; i++) {
-        if (items[i] > 0) {
-            total += items[i];
-        }
-    }
-    return total;
-}
-
-int main(void) {
-    int values[] = {3, -2, 7, 0};
-    printf("%d\n", sum_positive(values, 4));
-    return 0;
-}
-```
-
-Practice:
-
-1. compile debug and optimized builds;
-2. identify the executable format and architecture;
-3. locate the output string or imported print function;
-4. find the call to `sum_positive`;
-5. map the arguments using the platform ABI;
-6. identify the loop's backward edge;
-7. infer the 4-byte element stride;
-8. identify the signed `> 0` test;
-9. compare debug and optimized control flow;
-10. annotate the binary until another reader can follow it.
-
-### 17. Reverse-Engineering Notebook Template
-
-```text
-Target hash:
-Architecture / ABI:
-Image base:
-Tool versions:
-
-Question:
-Observation:
-Hypothesis:
-Evidence for:
-Evidence against:
-Confidence:
-Next experiment:
-
-Address/RVA:
-Proposed name:
-Proposed prototype/type:
-Callers:
-Callees:
-Important offsets:
-Side effects:
-```
-
-Separating observation from inference prevents early guesses from becoming invisible
-assumptions.
-
-### 18. Common Beginner Traps
-
-| Trap                                | Better habit                                           |
-| ----------------------------------- | ------------------------------------------------------ |
-| Read assembly top-to-bottom         | Follow control flow and data dependencies              |
-| Treat stack adjustments as locals   | Separate ABI mechanics from source values              |
-| Forget the calling convention       | Annotate argument, return, and preserved registers     |
-| Treat every hex value as a pointer  | Classify it from use and valid address ranges          |
-| Mix RVA/file offset/VA              | Write down the coordinate system                       |
-| Trust decompiler names/types        | Verify against instructions and call sites             |
-| Rename unknown fields early         | Keep stable offset-based names until evidence improves |
-| Ignore width/signedness             | Track each access width and branch interpretation      |
-| Step into every library call        | Stay centered on the analysis question                 |
-| Inspect one call site               | Compare multiple callers and inputs                    |
-| Expect source-shaped optimized code | Recover behavior before syntax                         |
-| Save screenshots without context    | Record addresses, inputs, hashes, and conclusions      |
+| weight          | learned connection strength                      |
+| bias            | learned offset                                   |
+| activation      | nonlinear transformation                         |
+| forward pass    | compute predictions and intermediates            |
+| backpropagation | apply chain rule from loss toward earlier layers |
+| optimizer       | turn gradients into parameter updates            |
+| regularization  | discourage brittle overfit solutions             |
+
+ReLU is simple and common; sigmoid maps to `(0, 1)` but can saturate; softmax converts
+logits into a normalized multiclass distribution. Match the final activation, loss, and
+target representation.
+
+### 7. Regularization Controls Generalization
+
+| Technique               | Intuition                                        |
+| ----------------------- | ------------------------------------------------ |
+| L1 penalty              | encourage sparse parameters                      |
+| L2 penalty/weight decay | discourage large parameters                      |
+| dropout                 | randomly omit activations during training        |
+| early stopping          | stop when validation performance stops improving |
+| data augmentation       | encode valid input-preserving transformations    |
+| ensembling              | combine models to reduce some variance           |
+
+Regularization cannot repair mislabeled data, a broken split, or a metric unrelated to
+the real objective.
+
+### 8. Numerical and Systems Boundaries
+
+| Boundary             | Engineering question                                 |
+| -------------------- | ---------------------------------------------------- |
+| data loader          | Are order, decoding, and augmentation reproducible?  |
+| tensor shape         | Are dimensions and broadcasting intentional?         |
+| numeric precision    | Can overflow, underflow, or cancellation occur?      |
+| accelerator transfer | Is copy/synchronization cost measured?               |
+| checkpoint           | Are model, optimizer, schema, and version recorded?  |
+| inference service    | Are latency, batching, memory, and fallback bounded? |
+| monitoring           | Can drift and quality degradation be detected?       |
+
+### 9. ML and Language Tools
+
+| Possible use                 | Deterministic guardrail                     |
+| ---------------------------- | ------------------------------------------- |
+| code completion/ranking      | parser/type checker rejects invalid output  |
+| optimization heuristic       | semantic equivalence tests                  |
+| decompiler naming suggestion | evidence and analyst confirmation           |
+| fuzz-input prioritization    | coverage and reproducible seeds             |
+| anomaly detection in traces  | retain raw evidence and explain uncertainty |
+| performance autotuning       | benchmark budget and safe fallback          |
+
+Do not replace a cheap exact rule with a probabilistic model merely because ML is
+available. Use ML when approximation creates value and its uncertainty can be contained.
+
+> ➡️ **Next:** operating-system and executable chapters show how programs receive
+> processes, virtual memory, files, linking, and hardware access before those programs
+> become concurrent or distributed.
 
 ---
 
@@ -8749,6 +7240,3802 @@ transitions. Adding print statements can change timing and hide the bug.
 
 ---
 
+## 🏢 System Design Patterns in Rust
+
+[DesignDeck](https://deckly.dev/designdeck/) presents system-design decisions as a
+connected set of trade-offs: traffic, data, consistency, caching, partitioning,
+messaging, and failure handling. This section translates several of those decisions
+into Rust-shaped interfaces.
+
+> 🏗️ **Design principle:** begin with **quantities, guarantees, and failure behavior**;
+> only then choose components.
+
+### 1. Start with Quantities and Guarantees
+
+Before drawing services and databases, write down:
+
+| Design input       | Questions to answer                                      |
+| ------------------ | -------------------------------------------------------- |
+| Traffic            | Peak reads and writes per second?                        |
+| Payloads           | Typical and maximum request/response sizes?              |
+| Storage            | Daily growth and retention period?                       |
+| Latency            | Acceptable median and tail latency?                      |
+| Reliability        | Availability, recovery time, and recovery point targets? |
+| Consistency        | What does each operation guarantee?                      |
+| Message behavior   | Is loss, duplication, or reordering acceptable?          |
+| Security           | Where are trust and authorization boundaries?            |
+| Dependency failure | What happens when a dependency is slow or unavailable?   |
+
+Useful rough estimates:
+
+```text
+bandwidth        ≈ requests/second × bytes/request
+daily storage    ≈ writes/second × bytes/write × 86,400
+concurrent work  ≈ arrival rate × average service time
+```
+
+These are estimates, not capacity promises. Validate them with measurement and leave
+headroom for bursts, retries, replication, metadata, indexes, and uneven partitions.
+
+### 2. Cache-Aside
+
+In cache-aside, the application checks the cache, loads a miss from the source of truth,
+and then fills the cache. The cache does not independently query storage.
+
+```text
+read:
+    cache hit  ──→ return
+    cache miss ──→ read database ──→ populate cache ──→ return
+
+write:
+    update database ──→ invalidate or update cache
+```
+
+A small interface keeps policy separate from storage:
+
+```rust
+trait KeyValue<K, V> {
+    type Error;
+
+    fn get(&self, key: &K) -> Result<Option<V>, Self::Error>;
+    fn put(&mut self, key: K, value: V) -> Result<(), Self::Error>;
+}
+
+fn cache_aside<K, V, E>(
+    cache: &mut impl KeyValue<K, V, Error = E>,
+    source: &impl KeyValue<K, V, Error = E>,
+    key: &K,
+) -> Result<Option<V>, E>
+where
+    K: Clone,
+    V: Clone,
+{
+    if let Some(value) = cache.get(key)? {
+        return Ok(Some(value));
+    }
+
+    let Some(value) = source.get(key)? else {
+        return Ok(None);
+    };
+
+    cache.put(key.clone(), value.clone())?;
+    Ok(Some(value))
+}
+```
+
+| Cache decision   | Question                                                  |
+| ---------------- | --------------------------------------------------------- |
+| Staleness        | How long may an old value remain visible?                 |
+| Negative caching | Should missing values be cached?                          |
+| Stampede control | What protects a hot key during a miss?                    |
+| Fill failure     | Does cache failure fail the request or only reduce speed? |
+| Write policy     | Write-through, write-back, or invalidation?               |
+| Eviction         | LRU, LFU, FIFO, or a domain-specific policy?              |
+
+The database remains the source of truth unless the design explicitly chooses a
+different consistency model.
+
+### 3. Token-Bucket Rate Limiting
+
+A token bucket allows controlled bursts while enforcing a long-term rate. Tokens refill
+over time up to a fixed capacity; each accepted operation spends tokens.
+
+```rust
+use std::time::Instant;
+
+#[derive(Debug)]
+struct TokenBucket {
+    capacity: f64,
+    available: f64,
+    refill_per_second: f64,
+    last_update: Instant,
+}
+
+impl TokenBucket {
+    fn new(capacity: u32, refill_per_second: f64, now: Instant) -> Option<Self> {
+        if capacity == 0 || !refill_per_second.is_finite() || refill_per_second <= 0.0 {
+            return None;
+        }
+
+        Some(Self {
+            capacity: f64::from(capacity),
+            available: f64::from(capacity),
+            refill_per_second,
+            last_update: now,
+        })
+    }
+
+    fn try_take(&mut self, amount: u32, now: Instant) -> bool {
+        let elapsed = now.saturating_duration_since(self.last_update);
+        self.available = (self.available + elapsed.as_secs_f64() * self.refill_per_second)
+            .min(self.capacity);
+        self.last_update = now;
+
+        let amount = f64::from(amount);
+        if amount > self.available {
+            return false;
+        }
+
+        self.available -= amount;
+        true
+    }
+}
+```
+
+| Rate-limit decision | Choices to define                                 |
+| ------------------- | ------------------------------------------------- |
+| Identity            | User, IP, token, tenant, endpoint, or resource    |
+| Scope               | Per process or coordinated across replicas        |
+| Store failure       | Fail open, fail closed, or use a local fallback   |
+| Over-limit action   | Reject, queue, or degrade                         |
+| Client feedback     | Retry timing, remaining quota, and reset metadata |
+
+A leaky-bucket queue smooths output at a regular rate. It is useful when work can wait;
+a token bucket is useful when short bursts are legitimate.
+
+### 4. Circuit Breakers, Timeouts, and Backoff
+
+A circuit breaker prevents repeated calls to a dependency that is already failing:
+
+```rust
+use std::time::Instant;
+
+#[derive(Clone, Copy, Debug)]
+enum CircuitState {
+    Closed { consecutive_failures: u32 },
+    Open { retry_after: Instant },
+    HalfOpen,
+}
+```
+
+State transitions:
+
+```text
+Closed --failure threshold--> Open
+Open   --cooldown elapsed---> HalfOpen
+HalfOpen --probe succeeds---> Closed
+HalfOpen --probe fails------> Open
+```
+
+Use the patterns together:
+
+| Resilience pattern      | Responsibility                                  |
+| ----------------------- | ----------------------------------------------- |
+| **Timeout**             | Limit one attempt                               |
+| **Retry budget**        | Limit total extra work                          |
+| **Exponential backoff** | Increase spacing between attempts               |
+| **Jitter**              | Prevent synchronized retry storms               |
+| **Circuit breaker**     | Stop calls during sustained dependency failure  |
+| **Load shedding**       | Reject low-priority work before global collapse |
+
+Retry only operations that are safe to repeat, or attach an idempotency key. Never let
+every layer retry independently without a shared budget; multiplicative retries can
+turn a small outage into overload.
+
+### 5. Delivery Is Not Processing
+
+Networks and processes can fail between any two observable steps. Messages may be
+delayed, duplicated, dropped, or reordered.
+
+| Delivery model   | What the consumer must expect                     |
+| ---------------- | ------------------------------------------------- |
+| At most once     | Loss is possible; duplicates are suppressed       |
+| At least once    | Duplicates are possible; retry covers some losses |
+| Effectively once | Deduplication makes repeated processing harmless  |
+
+Exactly-once network delivery is not a general guarantee. Systems usually approach
+exactly-once **effects** through idempotency, durable deduplication, and atomic state
+changes.
+
+```rust
+use std::collections::HashSet;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+struct EventId(u128);
+
+#[derive(Debug)]
+struct Event {
+    id: EventId,
+    delta: i64,
+}
+
+fn apply_once(
+    event: &Event,
+    processed: &mut HashSet<EventId>,
+    total: &mut i64,
+) -> Result<bool, &'static str> {
+    if processed.contains(&event.id) {
+        return Ok(false);
+    }
+
+    let next = total.checked_add(event.delta).ok_or("total overflow")?;
+    *total = next;
+    processed.insert(event.id);
+    Ok(true)
+}
+```
+
+This in-memory example explains the invariant but is not crash safe. In a real system,
+the deduplication record and business update must be committed atomically in durable
+storage, or a crash can occur between them.
+
+An **event log** retains ordered records for replay and multiple consumers. A **queue**
+typically distributes work so one consumer handles each message. Choose based on replay,
+fan-out, ordering, and retention needs.
+
+### 6. Consistent Hashing and Partition Movement
+
+Ordinary `hash(key) % node_count` remaps most keys when the number of nodes changes.
+Consistent hashing places keys and nodes in a hash space so adding or removing a node
+moves a smaller portion of the data.
+
+```text
+hash ring:
+0 ───── node A ───── node B ───── node C ───── max
+          ↑ key x                  ↑ key y
+```
+
+Virtual nodes give each physical node multiple positions, which can improve balance.
+Jump consistent hashing is another option when a compact computation is preferable to
+maintaining a ring.
+
+| Partition concern | Required decision                                         |
+| ----------------- | --------------------------------------------------------- |
+| Hash stability    | Is the mapping stable across versions and languages?      |
+| Hot keys          | How are skewed workloads isolated or replicated?          |
+| Replication       | How many owners does each partition have?                 |
+| Membership        | How are node changes proposed and observed?               |
+| Rebalancing       | Can reads and writes continue while data moves?           |
+| Recovery          | How are partially moved partitions detected and repaired? |
+
+If the key is a compiler module, bytecode package, or analysis artifact, stable
+partitioning can also support distributed builds and content-addressed caches.
+
+### 7. Consistency Is Per Operation
+
+Do not label an entire system merely "strong" or "eventual." State what each operation
+guarantees:
+
+| Consistency guarantee        | Meaning                                                |
+| ---------------------------- | ------------------------------------------------------ |
+| Read-your-writes             | A client observes its own completed writes             |
+| Monotonic reads              | A client does not move backward to older state         |
+| Causal ordering              | Causally related events are observed in order          |
+| Linearizable compare-and-set | The update behaves as one atomic real-time operation   |
+| Bounded staleness            | Reads lag by no more than a defined time/version bound |
+| Eventual convergence         | Replicas agree once updates and failures stop          |
+
+The CAP trade-off matters during a network partition: a distributed system cannot
+simultaneously guarantee both availability for every request and linearizable
+consistency across the partition. Different operations may make different choices.
+
+### 8. System-Design Review Checklist
+
+| Area            | Review criterion                                                |
+| --------------- | --------------------------------------------------------------- |
+| Data ownership  | Source of truth and derived copies are explicit                 |
+| Remote calls    | Every call has a timeout                                        |
+| Resource bounds | Queues, retries, bodies, fan-out, and concurrency are capped    |
+| Overload        | Degraded and rejected behavior is defined                       |
+| Idempotency     | Repeated messages are safe or durably detected                  |
+| Versioning      | Wire formats and stored schemas carry versions                  |
+| Deployment      | Migration, rollback, and mixed-version behavior are defined     |
+| Observability   | Saturation, errors, tail latency, and dropped work are measured |
+| Privacy         | Logs and cache keys exclude secrets and sensitive data          |
+| Failure testing | Slowness and partial failure are tested                         |
+| Recovery        | Recovery point and recovery time objectives are stated          |
+| Simplicity      | Operators can explain the important failure modes               |
+
+---
+
+## 🌐 Networking, Protocols & Wire Formats
+
+Networking is low-level I/O plus a shared language. A protocol has **syntax** (frame
+layout), **semantics** (what messages mean), and **state** (which messages are valid
+now). That makes protocol design closely related to compiler design.
+
+> 🌐 **Mental model:** a network protocol is a language spoken over an unreliable,
+> partial-I/O boundary.
+
+### 1. Layered Mental Model
+
+```text
+Application protocol   your messages, grammar, state machine
+Transport              TCP stream or UDP datagrams
+Network                IP addressing and routing
+Link                   local network frames
+Physical               electrical/radio/optical signals
+```
+
+An application usually reads and writes through a socket; the OS networking stack
+handles the lower layers.
+
+| Concept          | TCP                                   | UDP                                    |
+| ---------------- | ------------------------------------- | -------------------------------------- |
+| Abstraction      | Ordered byte stream                   | Individual datagrams                   |
+| Delivery         | Retransmitted while connection lives  | Best effort                            |
+| Boundaries       | Not preserved                         | Preserved per datagram                 |
+| Connection state | Yes                                   | No transport connection                |
+| Typical use      | Web, shells, databases, file transfer | DNS, telemetry, games, real-time media |
+
+TCP does **not** deliver "messages." One `write` may be split across many reads, and
+several writes may arrive in one read. Your protocol must provide framing.
+
+### 2. Common Framing Strategies
+
+| Strategy          | Example                | Trade-off                       |
+| ----------------- | ---------------------- | ------------------------------- |
+| Fixed size        | exactly 32 bytes       | Simple, wastes space            |
+| Delimiter         | line ending `\n`       | Human-readable, escaping needed |
+| Length prefix     | `u32 length` + payload | Efficient, must bound length    |
+| Type-length-value | tag + length + value   | Extensible                      |
+| Self-describing   | JSON/CBOR-like value   | Flexible, more overhead         |
+
+Example binary frame:
+
+```text
+0               1               2               3
++---------------+---------------+---------------+---------------+
+| version (u8)  | kind (u8)     | payload length (u16, BE)       |
++---------------+---------------+---------------+---------------+
+| payload ...                                                   |
++---------------------------------------------------------------+
+```
+
+```rust
+#[derive(Debug)]
+struct Frame<'a> {
+    version: u8,
+    kind: u8,
+    payload: &'a [u8],
+}
+
+fn decode_frame(bytes: &[u8]) -> Result<Frame<'_>, &'static str> {
+    let header = bytes.get(..4).ok_or("short header")?;
+    let length = u16::from_be_bytes([header[2], header[3]]) as usize;
+    if length > 4096 {
+        return Err("payload too large");
+    }
+    let payload = bytes.get(4..4 + length).ok_or("short payload")?;
+    if bytes.len() != 4 + length {
+        return Err("trailing data");
+    }
+    Ok(Frame {
+        version: header[0],
+        kind: header[1],
+        payload,
+    })
+}
+```
+
+### 3. Reading a Length-Prefixed TCP Frame
+
+`read_exact` loops until the requested buffer is filled or an error occurs. It is
+appropriate for a fixed header and a validated payload length.
+
+```rust
+use std::io::{self, Read};
+use std::net::TcpStream;
+
+const MAX_FRAME: usize = 64 * 1024;
+
+fn read_frame(stream: &mut TcpStream) -> io::Result<Vec<u8>> {
+    let mut header = [0u8; 4];
+    stream.read_exact(&mut header)?;
+
+    let length = u32::from_be_bytes(header) as usize;
+    if length > MAX_FRAME {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidData,
+            "frame exceeds limit",
+        ));
+    }
+
+    let mut payload = vec![0u8; length];
+    stream.read_exact(&mut payload)?;
+    Ok(payload)
+}
+```
+
+Real services should also use timeouts, connection limits, authentication when needed,
+and resource budgets. Portable code should not assume every operating system reports
+socket timeouts with exactly the same error kind.
+
+### 4. A Safe Loopback Protocol Lab
+
+Bind test services to loopback so they are not exposed to the local network:
+
+```rust
+use std::io::{self, Read, Write};
+use std::net::{TcpListener, TcpStream};
+
+fn handle(mut stream: TcpStream) -> io::Result<()> {
+    let mut request = [0u8; 4];
+    stream.read_exact(&mut request)?;
+
+    let response = match &request {
+        b"PING" => b"PONG",
+        _ => b"NOPE",
+    };
+
+    stream.write_all(response)?;
+    Ok(())
+}
+
+fn main() -> io::Result<()> {
+    let listener = TcpListener::bind("127.0.0.1:0")?;
+    println!("listening on {}", listener.local_addr()?);
+
+    for incoming in listener.incoming() {
+        match incoming {
+            Ok(stream) => {
+                if let Err(error) = handle(stream) {
+                    eprintln!("connection error: {error}");
+                }
+            }
+            Err(error) => eprintln!("accept error: {error}"),
+        }
+    }
+    Ok(())
+}
+```
+
+| Lab concept        | What the example demonstrates                     |
+| ------------------ | ------------------------------------------------- |
+| Endpoint           | An address combined with a port                   |
+| Server lifecycle   | Listen, accept, read, write, close                |
+| Partial I/O        | Use helpers that complete or report failure       |
+| Protocol semantics | Map a request to a defined response               |
+| Error isolation    | One connection failure need not stop the listener |
+
+### 5. Socket Lifecycle and Client/Server Roles
+
+[Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/) frames a socket
+as an operating-system handle used for network I/O. On Unix-like systems it is a file
+descriptor, so familiar resource and blocking-I/O ideas apply.
+
+Typical TCP server:
+
+```text
+resolve local address
+    ↓
+socket → bind → listen → accept
+                         ↓
+                    read/write
+                         ↓
+                       close
+```
+
+Typical TCP client:
+
+```text
+resolve remote address
+    ↓
+socket → connect → read/write → close
+```
+
+Rust wraps the resource in `TcpStream`, `TcpListener`, and `UdpSocket`. Their destructors
+close the underlying socket when ownership ends, but protocol shutdown may still need an
+explicit `shutdown`.
+
+```rust
+use std::io::{self, Read, Write};
+use std::net::{Shutdown, TcpStream};
+use std::time::Duration;
+
+fn request(address: &str, bytes: &[u8]) -> io::Result<Vec<u8>> {
+    let mut stream = TcpStream::connect(address)?;
+    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
+
+    stream.write_all(bytes)?;
+    stream.shutdown(Shutdown::Write)?;
+
+    let mut response = Vec::new();
+    stream.take(64 * 1024).read_to_end(&mut response)?;
+    Ok(response)
+}
+```
+
+`shutdown(Write)` sends an end-of-stream signal for the writing direction while leaving
+the reading direction open. This is useful only when the application protocol defines
+end-of-stream as the request boundary. Many protocols keep the connection open and use
+lengths or delimiters instead.
+
+### 6. Names, Addresses, and Ports
+
+An endpoint combines an IP address with a transport port:
+
+```text
+IPv4 endpoint: 192.0.2.10:443
+IPv6 endpoint: [2001:db8::10]:443
+```
+
+| Network name/value | Role                                           |
+| ------------------ | ---------------------------------------------- |
+| IP address         | Identifies an interface or routing destination |
+| Port               | Identifies a transport endpoint on a host      |
+| Host name          | Resolves to one or more IPv4/IPv6 addresses    |
+| Client local port  | Usually assigned ephemerally by the OS         |
+| Server port        | Bound to a known local address/service port    |
+
+Do not resolve a name and then use only the first address forever. Try the returned
+candidates according to policy:
+
+```rust
+use std::io;
+use std::net::{TcpStream, ToSocketAddrs};
+use std::time::Duration;
+
+fn connect_any(host: &str, port: u16) -> io::Result<TcpStream> {
+    let addresses = (host, port).to_socket_addrs()?;
+    let timeout = Duration::from_secs(3);
+    let mut last_error = None;
+
+    for address in addresses {
+        match TcpStream::connect_timeout(&address, timeout) {
+            Ok(stream) => return Ok(stream),
+            Err(error) => last_error = Some(error),
+        }
+    }
+
+    Err(last_error.unwrap_or_else(|| {
+        io::Error::new(io::ErrorKind::AddrNotAvailable, "name resolved to no addresses")
+    }))
+}
+```
+
+Resolution is not authentication. A successful DNS lookup says where to connect, not
+whether the peer is trusted. Secure protocols still authenticate the remote identity.
+
+### 7. Encapsulation and Byte Order
+
+Each layer wraps the data from the layer above:
+
+```text
+[link header [IP header [TCP/UDP header [application frame]]]]
+```
+
+On receipt, the layers remove their respective headers in reverse order. This
+separation lets the application use the same socket interface across different link
+technologies.
+
+Multi-byte integers need a specified wire order. Network protocols commonly use
+big-endian, traditionally called **network byte order**:
+
+```rust
+let request_id = 0x1234_5678u32;
+let encoded = request_id.to_be_bytes();
+assert_eq!(encoded, [0x12, 0x34, 0x56, 0x78]);
+
+let decoded = u32::from_be_bytes(encoded);
+assert_eq!(decoded, request_id);
+```
+
+Never transmit an in-memory Rust struct directly:
+
+| In-memory property     | Wire-format problem                                     |
+| ---------------------- | ------------------------------------------------------- |
+| Padding                | Bytes may be unstable or uninitialized                  |
+| Alignment/layout       | Can vary by target and compiler settings                |
+| Integer representation | May use the wrong byte order                            |
+| Pointers/references    | Have no meaning in another process                      |
+| Enum representation    | Is unstable without an explicit representation contract |
+
+Serialize each field deliberately, or use a documented format and implementation.
+
+### 8. Partial I/O, EOF, and Blocking
+
+A successful socket read or write may transfer fewer bytes than requested.
+
+| Operation/result | Meaning                                                  |
+| ---------------- | -------------------------------------------------------- |
+| `read` → `Ok(0)` | TCP end-of-stream                                        |
+| `read_exact`     | Fill the buffer or report EOF/error                      |
+| `write_all`      | Continue until all bytes are accepted or an error occurs |
+| Timeout          | Bound waiting; does not create a message boundary        |
+
+Blocking sockets put the calling thread to sleep until progress or an error is possible.
+Non-blocking sockets instead report that the operation would block. An event loop uses
+an OS readiness facility to learn which sockets may make progress.
+
+```text
+blocking model:      one waiting thread per operation or connection
+readiness model:     poll/select/epoll/kqueue → operate on ready sockets
+completion model:    submit I/O → receive completion later
+async Rust:          futures + reactor/executor hide much of this bookkeeping
+```
+
+Readiness is a hint, not a promise that an arbitrarily large operation will finish.
+Drain or fill only until the operation would block again, and keep per-connection
+buffers bounded.
+
+For TCP framing, test all of these:
+
+```text
+header split across reads
+payload split across reads
+header + payload + next frame in one read
+peer closes halfway through a frame
+declared length exceeds the limit
+write accepts only a prefix
+```
+
+### 9. UDP Is Message-Oriented but Not Reliable
+
+UDP preserves datagram boundaries, but an individual datagram may be lost, duplicated,
+or reordered. If reliability matters, the application protocol must define sequence
+numbers, acknowledgments, retransmission, deduplication, and congestion behavior—or use
+an existing transport that already does.
+
+```rust
+use std::io;
+use std::net::UdpSocket;
+use std::time::Duration;
+
+fn udp_exchange(server: &str, request: &[u8]) -> io::Result<Vec<u8>> {
+    let socket = UdpSocket::bind("127.0.0.1:0")?;
+    socket.connect(server)?;
+    socket.set_read_timeout(Some(Duration::from_secs(1)))?;
+    socket.send(request)?;
+
+    let mut buffer = vec![0u8; 1_200];
+    let received = socket.recv(&mut buffer)?;
+    buffer.truncate(received);
+    Ok(buffer)
+}
+```
+
+This example binds to loopback for a local lab. In a real UDP protocol:
+
+| UDP concern       | Defensive design                             |
+| ----------------- | -------------------------------------------- |
+| Fragmentation     | Keep datagrams within a conservative size    |
+| Authenticity      | Authenticate before acting                   |
+| Response matching | Use unpredictable request IDs                |
+| Amplification     | Bound response size relative to request size |
+| Retransmission    | Model timeout/retry as finite protocol state |
+
+### 10. Protocol State Machines
+
+A parser answers "is this frame shaped correctly?" A state machine answers "is this
+message valid now?"
+
+```rust
+enum Session {
+    AwaitHello,
+    Ready { user: String },
+    Closed,
+}
+
+enum Message {
+    Hello { user: String },
+    Data(Vec<u8>),
+    Goodbye,
+}
+
+fn transition(state: Session, message: Message) -> Result<Session, &'static str> {
+    match (state, message) {
+        (Session::AwaitHello, Message::Hello { user }) => {
+            Ok(Session::Ready { user })
+        }
+        (Session::Ready { user }, Message::Data(_)) => {
+            // Process data, then remain ready.
+            Ok(Session::Ready { user })
+        }
+        (Session::Ready { .. }, Message::Goodbye) => Ok(Session::Closed),
+        _ => Err("message is invalid in the current state"),
+    }
+}
+```
+
+A compiler is also a protocol state machine:
+
+```text
+source → parsed → typed → lowered → emitted
+```
+
+### 11. Reverse Engineering an Unknown Protocol Safely
+
+packet-analysis workflow generalizes well to your own local server, interoperability
+research, and authorized captures:
+
+1. identify the transport and endpoints;
+2. capture a baseline exchange;
+3. change one controllable input;
+4. compare packet lengths and changed byte regions;
+5. look for magic values, counters, timestamps, strings, and length prefixes;
+6. test byte order and compression hypotheses;
+7. infer the session state machine;
+8. write a decoder that rejects malformed input;
+9. validate against fresh captures you did not use to form the hypothesis.
+
+| Observed clue                          | Plausible interpretation                       |
+| -------------------------------------- | ---------------------------------------------- |
+| First 2/4 bytes match remaining length | Length-prefixed framing                        |
+| Many readable bytes                    | Text or lightly structured data                |
+| Tiny change affects most later bytes   | Compression, encryption, or integrity data     |
+| Repeated fixed prefix                  | Magic value, version, or header                |
+| Monotonically changing field           | Sequence number or timestamp                   |
+| Same message differs each time         | Nonce, timestamp, randomization, or encryption |
+
+Do not assume traffic is plaintext merely because a few bytes are readable. Do not
+attempt to defeat encryption or access systems without permission.
+
+### 12. Designing a Protocol for Your Own Language
+
+Suppose your language has a remote REPL. Separate framing, message syntax, and
+semantics:
+
+```text
+Frame:
+    version: u8
+    message_kind: u8
+    payload_length: u32 big-endian
+    payload: bytes
+
+Message kinds:
+    1 = Evaluate(source_utf8)
+    2 = Result(value)
+    3 = Diagnostic(code, span, message)
+    4 = Cancel(request_id)
+```
+
+| Protocol area       | Design requirement                               |
+| ------------------- | ------------------------------------------------ |
+| Versioning          | Include a version from the beginning             |
+| Integers            | Define widths and byte order                     |
+| Text                | Specify UTF-8 validity and normalization         |
+| Resource limits     | Cap frames, strings, collections, and nesting    |
+| Identifier domains  | Use newtypes for request IDs and session IDs     |
+| Extensibility       | Define optional/mandatory unknown-field behavior |
+| Authentication      | Authenticate before evaluating code              |
+| Sandboxing          | Bound CPU, memory, and execution time            |
+| Diagnostics         | Use structured fields, not scraped prose         |
+| Compatibility tests | Publish input bytes with expected decoded values |
+
+### 13. Networking Failure Modes
+
+| Failure mode               | Safer design                                         |
+| -------------------------- | ---------------------------------------------------- |
+| Assume full `read`/`write` | Loop with `read_exact`/`write_all` or buffered state |
+| Trust a length field       | Validate against protocol and resource limits        |
+| Omit timeouts              | Bound connect, read, write, and idle time            |
+| Recurse without a limit    | Enforce structural depth                             |
+| Treat TCP close as a frame | Use explicit framing semantics                       |
+| Parse before trust checks  | Place authentication/authorization deliberately      |
+| Trust client type tags     | Validate every tag, offset, and enum value           |
+| Log entire payloads        | Redact and cap diagnostic data                       |
+| Use host endianness        | Specify and encode a wire byte order                 |
+| Change layouts silently    | Version messages and define compatibility            |
+
+Tests should fragment a frame at every possible byte boundary, combine several frames
+into one read, truncate every field, and exercise maximum permitted sizes.
+
+---
+
+## 📡 Embedded Networking with `smoltcp`
+
+[`smoltcp`](https://github.com/smoltcp-rs/smoltcp) is a standalone, event-driven TCP/IP
+stack designed for bare-metal and real-time systems. It can operate without heap
+allocation, making queues, socket buffers, timing, and packet work visible rather than
+hiding them behind an operating-system socket API.
+
+### 1. Stack Architecture
+
+```text
+application / language runtime
+          ↕ socket send and receive buffers
+SocketSet: TCP, UDP, ICMP, DHCP, DNS, raw sockets
+          ↕
+Interface: addressing, routes, neighbors, protocol state
+          ↕
+Device + RxToken / TxToken
+          ↕
+driver, TAP/TUN, loopback, Ethernet MAC, or radio
+```
+
+| Layer       | Owns or describes                                   |
+| ----------- | --------------------------------------------------- |
+| `Device`    | frame receive/transmit capability, MTU, medium      |
+| `Interface` | IP addresses, routes, neighbor/protocol state       |
+| `SocketSet` | heterogeneous sockets identified by stable handles  |
+| socket      | protocol state plus explicitly supplied buffers     |
+| application | when to poll, consume, produce, retry, and time out |
+
+This resembles a language runtime: the device is the host boundary, the interface is
+runtime-wide state, sockets are managed objects, and `poll` is the scheduler step.
+
+### 2. Memory Is Part of the Network Contract
+
+In hosted code, examples may provide `Vec<u8>` storage. In heapless code, the same
+buffer abstractions can borrow fixed slices.
+
+```rust
+use smoltcp::socket::tcp;
+
+static mut RX_BYTES: [u8; 1024] = [0; 1024];
+static mut TX_BYTES: [u8; 1024] = [0; 1024];
+
+// In real embedded code, obtain unique mutable access during initialization.
+// The surrounding platform code must ensure these buffers are never aliased.
+let socket = unsafe {
+    // SAFETY: initialization runs once before interrupts/tasks can access the buffers.
+    let rx = tcp::SocketBuffer::new(&mut *core::ptr::addr_of_mut!(RX_BYTES));
+    let tx = tcp::SocketBuffer::new(&mut *core::ptr::addr_of_mut!(TX_BYTES));
+    tcp::Socket::new(rx, tx)
+};
+```
+
+Prefer linker- or platform-provided single-init cells where available; the snippet makes
+the low-level ownership contract visible, not idealizes `static mut` as an everyday API.
+
+| Fixed resource              | Behavior when exhausted                          |
+| --------------------------- | ------------------------------------------------ |
+| TCP receive buffer          | advertised window shrinks; application must read |
+| TCP transmit buffer         | send capacity disappears until packets advance   |
+| UDP packet metadata/storage | datagram send/receive can fail                   |
+| neighbor cache              | entries are replaced or resolution is delayed    |
+| routes/addresses            | insertion may fail at configured capacity        |
+| reassembly storage          | oversized/excess fragmented packets are dropped  |
+
+> 🧭 **Invariant:** buffer size is observable protocol behavior. Treat it as a deliberate
+> capacity and backpressure decision, not an incidental allocation.
+
+### 3. Polling Makes Scheduling Explicit
+
+`Interface::poll(now, device, sockets)` transmits queued socket data and processes
+queued device packets. `poll_at` or `poll_delay` tells an event loop when protocol timers
+want attention.
+
+```rust
+use smoltcp::iface::{Interface, SocketSet};
+use smoltcp::phy::Device;
+use smoltcp::time::Instant;
+
+fn drive_once(
+    iface: &mut Interface,
+    device: &mut impl Device,
+    sockets: &mut SocketSet<'_>,
+    now: Instant,
+) {
+    let _changed = iface.poll(now, device, sockets);
+
+    // Inspect socket readiness and do a bounded amount of application work here.
+    // Then sleep/yield until the device is ready or iface.poll_at(...) is due.
+}
+```
+
+| Timing mistake                  | Consequence                                   |
+| ------------------------------- | --------------------------------------------- |
+| Poll too late                   | retransmissions and quality of service suffer |
+| Busy-poll continuously          | wasted CPU and energy                         |
+| Use a non-monotonic clock       | broken timeout/retransmission reasoning       |
+| Drain unlimited ingress         | other real-time work may starve               |
+| Ignore application backpressure | buffers fill and useful work is displaced     |
+
+The current interface API warns that a full `poll()` may process an unbounded number of
+queued ingress packets. In a cooperative or real-time scheduler, use
+`poll_ingress_single`, `poll_egress`, and `poll_maintenance` to create explicit yield
+points and bounded work.
+
+### 4. Socket State Is a Protocol State Machine
+
+```rust
+use smoltcp::iface::{SocketHandle, SocketSet};
+use smoltcp::socket::tcp;
+
+fn service_echo(
+    sockets: &mut SocketSet<'_>,
+    handle: SocketHandle,
+) -> Result<(), tcp::ListenError> {
+    let socket = sockets.get_mut::<tcp::Socket<'_>>(handle);
+
+    if !socket.is_open() {
+        socket.listen(7000)?;
+    }
+
+    if socket.can_recv() {
+        let _ = socket.recv(|bytes| {
+            let consumed = bytes.len();
+            // Parse or copy only what the bounded application budget permits.
+            (consumed, ())
+        });
+    }
+
+    Ok(())
+}
+```
+
+| Readiness/state query | Meaning for application logic            |
+| --------------------- | ---------------------------------------- |
+| `is_open()`           | socket is not fully closed               |
+| `is_active()`         | connection has active protocol state     |
+| `can_recv()`          | receive would produce application data   |
+| `may_recv()`          | peer may still send data in the future   |
+| `can_send()`          | transmit buffer currently has capacity   |
+| `may_send()`          | connection may still permit future sends |
+
+Do not equate `can_recv() == false` with EOF. Like a VM or coroutine, a socket can be
+temporarily unable to progress while remaining live.
+
+### 5. A Networked Language Runtime
+
+| Runtime feature       | `smoltcp` integration decision                       |
+| --------------------- | ---------------------------------------------------- |
+| remote REPL           | frame parser, source limit, authentication, timeout  |
+| debugger protocol     | request IDs, cancellation, bounded diagnostic output |
+| package transfer      | chunking, hash verification, storage budget          |
+| actor/message runtime | UDP loss policy or TCP backpressure                  |
+| embedded web endpoint | HTTP parser limits and one/many-connection policy    |
+| telemetry             | sampling, queue eviction, reconnect/backoff          |
+
+Keep protocol parsing independent from the socket. Feed it byte slices and test it with
+fragmentation, coalescing, truncation, invalid lengths, and capacity exhaustion. Then
+test the stack in a loopback or TAP-based lab you control.
+
+### 6. Test Faults, Not Only Happy Packets
+
+The upstream hosted examples support packet dropping, corruption, size limits, rate
+limits, and PCAP capture. These are valuable language-runtime tests too:
+
+| Injected condition | Runtime property to verify                     |
+| ------------------ | ---------------------------------------------- |
+| packet loss        | retry/timeout does not duplicate semantic work |
+| corruption         | checksums and parsers reject damaged input     |
+| tiny MTU           | fragmentation assumptions are not baked in     |
+| tiny socket buffer | backpressure reaches the producer              |
+| slow polling       | deadlines fail predictably                     |
+| connection reset   | pending requests finish with structured errors |
+
+Run raw-interface and fault-injection experiments only on an isolated lab interface or
+network you are authorized to control.
+
+> ➡️ **Next:** QUIC keeps UDP's user-space flexibility while adding secure connections,
+> reliable streams, loss recovery, and congestion control.
+
+---
+
+## ⚡ QUIC Networking with Quinn
+
+The [Quinn networking introduction](https://quinn-rs.github.io/quinn/networking-introduction.html)
+compares TCP, UDP, and QUIC, then motivates QUIC through latency and head-of-line
+blocking. Quinn is an async Rust implementation of QUIC.
+
+### 1. Transport Comparison
+
+| Property          | TCP                              | UDP                      | QUIC                                 |
+| ----------------- | -------------------------------- | ------------------------ | ------------------------------------ |
+| connection        | yes                              | no                       | yes                                  |
+| reliability/order | one reliable ordered byte stream | neither provided         | reliable streams; optional datagrams |
+| implementation    | usually kernel                   | usually kernel primitive | mainly user space over UDP           |
+| security          | separate TLS                     | application-defined      | TLS integrated into the protocol     |
+| multiplexing      | application protocol must add it | application-defined      | multiple independent streams         |
+| migration         | connection tied to address tuple | application-defined      | connection IDs can support migration |
+
+QUIC is not “reliable UDP.” It is a connection protocol built over UDP with its own
+handshake, encryption, stream, loss-recovery, and congestion-control behavior.
+
+### 2. Head-of-Line Blocking Has Layers
+
+TCP exposes one ordered stream. If a packet containing earlier bytes is lost, later
+bytes cannot be delivered to the application even if they belong to an unrelated
+logical request.
+
+```text
+TCP connection:
+request A bytes ─┐
+request B bytes ─┼─ one ordered delivery sequence
+request C bytes ─┘
+
+QUIC connection:
+stream A ─ independent ordered sequence
+stream B ─ independent ordered sequence
+stream C ─ independent ordered sequence
+```
+
+Loss on one QUIC stream does not prevent complete data on another stream from becoming
+available to the application. Congestion control still couples traffic at the
+connection/path level, so “independent” does not mean resource-free.
+
+### 3. Quinn's Core Objects
+
+```text
+Endpoint
+  └── Connection
+      ├── bidirectional stream: SendStream + RecvStream
+      ├── unidirectional SendStream
+      ├── unidirectional RecvStream
+      └── unreliable datagrams
+```
+
+| Object/API              | Responsibility                                  |
+| ----------------------- | ----------------------------------------------- |
+| `Endpoint`              | bind UDP socket, accept/connect, own QUIC state |
+| `Connection`            | secure peer session and shared transport state  |
+| `open_bi`/`accept_bi`   | create/accept bidirectional streams             |
+| `open_uni`/`accept_uni` | create/accept one-way streams                   |
+| datagram API            | bounded unreliable messages                     |
+| connection stats        | observe loss, RTT, congestion, and traffic      |
+
+### 4. A Bounded Request on an Existing Connection
+
+```rust
+use anyhow::{Context, Result};
+use tokio::io::AsyncWriteExt;
+
+const MAX_RESPONSE_BYTES: usize = 256 * 1024;
+
+async fn request(
+    connection: &quinn::Connection,
+    payload: &[u8],
+) -> Result<Vec<u8>> {
+    let (mut send, mut receive) = connection
+        .open_bi()
+        .await
+        .context("open QUIC stream")?;
+
+    send.write_all(payload)
+        .await
+        .context("write request")?;
+    send.finish().context("finish request stream")?;
+
+    receive
+        .read_to_end(MAX_RESPONSE_BYTES)
+        .await
+        .context("read bounded response")
+}
+```
+
+The connection setup is deliberately separate because certificate trust, server name,
+transport configuration, socket address, timeouts, and resumption policy belong to a
+larger security contract.
+
+### 5. Streams Need Application Framing
+
+A QUIC stream is still a byte stream. Opening one stream per request can provide a
+natural boundary, but a long-lived stream still needs explicit framing.
+
+| Choice                   | Appropriate when                            |
+| ------------------------ | ------------------------------------------- |
+| one stream per request   | independent request/response exchanges      |
+| long-lived framed stream | ordered session, REPL, incremental protocol |
+| unidirectional stream    | logs, asset push, one-way result            |
+| datagram                 | stale data is worse than missing data       |
+
+Never allocate directly from an untrusted length field. Cap stream count, total buffered
+bytes, message length, decompressed size, and work per connection.
+
+### 6. Security and Replay
+
+| Concern             | Design requirement                                        |
+| ------------------- | --------------------------------------------------------- |
+| certificate trust   | verify the intended identity; do not disable verification |
+| ALPN                | negotiate the exact application protocol                  |
+| 0-RTT               | early data may be replayed; allow only replay-safe work   |
+| authentication      | transport identity may not equal application user         |
+| migration           | authorization must not rely only on source IP             |
+| key logging/tracing | keep diagnostic secrets out of production logs            |
+
+A safe 0-RTT operation is idempotent or otherwise replay-tolerant. “Charge account,”
+“delete record,” and “run build” are not safe merely because the transport accepts them
+early.
+
+### 7. Backpressure and Concurrency
+
+```rust
+use std::sync::Arc;
+use tokio::sync::Semaphore;
+
+async fn serve_connection(
+    connection: quinn::Connection,
+    permits: Arc<Semaphore>,
+) -> anyhow::Result<()> {
+    loop {
+        let (send, receive) = connection.accept_bi().await?;
+        let permit = Arc::clone(&permits).acquire_owned().await?;
+
+        tokio::spawn(async move {
+            let _permit = permit;
+            if let Err(error) = handle_stream(send, receive).await {
+                tracing::warn!(%error, "stream failed");
+            }
+        });
+    }
+}
+```
+
+The semaphore bounds active stream handlers. A production server also needs connection
+limits, idle timeouts, cancellation, task supervision, per-peer policy, and a strategy
+for expected connection closure.
+
+### 8. QUIC for a Language Runtime
+
+| Runtime feature         | Useful QUIC mapping                           |
+| ----------------------- | --------------------------------------------- |
+| compile request         | one bidirectional stream                      |
+| diagnostic stream       | server-initiated unidirectional stream        |
+| debugger session        | long-lived framed bidirectional stream        |
+| cancellation            | reset/stop the request stream plus request ID |
+| live telemetry          | datagrams when old samples have no value      |
+| package/object transfer | independent reliable streams with hashes      |
+
+Define semantic cancellation separately from transport reset: stopping byte delivery
+does not automatically roll back compilation, database work, or external effects.
+
+> ➡️ **Next:** browser internals follow network responses into HTML parsing, style,
+> layout, painting, and script execution.
+
+---
+
+## 🌐 How Browser Engines Turn Bytes into Pixels
+
+The classic [How Browsers Work](https://web.dev/articles/howbrowserswork) article gives
+a useful **conceptual pipeline** for browser internals. It was originally published in
+2011, and the page itself warns that parts are no longer accurate. Use it to build a
+mental model—not as a current specification for Chromium, Firefox, or WebKit internals.
+
+> 🧠 **Compiler connection:** a browser is several language implementations cooperating
+> in real time: HTML builds structure, CSS computes presentation rules, JavaScript
+> mutates state, and the rendering engine turns the result into pixels.
+
+### 1. The Major Browser Subsystems
+
+| Subsystem           | Main responsibility                            | Language/runtime analogy                 |
+| ------------------- | ---------------------------------------------- | ---------------------------------------- |
+| user interface      | tabs, address bar, navigation, chrome          | debugger or IDE shell                    |
+| browser engine      | coordinates navigation and page lifecycle      | compilation driver                       |
+| networking          | fetches resources under cache/security rules   | module loader                            |
+| rendering engine    | parses, styles, lays out, and paints documents | compiler front end plus display backend  |
+| JavaScript engine   | parses, optimizes, and executes scripts        | JIT/AOT language runtime                 |
+| UI/graphics backend | draws platform controls and graphics           | target-specific code-generation backend  |
+| storage             | cookies, caches, databases, local state        | persistent runtime state                 |
+| process sandbox     | isolates sites, frames, or services            | privilege and fault-containment boundary |
+
+Real browsers use multiple processes and threads. The exact split changes over time, so
+reason in terms of **responsibilities and messages**, not one fixed process diagram.
+
+### 2. The Rendering Pipeline
+
+```text
+network bytes
+    ├─ HTML tokenizer + tree builder ───────────────→ DOM
+    ├─ CSS parser ─────────────────────────────────→ style rules
+    └─ scripts/fonts/images ───────────────────────→ external resources
+
+DOM + matching/cascade + inherited values
+    ↓
+computed styles + render/layout objects
+    ↓
+layout: sizes and positions
+    ↓
+paint records / display list
+    ↓
+rasterization + compositing
+    ↓
+pixels
+```
+
+This diagram is a dependency graph, **not a promise of strictly sequential execution**.
+Browsers stream input, discover resources early, update partial trees, invalidate only
+affected work when possible, and may perform raster/compositing work elsewhere.
+
+| Stage             | Core question                                | Typical bug or cost                         |
+| ----------------- | -------------------------------------------- | ------------------------------------------- |
+| tokenize          | Which HTML token is next?                    | malformed input or wrong parser state       |
+| tree construction | Where does this token belong?                | surprising error recovery                   |
+| style computation | Which declarations win for this element?     | cascade/specificity confusion               |
+| layout            | What rectangle does each visible box occupy? | unnecessary synchronous relayout            |
+| paint             | In what order are visual commands emitted?   | repainting a large invalidated region       |
+| composite         | How are rendered layers combined?            | too many layers or expensive visual effects |
+
+### 3. HTML Parsing Is an Error-Recovering State Machine
+
+HTML is not parsed like a small, strict configuration grammar. Its tokenizer changes
+state based on characters and context; tree construction tracks insertion modes and a
+stack of open elements. Invalid or awkward markup is often repaired according to
+defined recovery rules.
+
+```text
+bytes → tokenizer state → token
+                     token + insertion mode + open-element stack
+                                      ↓
+                              DOM mutation/recovery
+```
+
+| Strict language parser                    | Browser HTML parser                         |
+| ----------------------------------------- | ------------------------------------------- |
+| usually rejects malformed syntax          | attempts deterministic recovery             |
+| grammar can often stay context-free-ish   | state and tree context strongly affect work |
+| parsing often completes before evaluation | scripts can interact with parsing           |
+| one AST represents the program            | several cooperating trees/representations   |
+
+When designing your own language, decide explicitly whether malformed input is:
+
+1. **fatal** for batch compilation;
+2. **recoverable** for an IDE so later diagnostics remain visible; or
+3. **normalized** for a tolerant data/document format.
+
+Recovery is part of the language contract. Test it with incomplete and adversarial
+input, not just valid programs.
+
+### 4. DOM, Style, and Layout Trees Are Different Representations
+
+The DOM records document structure, but it is not a one-to-one map of painted objects.
+
+| Example                          | DOM representation | Render/layout representation           |
+| -------------------------------- | ------------------ | -------------------------------------- |
+| `<head>` metadata                | present            | normally no visible box                |
+| `display: none` subtree          | present            | omitted from layout/paint              |
+| text inside styled elements      | text nodes         | one or more shaped/layout text runs    |
+| pseudo-element                   | no ordinary node   | generated presentation object          |
+| positioned or fragmented content | one source element | may require specialized/multiple boxes |
+
+This is the same reason a compiler keeps several IRs:
+
+```text
+source syntax tree       answers "what was written?"
+typed IR                 answers "what does it mean?"
+control-flow IR          answers "what can execute next?"
+machine IR               answers "how will the target do it?"
+
+DOM                      answers "what document exists?"
+computed style/layout    answers "what visual objects and geometry exist?"
+display list             answers "what drawing operations must occur?"
+```
+
+Do not force one structure to answer every question. Derive representations with clear
+invariants and keep mappings for diagnostics and debugging.
+
+### 5. Scripts, Styles, and Resource Discovery Affect Order
+
+Classic scripts can pause HTML parsing because they may inspect or mutate the document.
+Deferred and asynchronous loading modes express different ordering constraints.
+Browsers may also use a speculative scanner to discover likely resources while the main
+parser is blocked.
+
+| Resource behavior   | Useful mental model                                   |
+| ------------------- | ----------------------------------------------------- |
+| parser-blocking     | execute at a specific construction point              |
+| deferred            | fetch alongside parsing, run after document parsing   |
+| asynchronous        | execute when ready; do not rely on document order     |
+| speculative preload | discover/fetch early without committing DOM mutations |
+
+> ⚠️ **Ordering rule:** “downloaded” does not mean “safe to execute now.” Fetch order,
+> execution order, DOM readiness, and dependency readiness are separate states.
+
+That distinction also matters in a module loader for your own language:
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ModuleState {
+    Discovered,
+    Fetching,
+    Parsed,
+    Linked,
+    Ready,
+    Failed,
+}
+```
+
+### 6. Style Is a Rule-Resolution System
+
+Style computation combines selector matching, inheritance, defaults, origins,
+importance, specificity, and source order. It resembles name resolution: many
+candidates exist, but deterministic precedence chooses the effective value.
+
+| CSS idea           | Compiler analogy                            |
+| ------------------ | ------------------------------------------- |
+| selector matching  | lookup candidates for a symbol              |
+| cascade precedence | overload/scope priority rules               |
+| inherited property | environment passed from parent scope        |
+| computed value     | resolved, normalized semantic value         |
+| invalidation       | dependency-driven incremental recompilation |
+
+A useful engine design stores enough dependency information to answer:
+**“If this attribute, class, or rule changed, which computed results may now be stale?”**
+
+```rust
+enum Dirty {
+    Clean,
+    Paint,
+    LayoutAndPaint,
+    RecomputeStyle,
+    RebuildSubtree,
+}
+```
+
+Use the smallest sound invalidation class. An incorrect narrow invalidation produces
+stale output; invalidating everything preserves correctness but wastes time.
+
+### 7. Layout, Paint, and Composite Are Separate Costs
+
+| Change                                | Minimum conceptual work                    |
+| ------------------------------------- | ------------------------------------------ |
+| text color                            | paint                                      |
+| width, font metrics, or position      | layout then paint                          |
+| element added/removed                 | style/tree update, layout, then paint      |
+| transform/opacity on a suitable layer | often composite, subject to implementation |
+
+Layout calculates geometry and may be global or incremental. Browsers mark affected
+objects dirty, then update them when needed. Reading a geometry property after a DOM
+write can force pending layout to complete immediately.
+
+```text
+bad:    write style → read geometry → write style → read geometry
+better: read required geometry → compute → batch writes
+```
+
+Paint walks visible objects in defined visual order and emits drawing operations.
+Incremental painting tries to restrict work to invalidated regions. Compositing combines
+already-rendered surfaces/layers, but layer promotion is an optimization—not a semantic
+guarantee to depend on.
+
+### 8. A Tiny Browser-Like Architecture for Your Own UI Language
+
+```rust
+struct UiEngine {
+    document: DocumentTree,
+    styles: StyleSheet,
+    layout: LayoutTree,
+    display_list: Vec<DrawCommand>,
+}
+
+enum DrawCommand {
+    FillRect { x: f32, y: f32, w: f32, h: f32, rgba: [u8; 4] },
+    Text { x: f32, y: f32, text: String },
+}
+```
+
+Keep the passes explicit:
+
+| Pass               | Input                           | Output/invariant                 |
+| ------------------ | ------------------------------- | -------------------------------- |
+| parse document     | bounded UTF-8 source            | well-formed recoverable tree     |
+| resolve styles     | tree + rules                    | effective values per styled node |
+| construct layout   | styled visible nodes            | boxes linked to source nodes     |
+| compute geometry   | boxes + viewport/font metrics   | finite sizes and positions       |
+| build display list | ordered boxes                   | backend-neutral drawing commands |
+| render             | display list + graphics backend | pixels or recorded vector output |
+
+This design can target SDL, a browser canvas, a GPU API, or a test renderer. Snapshot
+the display list in tests so layout logic can be verified without comparing screenshots
+for every case.
+
+> ➡️ **Next:** Actix shows the server side of the web boundary, while `wasm-bindgen`,
+> `web-sys`, and the DOM expose the browser-hosted side.
+
+---
+
+## 🕸 Rust Web Boundaries: Actix Web & wasm-bindgen
+
+Actix Web and `wasm-bindgen` sit on opposite sides of the web:
+
+```text
+browser JavaScript
+    ↕ wasm-bindgen glue
+Rust compiled to WebAssembly
+    ↕ HTTP / structured messages
+Actix Web service
+```
+
+Both are boundary-design problems. Bytes and dynamic values enter Rust, become typed
+data, pass through application logic, and are converted back into an external
+representation.
+
+### 1. Boundary Comparison
+
+| Concern            | Actix Web boundary                        | `wasm-bindgen` boundary                    |
+| ------------------ | ----------------------------------------- | ------------------------------------------ |
+| External peer      | HTTP client                               | JavaScript host                            |
+| Input conversion   | Extractors (`Path`, `Query`, `Json`)      | Generated JS/Wasm bindings                 |
+| Error form         | HTTP status + response body               | `Result<T, JsValue>` / JS exception        |
+| Shared state       | `web::Data<T>`                            | Exported Rust object or Wasm linear memory |
+| Trust boundary     | Network request                           | Host calls and JS values                   |
+| Main resource risk | Connections, bodies, tasks, backend calls | Copies, memory growth, handles, JS GC      |
+
+---
+
+### 2. Actix Web Application Shape
+
+Current Actix Web 4 applications construct an `App` inside an `HttpServer` factory:
+
+```rust
+use actix_web::{get, web, App, HttpServer, Responder};
+
+#[get("/hello/{name}")]
+async fn hello(name: web::Path<String>) -> impl Responder {
+    let name = name.into_inner();
+    format!("Hello, {name}!")
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| App::new().service(hello))
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
+}
+```
+
+The server factory may run once per worker. Create intentionally shared state outside
+the closure and clone its `web::Data` handle into each app.
+
+### 3. Extractors Turn Requests into Typed Inputs
+
+| Extractor       | Source in the HTTP request                  |
+| --------------- | ------------------------------------------- |
+| `web::Path<T>`  | Variables captured by the route             |
+| `web::Query<T>` | URL query string                            |
+| `web::Json<T>`  | JSON request body                           |
+| `web::Data<T>`  | Application state                           |
+| `HttpRequest`   | Headers, peer data, extensions, method, URI |
+| `web::Bytes`    | Buffered raw body                           |
+
+```rust
+use actix_web::{web, HttpResponse, Responder};
+use serde::{Deserialize, Serialize};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+struct AppState {
+    next_job: AtomicU64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct CreateJob {
+    source: String,
+}
+
+#[derive(Debug, Serialize)]
+struct JobAccepted {
+    id: u64,
+    source_bytes: usize,
+}
+
+async fn create_job(
+    state: web::Data<AppState>,
+    request: web::Json<CreateJob>,
+) -> impl Responder {
+    let id = state.next_job.fetch_add(1, Ordering::Relaxed);
+    web::Json(JobAccepted {
+        id,
+        source_bytes: request.source.len(),
+    })
+}
+
+fn configure(config: &mut web::ServiceConfig) {
+    config.service(
+        web::resource("/jobs")
+            .route(web::post().to(create_job)),
+    );
+}
+```
+
+> 🚧 **Extraction is parsing:** a handler should receive values that already satisfy
+> transport-level syntax, then perform application validation such as source-size,
+> authorization, and allowed-language checks.
+
+### 4. Bound Request Resources
+
+```rust
+use actix_web::web;
+
+fn json_config() -> web::JsonConfig {
+    web::JsonConfig::default()
+        .limit(32 * 1024)
+}
+```
+
+| Resource          | Boundary to define                              |
+| ----------------- | ----------------------------------------------- |
+| Request body      | Maximum compressed and decoded size             |
+| JSON nesting      | Parser/format limits when configurable          |
+| Path/query values | Length and allowed character policy             |
+| Connections       | Worker, backlog, keep-alive, and timeout policy |
+| Backend calls     | Timeout and retry budget                        |
+| Spawned tasks     | Concurrency limit and cancellation behavior     |
+| Response          | Maximum buffered or streamed output             |
+
+Do not hold a synchronous mutex guard across `.await`. Prefer an atomic for small
+independent counters, a short critical section for local compound state, or an
+async-aware/resource-specific client pool for I/O.
+
+### 5. Typed HTTP Errors
+
+```rust
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
+use std::fmt;
+
+#[derive(Debug)]
+enum ApiError {
+    InvalidSource,
+    Overloaded,
+}
+
+impl fmt::Display for ApiError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidSource => write!(formatter, "invalid source"),
+            Self::Overloaded => write!(formatter, "service overloaded"),
+        }
+    }
+}
+
+impl ResponseError for ApiError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::InvalidSource => StatusCode::BAD_REQUEST,
+            Self::Overloaded => StatusCode::SERVICE_UNAVAILABLE,
+        }
+    }
+
+    fn error_response(&self) -> HttpResponse {
+        HttpResponse::build(self.status_code())
+            .body(self.to_string())
+    }
+}
+```
+
+| Error layer     | Suitable information                               |
+| --------------- | -------------------------------------------------- |
+| Internal error  | Source chain, operation, IDs, private diagnostics  |
+| Log/trace event | Correlation ID, sanitized context, latency         |
+| Client response | Stable code, safe message, appropriate HTTP status |
+
+Avoid exposing filesystem paths, database errors, backtraces, secrets, or parser
+internals to an untrusted client.
+
+### 6. Middleware and Handler Responsibilities
+
+| Concern                      | Best location                        |
+| ---------------------------- | ------------------------------------ |
+| Correlation/request ID       | Middleware                           |
+| Access logging and timing    | Middleware                           |
+| Authentication context       | Middleware/extractor                 |
+| Route-specific authorization | Handler or domain service            |
+| Input extraction             | Typed extractor                      |
+| Business rules               | Domain function independent of Actix |
+| HTTP response mapping        | Handler / `ResponseError`            |
+
+Body-consuming extractors need special care in middleware because the body is a stream.
+A middleware that consumes it must deliberately restore or replace what downstream
+handlers receive.
+
+### 7. Test the Service Without Opening a Port
+
+```rust
+use actix_web::{http::StatusCode, test, web, App};
+use std::sync::atomic::AtomicU64;
+
+#[actix_web::test]
+async fn accepts_a_job() {
+    let state = web::Data::new(AppState {
+        next_job: AtomicU64::new(1),
+    });
+
+    let app = test::init_service(
+        App::new()
+            .app_data(state)
+            .app_data(json_config())
+            .configure(configure),
+    )
+    .await;
+
+    let request = test::TestRequest::post()
+        .uri("/jobs")
+        .set_json(&CreateJob {
+            source: "1 + 2".to_owned(),
+        })
+        .to_request();
+
+    let response = test::call_service(&app, request).await;
+    assert_eq!(response.status(), StatusCode::OK);
+}
+```
+
+Test routing and HTTP conversion at the Actix layer, but keep most language parsing,
+type checking, and compilation tests independent of the web framework.
+
+---
+
+### 8. What `wasm-bindgen` Generates
+
+WebAssembly itself has a deliberately small boundary based on numeric values, linear
+memory, functions, tables, imports, and exports. `wasm-bindgen` generates glue that maps
+more ergonomic Rust and JavaScript values across that lower-level interface.
+
+```text
+Rust source + #[wasm_bindgen]
+    ↓ rustc --target wasm32-unknown-unknown
+.wasm module
+    ↓ wasm-bindgen CLI/tooling
+processed Wasm + JavaScript/TypeScript bindings
+```
+
+| Layer                | Responsibility                                 |
+| -------------------- | ---------------------------------------------- |
+| Rust compiler        | Produce the Wasm module                        |
+| `wasm-bindgen` macro | Describe imported/exported boundary items      |
+| Binding generator    | Produce JS glue and metadata                   |
+| JavaScript loader    | Instantiate the module and satisfy imports     |
+| Wasm linear memory   | Store Rust stacks, heaps, strings, and buffers |
+
+### 9. Export Rust Functions and Types
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn read_u32_be(bytes: &[u8]) -> Result<u32, JsValue> {
+    let bytes: [u8; 4] = bytes
+        .get(..4)
+        .ok_or_else(|| JsValue::from_str("expected four bytes"))?
+        .try_into()
+        .map_err(|_| JsValue::from_str("invalid byte slice"))?;
+
+    Ok(u32::from_be_bytes(bytes))
+}
+
+#[wasm_bindgen]
+pub struct Counter {
+    value: u32,
+}
+
+#[wasm_bindgen]
+impl Counter {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self { value: 0 }
+    }
+
+    pub fn increment(&mut self) -> u32 {
+        self.value = self.value.saturating_add(1);
+        self.value
+    }
+}
+```
+
+An exported Rust struct appears to JavaScript through a generated wrapper/handle. Its
+fields remain private unless explicitly exported through methods or accessors.
+
+### 10. Import JavaScript Functions
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(message: &str);
+}
+
+#[wasm_bindgen]
+pub fn announce(message: &str) {
+    log(message);
+}
+```
+
+An imported JavaScript function is an environmental dependency just like an OS system
+call or host function in a custom VM. Keep imports narrow so the module's capabilities
+are easy to audit and replace in tests.
+
+### 11. Value and Ownership Boundaries
+
+| Rust-side value      | Boundary behavior to remember                        |
+| -------------------- | ---------------------------------------------------- |
+| Numbers/booleans     | Converted directly when supported                    |
+| `String` / `&str`    | Encoded/decoded through Wasm memory                  |
+| `Vec<u8>` / `&[u8]`  | Typically copied to/from typed-array-compatible data |
+| `JsValue`            | Dynamic escape hatch; loses Rust type precision      |
+| Exported Rust struct | JavaScript wrapper holds a Rust-side allocation      |
+| Imported JS object   | Rust holds a generated handle to a host object       |
+| `Option<T>`          | Often maps to a nullable/optional host value         |
+
+> ⚠️ **Memory-view hazard:** Wasm memory can grow. JavaScript typed-array views into old
+> memory may become stale after growth, so reacquire views according to the generated
+> API instead of retaining them indefinitely.
+
+### 12. Error Design Across JavaScript
+
+Use `Result<T, JsValue>` when a Rust export can fail for a JavaScript caller:
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn checked_frame_size(length: u32) -> Result<u32, JsValue> {
+    const MAX_FRAME: u32 = 64 * 1024;
+    if length > MAX_FRAME {
+        return Err(JsValue::from_str("frame exceeds limit"));
+    }
+    Ok(length)
+}
+```
+
+| Boundary choice     | Trade-off                                       |
+| ------------------- | ----------------------------------------------- |
+| `JsValue` error     | Natural JS interop, weak Rust-side structure    |
+| Numeric error code  | Compact ABI, requires an external error table   |
+| Serialized error    | Stable schema, conversion overhead              |
+| Exported error type | Rich API, more bindings and lifetime management |
+
+Do not expose Rust panics as normal validation. Convert expected failure into `Result`
+and install deliberate panic diagnostics only for unexpected bugs.
+
+### 13. Using Wasm as a Language Target
+
+For your own language, WebAssembly can be:
+
+| Role                      | Architecture                                    |
+| ------------------------- | ----------------------------------------------- |
+| Compilation target        | Source → typed IR → Wasm                        |
+| Sandboxable plugin format | Host supplies a small import capability set     |
+| Browser runtime           | Language VM compiled to Wasm, UI supplied by JS |
+| Portable bytecode         | Server/CLI embeds a Wasm engine                 |
+
+| Wasm language-target contract | Decision to define                                |
+| ----------------------------- | ------------------------------------------------- |
+| Imports                       | Module and function names                         |
+| Representation                | Value and memory layouts                          |
+| Allocation                    | Ownership across host/module calls                |
+| Strings/errors                | Encoding and failure representation               |
+| Memory growth                 | Whether growth is permitted and view invalidation |
+| Resource limits               | Fuel, wall time, stack, and memory                |
+| Capabilities                  | Deterministic/nondeterministic host functions     |
+
+This is the same design work as an FFI ABI and a network protocol: **representation,
+ownership, versioning, and trust** must all be explicit.
+
+### 14. The DOM Is a Host-Owned Object Graph
+
+As the
+[`wasm-bindgen` DOM examples](https://wasm-bindgen.github.io/wasm-bindgen/examples/dom.html)
+demonstrate, the browser's Document Object Model is **not stored inside Wasm linear
+memory**. `web-sys` exposes typed Rust handles to JavaScript-managed objects.
+
+```text
+browser Window
+    └── Document
+        └── Node tree
+            ├── Element
+            │   └── HtmlElement / HtmlCanvasElement / ...
+            └── Text
+
+Rust/Wasm holds generated JS handles ──→ objects above
+Rust values, stack, heap, strings ─────→ Wasm linear memory
+```
+
+| Type          | Role                                              |
+| ------------- | ------------------------------------------------- |
+| `Window`      | browser global, timers, location, event target    |
+| `Document`    | element creation and document-wide lookup         |
+| `Node`        | common tree operations such as `append_child`     |
+| `Element`     | attributes, selectors, classes, element content   |
+| `HtmlElement` | HTML-specific style, focus, and common properties |
+| `EventTarget` | add/remove event listener boundary                |
+| `JsValue`     | dynamic JavaScript value and error carrier        |
+
+`web-sys` APIs are feature-gated. Enable only the browser types and methods your crate
+uses; a compile error about a missing method may mean a missing Cargo feature rather
+than a missing browser API.
+
+### 15. Create and Attach DOM Nodes
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(start)]
+pub fn start() -> Result<(), JsValue> {
+    let window = web_sys::window()
+        .ok_or_else(|| JsValue::from_str("window is unavailable"))?;
+    let document = window
+        .document()
+        .ok_or_else(|| JsValue::from_str("document is unavailable"))?;
+    let body = document
+        .body()
+        .ok_or_else(|| JsValue::from_str("document has no body"))?;
+
+    let status = document.create_element("p")?;
+    status.set_id("compiler-status");
+    status.set_text_content(Some("Compiler ready 🦀"));
+    body.append_child(&status)?;
+    Ok(())
+}
+```
+
+Prefer `set_text_content` when displaying untrusted text. `set_inner_html` parses HTML,
+so using it with untrusted source, diagnostics, names, or network data can create an
+injection vulnerability.
+
+| Lookup/creation API | Result shape                 | Design response                 |
+| ------------------- | ---------------------------- | ------------------------------- |
+| `web_sys::window()` | `Option<Window>`             | host environment may differ     |
+| `window.document()` | `Option<Document>`           | worker has no `Document`        |
+| `get_element_by_id` | `Option<Element>`            | missing markup is expected      |
+| `query_selector`    | `Result<Option<Element>, _>` | selector may be invalid/missing |
+| `create_element`    | `Result<Element, JsValue>`   | browser operation may throw     |
+| `append_child`      | `Result<Node, JsValue>`      | tree mutation may fail          |
+
+### 16. Cast Only at a Checked Boundary
+
+A CSS selector returns a general `Element`. Use `JsCast::dyn_into` when an operation
+requires a more specific browser type.
+
+```rust
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::HtmlInputElement;
+
+fn source_text(document: &web_sys::Document) -> Result<String, JsValue> {
+    let element = document
+        .get_element_by_id("source")
+        .ok_or_else(|| JsValue::from_str("missing #source"))?;
+    let input = element
+        .dyn_into::<HtmlInputElement>()
+        .map_err(|_| JsValue::from_str("#source is not an input element"))?;
+    Ok(input.value())
+}
+```
+
+| Cast style              | Use                                             |
+| ----------------------- | ----------------------------------------------- |
+| `dyn_ref::<T>()`        | checked borrowed view; keep original handle     |
+| `dyn_into::<T>()`       | checked consuming conversion                    |
+| `unchecked_ref::<T>()`  | glue boundary only when type is already proven  |
+| `unchecked_into::<T>()` | rare; caller assumes the complete type contract |
+
+Unchecked casting is analogous to `unsafe`: keep it local and document what establishes
+the runtime JavaScript type.
+
+### 17. DOM Event Listeners Need Lifetime Design
+
+Browser callbacks are JavaScript functions, while Rust closures live in Wasm-managed
+state. Dropping a `Closure` while JavaScript still holds its callback is invalid.
+Calling `forget()` keeps it alive forever, which is acceptable only for a truly
+page-lifetime listener.
+
+```rust
+use wasm_bindgen::{closure::Closure, JsCast, JsValue};
+use web_sys::{EventTarget, MouseEvent};
+
+struct ClickListener {
+    target: EventTarget,
+    callback: Closure<dyn FnMut(MouseEvent)>,
+}
+
+impl ClickListener {
+    fn install(
+        target: EventTarget,
+        mut on_click: impl FnMut(MouseEvent) + 'static,
+    ) -> Result<Self, JsValue> {
+        let callback = Closure::new(move |event: MouseEvent| on_click(event));
+        target.add_event_listener_with_callback(
+            "click",
+            callback.as_ref().unchecked_ref(),
+        )?;
+        Ok(Self { target, callback })
+    }
+}
+
+impl Drop for ClickListener {
+    fn drop(&mut self) {
+        let _ = self.target.remove_event_listener_with_callback(
+            "click",
+            self.callback.as_ref().unchecked_ref(),
+        );
+    }
+}
+```
+
+The application must retain the `ClickListener` for as long as the UI is active. This
+RAII shape pairs registration with removal and works well inside a Rust application
+struct exported through `wasm-bindgen`.
+
+| Callback strategy        | Lifetime/result                                 |
+| ------------------------ | ----------------------------------------------- |
+| local `Closure`, dropped | listener becomes invalid                        |
+| `closure.forget()`       | page-lifetime leak by design                    |
+| store in app state       | listener lives with component/application       |
+| RAII listener wrapper    | automatically unregisters when owner is dropped |
+
+### 18. UI State Crosses Two Memory Managers
+
+```rust
+use std::{cell::Cell, rc::Rc};
+
+let clicks = Rc::new(Cell::new(0_u32));
+let callback_state = Rc::clone(&clicks);
+
+let listener = ClickListener::install(button.into(), move |_event| {
+    callback_state.set(callback_state.get().saturating_add(1));
+})?;
+```
+
+| Ownership edge                  | What keeps it alive                   |
+| ------------------------------- | ------------------------------------- |
+| Rust state captured by closure  | Wasm closure environment              |
+| `Closure` callback wrapper      | Rust owner or deliberate `forget()`   |
+| DOM node                        | browser DOM tree and JS references    |
+| Rust handle to DOM node         | generated JS reference table/glue     |
+| typed-array view of Wasm memory | JS value, but backing memory may grow |
+
+`Rc<Cell<T>>` is appropriate for small single-threaded browser state. Use
+`Rc<RefCell<T>>` for more complex mutable state, but keep borrows short and never call
+unknown JavaScript while a mutable `RefCell` borrow is held: JavaScript can re-enter
+Rust through another callback.
+
+### 19. DOM Work Is Also Performance Work
+
+| Expensive pattern                         | Better direction                                |
+| ----------------------------------------- | ----------------------------------------------- |
+| alternate layout reads and writes         | group reads, compute, then group writes         |
+| rebuild a large subtree for one text edit | mutate the smallest stable node                 |
+| copy huge buffers for every event         | batch, reuse, or expose bounded views carefully |
+| compile on every keystroke immediately    | debounce/cancel stale work                      |
+| block the main thread with language work  | use a Web Worker or incremental execution       |
+
+For a browser-hosted language:
+
+```text
+DOM input event
+    ↓ capture bounded source text
+debounced compile request
+    ↓ lexer → parser → type checker → Wasm/backend
+structured diagnostics
+    ↓ escape as text, map byte spans to source view
+small batched DOM update
+```
+
+Keep the compiler core independent of `web-sys`. A browser adapter should translate DOM
+events into plain Rust inputs and translate structured compiler results back into UI
+updates. That preserves CLI, test, server, and browser front ends over one language
+implementation.
+
+> ➡️ **Next:** SDL exposes native windows, input, timing, audio, and drawing without the
+> browser's document and JavaScript host layers.
+
+---
+
+## 🎮 Native Event Loops & Multimedia with SDL3
+
+The [SDL3 API by category](https://wiki.libsdl.org/SDL3/APIByCategory) is best read as a
+map of platform services. SDL does not impose a game architecture; it gives a portable
+boundary over windows, input, graphics, audio, timing, files, threads, and devices.
+
+### 1. Read the API by Responsibility
+
+| API family            | What it gives the program                    | Boundary to design carefully          |
+| --------------------- | -------------------------------------------- | ------------------------------------- |
+| initialization        | subsystem startup/shutdown                   | partial failure and cleanup           |
+| video                 | windows, displays, surfaces                  | OS-owned handles                      |
+| events                | keyboard, mouse, touch, window/device events | queue draining and latency            |
+| 2D render             | draw state, textures, primitives, present    | frame lifetime and backend state      |
+| GPU                   | explicit modern graphics work                | synchronization and resource lifetime |
+| audio                 | devices, streams, formats                    | real-time callback constraints        |
+| gamepad/joystick      | controllers, axes, buttons, hotplug          | unstable device identities            |
+| time                  | ticks, delay, high-resolution timing         | units, overflow, frame pacing         |
+| threads/synchronizing | worker threads, mutexes, conditions          | ownership and shutdown                |
+| I/O/storage           | streams, paths, filesystem helpers           | untrusted bytes and platform paths    |
+| properties/logging    | extensible metadata and diagnostics          | type agreement and observability      |
+
+> 🆕 **SDL3 migration note:** do not paste SDL2 error checks blindly. Many SDL3
+> operations—including `SDL_Init` and `SDL_CreateWindowAndRenderer`—return `bool`, with
+> `true` meaning success.
+
+### 2. Resource Lifetime Is the First Invariant
+
+```text
+SDL_Init
+    ↓
+create window + renderer
+    ↓
+poll events → update state → render → present
+    ↓
+destroy renderer → destroy window
+    ↓
+SDL_Quit
+```
+
+Every successful acquisition must have one cleanup path. Destroy resources in an order
+compatible with their dependencies.
+
+### 3. Minimal SDL3 Window and Render Loop
+
+```c
+#include <SDL3/SDL.h>
+#include <stdbool.h>
+
+int main(void) {
+    SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
+
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        SDL_Log("SDL_Init failed: %s", SDL_GetError());
+        return 1;
+    }
+
+    if (!SDL_CreateWindowAndRenderer(
+            "Language Runtime", 800, 600, 0, &window, &renderer)) {
+        SDL_Log("window/renderer creation failed: %s", SDL_GetError());
+        SDL_Quit();
+        return 1;
+    }
+
+    bool running = true;
+    while (running) {
+        SDL_Event event;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_EVENT_QUIT) {
+                running = false;
+            }
+        }
+
+        SDL_SetRenderDrawColor(renderer, 18, 22, 30, 255);
+        SDL_RenderClear(renderer);
+
+        SDL_FRect box = {120.0f, 90.0f, 240.0f, 120.0f};
+        SDL_SetRenderDrawColor(renderer, 88, 166, 255, 255);
+        SDL_RenderFillRect(renderer, &box);
+        SDL_RenderPresent(renderer);
+    }
+
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 0;
+}
+```
+
+Check the return value of fallible drawing operations in production code. A concise
+tutorial may omit checks to keep the lifecycle visible; an engine should surface errors
+with operation, resource, and frame context.
+
+### 4. Separate Platform Events from Simulation State
+
+```text
+OS/SDL events
+    ↓ normalize
+application commands
+    ↓ update
+deterministic world state
+    ↓ interpolate/view
+draw commands
+    ↓ renderer/GPU
+presented frame
+```
+
+| Layer                 | Example data                                 |
+| --------------------- | -------------------------------------------- |
+| raw event             | key code, device ID, window event            |
+| normalized command    | `MoveLeft(true)`, `Resize { width, height }` |
+| simulation state      | position, velocity, editor selection         |
+| presentation snapshot | visible sprites, boxes, glyphs               |
+
+Do not let gameplay or language semantics depend directly on platform key codes. An
+input-mapping layer makes tests deterministic and lets keyboard, gamepad, touch, and
+replay files produce the same commands.
+
+### 5. Variable Rendering, Fixed Simulation
+
+```text
+elapsed = now - previous
+accumulator += clamp(elapsed)
+
+while accumulator >= fixed_step:
+    update(fixed_step)
+    accumulator -= fixed_step
+
+render(interpolation = accumulator / fixed_step)
+```
+
+| Timing mistake                       | Result                           |
+| ------------------------------------ | -------------------------------- |
+| simulation speed tied to frame count | behavior changes across machines |
+| unbounded catch-up after a pause     | spiral of death                  |
+| mixed milliseconds/nanoseconds       | enormous or tiny time steps      |
+| nondeterministic input inside update | replays/tests diverge            |
+
+SDL provides timing primitives such as `SDL_GetTicksNS`; convert once into a
+well-named duration type. Clamp unusually large elapsed intervals after breakpoints,
+suspend/resume, or window dragging.
+
+### 6. Rendering APIs Form a State Machine
+
+The renderer remembers draw color, blend mode, target, viewport, clip rectangle, and
+texture state. Make state transitions explicit rather than relying on whatever the
+previous draw left behind.
+
+```text
+begin frame
+  set target/viewport/clip
+  clear
+  draw ordered opaque and transparent work
+  reset temporary state
+present
+```
+
+| Representation | Best use                                |
+| -------------- | --------------------------------------- |
+| surface        | CPU-side pixels, loading/manipulation   |
+| texture        | renderer-owned image used for drawing   |
+| 2D renderer    | portable sprites, rectangles, simple UI |
+| GPU API        | explicit pipelines, buffers, shaders    |
+
+### 7. Audio and Device Events Need Special Discipline
+
+Audio work runs under tight real-time constraints. Avoid blocking I/O, long locks,
+allocation spikes, and logging in the time-critical path. Feed an audio stream from
+bounded buffers and define underrun behavior.
+
+Controllers can appear and disappear while the program runs:
+
+```text
+device-added → open/identify → map controls → sample
+device-removed → stop using handle → release → notify application
+```
+
+Use a logical player/device handle rather than treating a temporary enumeration index
+as permanent identity.
+
+### 8. Wrap SDL Handles at a Safe Language Boundary
+
+```rust
+struct WindowHandle {
+    raw: *mut sdl_sys::SDL_Window,
+}
+
+impl Drop for WindowHandle {
+    fn drop(&mut self) {
+        if !self.raw.is_null() {
+            unsafe { sdl_sys::SDL_DestroyWindow(self.raw) };
+        }
+    }
+}
+```
+
+The full wrapper must also define:
+
+| Contract          | Question                                                    |
+| ----------------- | ----------------------------------------------------------- |
+| nullability       | Can creation or lookup return null?                         |
+| thread affinity   | Which thread may call this operation?                       |
+| aliasing          | Can two safe wrappers believe they uniquely own one handle? |
+| callbacks         | How long do captured values live, and can calls re-enter?   |
+| destruction order | Which child resources must be dropped first?                |
+| strings/buffers   | Who owns bytes, and for how long are pointers valid?        |
+
+Keep raw pointers private. A custom language runtime should expose stable integer
+handles or capability objects, validate every lookup, and never let untrusted scripts
+forge native addresses.
+
+### 9. SDL as a Backend for a Small Language
+
+```text
+script/DSL
+    ↓ parse + type/check capabilities
+runtime commands: CreateWindow, DrawRect, PlayTone, PollInput
+    ↓ validated host adapter
+SDL resources and event queue
+    ↓
+OS window, devices, audio, graphics
+```
+
+The host adapter should enforce limits on windows, textures, audio buffers, file paths,
+and per-frame commands. This turns SDL from an unrestricted FFI surface into a
+capability-based standard library.
+
+> ➡️ **Next:** Bevy builds a data-oriented scheduler and application framework over the
+> same event/update/render lifecycle.
+
+---
+
+## 🧰 Applied Rust Architectures: Bevy, Diesel & Tauri
+
+These frameworks solve different problems, but they all reward the same habits:
+explicit data models, narrow boundaries, scheduled work, bounded resources, and
+testable domain logic.
+
+| Framework | Primary problem                       | Architectural lesson                 |
+| --------- | ------------------------------------- | ------------------------------------ |
+| Bevy      | data-driven games/visual applications | behavior as scheduled systems        |
+| Diesel    | typed relational database access      | schema/query contract in Rust types  |
+| Tauri 2   | cross-platform webview applications   | least-privilege frontend/backend IPC |
+
+### 1. Bevy: Data-Oriented Application Structure
+
+The [Bevy quick start](https://bevy.org/learn/quick-start/introduction/) introduces a
+modular, data-focused Rust engine based on the Entity Component System (ECS) paradigm.
+
+```text
+Entity    = identity only
+Component = typed data attached to an entity
+System    = function that queries/transforms data
+Resource  = unique world-wide data
+Schedule  = when and in what constraints systems run
+Plugin    = reusable bundle of systems/resources/configuration
+```
+
+| ECS concept | Compiler/runtime analogy                          |
+| ----------- | ------------------------------------------------- |
+| entity      | stable arena ID or object handle                  |
+| component   | fact attached to an ID                            |
+| query       | select IDs possessing a required fact combination |
+| system      | compiler pass over selected data                  |
+| resource    | target configuration, interner, diagnostic sink   |
+| schedule    | pass pipeline and dependency ordering             |
+| plugin      | optional language feature/backend package         |
+
+#### A Small Scheduled Model
+
+```rust
+use bevy::prelude::*;
+
+#[derive(Component)]
+struct Velocity(Vec2);
+
+#[derive(Resource, Default)]
+struct SimulationStats {
+    moved_entities: u64,
+}
+
+fn spawn(mut commands: Commands) {
+    commands.spawn((
+        Transform::default(),
+        Velocity(Vec2::new(3.0, -1.0)),
+    ));
+}
+
+fn integrate(
+    time: Res<Time>,
+    mut stats: ResMut<SimulationStats>,
+    mut movers: Query<(&Velocity, &mut Transform)>,
+) {
+    for (velocity, mut transform) in &mut movers {
+        transform.translation +=
+            velocity.0.extend(0.0) * time.delta_secs();
+        stats.moved_entities += 1;
+    }
+}
+
+fn main() {
+    App::new()
+        .add_plugins(DefaultPlugins)
+        .init_resource::<SimulationStats>()
+        .add_systems(Startup, spawn)
+        .add_systems(Update, integrate)
+        .run();
+}
+```
+
+Bevy can parallelize systems when their parameter access is compatible. A system that
+reads `Res<T>` can overlap with other readers; a `ResMut<T>` or mutable component query
+declares exclusive access to that data.
+
+#### ECS Design Questions
+
+| Question                     | Better direction                                  |
+| ---------------------------- | ------------------------------------------------- |
+| component or resource?       | per-entity fact vs one world-wide value           |
+| component or enum field?     | queried independently vs always part of one state |
+| event/message or component?  | transient notification vs persistent state        |
+| one huge system?             | separate transformations with explicit ordering   |
+| every entity has everything? | compose only the data each behavior requires      |
+
+Do not use ECS merely to avoid ordinary structs. It is strongest when large collections
+need different combinations of data-oriented behavior.
+
+### 2. Diesel: Typed SQL Boundary
+
+The [Diesel guides](https://diesel.rs/guides/) separate setup, selects, updates, inserts,
+relations, schema generation, application composition, and extension. Diesel turns many
+schema/query mismatches into compile-time type errors, but runtime data, connectivity,
+transactions, constraints, and authorization still require deliberate handling.
+
+```text
+migration files
+    ↓ create/update database schema
+generated Rust schema (`table!`)
+    ↓ constrains typed query expressions
+Selectable / Queryable / Insertable models
+    ↓
+domain conversion and application rules
+```
+
+#### Separate Row, Insert, and Domain Types
+
+```rust
+use diesel::prelude::*;
+
+#[derive(Debug, Queryable, Selectable)]
+#[diesel(table_name = crate::schema::compile_jobs)]
+struct JobRow {
+    id: i32,
+    source: String,
+    status: String,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = crate::schema::compile_jobs)]
+struct NewJob<'a> {
+    source: &'a str,
+    status: &'a str,
+}
+
+fn pending_jobs(
+    connection: &mut SqliteConnection,
+) -> QueryResult<Vec<JobRow>> {
+    use crate::schema::compile_jobs::dsl;
+
+    dsl::compile_jobs
+        .filter(dsl::status.eq("pending"))
+        .order(dsl::id.asc())
+        .select(JobRow::as_select())
+        .load(connection)
+}
+```
+
+| Type                | Owns which contract                     |
+| ------------------- | --------------------------------------- |
+| generated schema    | SQL table/column types                  |
+| `JobRow`            | selected database row shape             |
+| `NewJob<'a>`        | allowed insert fields, borrowing inputs |
+| domain `CompileJob` | validated application invariants        |
+| API response        | intentionally exposed external fields   |
+
+Do not use one struct for every layer merely because the fields currently match.
+
+#### Transactions Protect Multi-Step Invariants
+
+```rust
+fn claim_job(
+    connection: &mut SqliteConnection,
+    job_id: i32,
+) -> QueryResult<JobRow> {
+    connection.transaction(|connection| {
+        use crate::schema::compile_jobs::dsl;
+
+        diesel::update(dsl::compile_jobs.find(job_id))
+            .filter(dsl::status.eq("pending"))
+            .set(dsl::status.eq("running"))
+            .execute(connection)?;
+
+        dsl::compile_jobs
+            .find(job_id)
+            .select(JobRow::as_select())
+            .first(connection)
+    })
+}
+```
+
+The sketch still needs an affected-row check or database constraint to distinguish
+“claimed” from “already unavailable.” Transactions provide atomicity; they do not invent
+the business invariant.
+
+#### Diesel Boundary Checklist
+
+| Area              | Decision                                                      |
+| ----------------- | ------------------------------------------------------------- |
+| migrations        | versioned, reviewed, reversible strategy                      |
+| connection        | pool size, timeout, health, transaction lifetime              |
+| async application | avoid blocking executor threads; use appropriate adapter/pool |
+| query cardinality | `first`, `optional`, one, many, or paginated                  |
+| updates           | distinguish absent field from explicit SQL `NULL`             |
+| errors            | map not-found, constraint, transient, and internal failures   |
+| observability     | record sanitized query context and latency                    |
+
+### 3. Tauri 2: A Desktop Capability Boundary
+
+[Tauri 2](https://v2.tauri.app/start/) combines a web frontend with native/mobile
+application code. JavaScript calls registered Rust commands across IPC; this makes every
+command a trust and serialization boundary.
+
+```text
+untrusted or semi-trusted webview input
+    ↓ deserialize command arguments
+Tauri command
+    ↓ validate + authorize
+domain service
+    ↓ narrow OS/database/network capability
+structured response/error
+    ↓ serialize to frontend
+```
+
+#### Register a Narrow Command Surface
+
+```rust
+use serde::Serialize;
+use std::sync::atomic::{AtomicU64, Ordering};
+use tauri::State;
+
+struct AppState {
+    next_request: AtomicU64,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+struct CompileAccepted {
+    request_id: u64,
+    source_bytes: usize,
+}
+
+#[tauri::command]
+fn compile_source(
+    source: String,
+    state: State<'_, AppState>,
+) -> Result<CompileAccepted, String> {
+    const MAX_SOURCE_BYTES: usize = 256 * 1024;
+
+    if source.len() > MAX_SOURCE_BYTES {
+        return Err("source exceeds configured limit".to_owned());
+    }
+
+    let request_id =
+        state.next_request.fetch_add(1, Ordering::Relaxed);
+
+    Ok(CompileAccepted {
+        request_id,
+        source_bytes: source.len(),
+    })
+}
+
+pub fn run() {
+    tauri::Builder::default()
+        .manage(AppState {
+            next_request: AtomicU64::new(1),
+        })
+        .invoke_handler(tauri::generate_handler![compile_source])
+        .run(tauri::generate_context!())
+        .expect("Tauri runtime failed");
+}
+```
+
+The outer `expect` handles an unrecoverable application-startup failure. Input-dependent
+command failures remain structured `Result` values.
+
+#### Capabilities and Permissions
+
+| Boundary                 | Least-privilege question                              |
+| ------------------------ | ----------------------------------------------------- |
+| command registration     | Does this command need to be callable at all?         |
+| capability configuration | Which windows/webviews receive which permissions?     |
+| filesystem               | Which paths and operations are allowed?               |
+| shell/process            | Can fixed programs replace arbitrary commands?        |
+| network                  | Which destinations and protocols are necessary?       |
+| plugin                   | Which plugin commands are exposed?                    |
+| updater/deep links       | How are authenticity and untrusted arguments checked? |
+
+Never turn a frontend string into an unrestricted shell command, path, SQL fragment, or
+URL fetch. Parse it into a typed request and authorize the resulting operation.
+
+#### Events, Channels, and Commands
+
+| Mechanism     | Best fit                                   |
+| ------------- | ------------------------------------------ |
+| command       | bounded request/response                   |
+| event         | broadcast-style notification               |
+| channel       | ordered streaming progress/data            |
+| managed state | shared native service/configuration handle |
+
+For long compilation, download, or indexing jobs, return a request ID promptly and send
+bounded progress events. Define cancellation and terminal states explicitly.
+
+### 4. Zero to Production: Service Engineering
+
+The [Zero to Production repository](https://github.com/LukeMathWalker/zero-to-production/)
+is the evolving reference application for an opinionated Rust backend book. Its
+newsletter service connects Actix Web, PostgreSQL/SQLx, Redis-backed sessions,
+configuration, authentication, email delivery, telemetry, migrations, and API tests.
+
+> 🚀 **Production mental model:** an HTTP handler is only the visible edge. A service is
+> the complete system that can be configured, observed, migrated, tested, deployed,
+> restarted, and operated without guessing.
+
+#### Grow the System in Dependency Order
+
+| Layer                  | Question to settle                                      |
+| ---------------------- | ------------------------------------------------------- |
+| health endpoint        | Can orchestration tell whether the process serves?      |
+| configuration          | How do local, test, and production values differ?       |
+| database migration     | How does persistent state evolve with the program?      |
+| request extraction     | Which bytes become trusted domain inputs?               |
+| domain/use-case logic  | Which invariant must hold independent of HTTP?          |
+| outbound dependency    | How are email/cache calls bounded and retried?          |
+| authentication/session | Who is acting, and how is that identity established?    |
+| telemetry              | Can an operator reconstruct a failed request?           |
+| deployment             | Can the artifact start reproducibly in a fresh setting? |
+
+Build a thin vertical slice first:
+
+```text
+TCP listener
+    ↓ HTTP request
+router → handler → validated command
+                    ↓
+                 domain service
+                    ↓
+              repository/outbound port
+                    ↓
+            structured response + trace
+```
+
+Each added dependency should arrive behind a narrow interface and with a test strategy.
+
+#### Bind the Listener Outside the Application Factory
+
+A testable server accepts a listener chosen by its caller. Tests can bind port `0` and
+ask the OS for an unused port instead of racing over a hard-coded one.
+
+```rust
+use actix_web::{web, App, HttpResponse, HttpServer};
+use std::net::TcpListener;
+
+async fn health_check() -> HttpResponse {
+    HttpResponse::Ok().finish()
+}
+
+fn run(listener: TcpListener) -> std::io::Result<actix_web::dev::Server> {
+    let server = HttpServer::new(|| {
+        App::new().route("/health_check", web::get().to(health_check))
+    })
+    .listen(listener)?
+    .run();
+
+    Ok(server)
+}
+```
+
+| Design choice                    | Testing/operations benefit                       |
+| -------------------------------- | ------------------------------------------------ |
+| caller supplies `TcpListener`    | ephemeral ports and pre-bound sockets            |
+| construction returns `Server`    | test can spawn and control lifetime              |
+| startup is separate from routes  | configuration errors fail before serving         |
+| health check avoids dependencies | distinguishes process health from deep readiness |
+
+Define **liveness** and **readiness** deliberately. A liveness probe should not restart
+a healthy process just because a downstream database briefly fails; readiness can stop
+new traffic when the service cannot fulfill requests.
+
+#### Configuration Is Parsed Input
+
+```rust
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct Settings {
+    application: ApplicationSettings,
+    database: DatabaseSettings,
+}
+
+#[derive(Debug, Deserialize)]
+struct ApplicationSettings {
+    host: String,
+    port: u16,
+    base_url: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct DatabaseSettings {
+    host: String,
+    port: u16,
+    database_name: String,
+    username: String,
+}
+```
+
+Treat configuration like source code:
+
+| Stage      | Configuration equivalent                         |
+| ---------- | ------------------------------------------------ |
+| lex/parse  | deserialize file/environment values              |
+| type-check | ports are numbers; URLs and enums are valid      |
+| link       | referenced files, secrets, and hosts exist       |
+| execute    | initialize dependencies and start listeners      |
+| diagnostic | name the field, source, bad value class, and fix |
+
+Secrets should use a wrapper that avoids accidental `Debug`/log output. Validate all
+non-secret settings at startup so failures appear before the service accepts traffic.
+
+#### One Application Object Owns Startup
+
+```rust
+struct Application {
+    port: u16,
+    server: actix_web::dev::Server,
+}
+
+impl Application {
+    fn port(&self) -> u16 {
+        self.port
+    }
+
+    async fn run_until_stopped(self) -> std::io::Result<()> {
+        self.server.await
+    }
+}
+```
+
+The construction path should assemble configuration, database pool, outbound clients,
+secrets, middleware, and routes. This creates one place to reason about dependency
+lifetimes and startup failures.
+
+#### Integration Tests Should Use Real Boundaries Selectively
+
+```rust
+#[tokio::test]
+async fn health_check_works() {
+    let app = spawn_test_app().await;
+
+    let response = reqwest::get(format!(
+        "http://127.0.0.1:{}/health_check",
+        app.port
+    ))
+    .await
+    .expect("request failed");
+
+    assert!(response.status().is_success());
+    assert_eq!(response.content_length(), Some(0));
+}
+```
+
+| Test type        | Real component                       | Replace/fake                     |
+| ---------------- | ------------------------------------ | -------------------------------- |
+| unit             | domain function                      | time, IDs, ports as values       |
+| handler          | extraction/response mapping          | use-case service                 |
+| API integration  | TCP/HTTP router and database         | external email/payment service   |
+| migration        | clean database with migration set    | production data                  |
+| end-to-end smoke | deployed artifact and critical route | destructive or expensive actions |
+
+Give each integration test isolated database state. Parallel tests sharing tables create
+false failures and conceal ordering dependencies.
+
+#### Transactions Preserve a Use-Case Invariant
+
+```text
+begin transaction
+  validate current persistent state
+  write all related rows
+  record an outbox event if external work must follow
+commit
+```
+
+Do not hold a database transaction open while calling an email server or unrelated
+network API. The database cannot atomically roll back the remote side effect. An
+**outbox** records the intent in the same transaction; a worker delivers it with an
+idempotency key and retry policy.
+
+| Failure question                          | Design tool                            |
+| ----------------------------------------- | -------------------------------------- |
+| client retries the same request           | idempotency key/unique constraint      |
+| process dies after commit                 | transactional outbox                   |
+| remote service is temporarily unavailable | bounded retry with backoff             |
+| request is canceled while work continues  | explicit job ownership/cancellation    |
+| two workers claim one item                | atomic update/locking with state check |
+
+#### Structured Telemetry Carries Causality
+
+```rust
+use tracing::{info, instrument};
+
+#[instrument(
+    name = "register subscriber",
+    skip(repository),
+    fields(request_id = %request_id)
+)]
+async fn register(
+    request_id: &str,
+    repository: &Repository,
+) -> Result<(), RegisterError> {
+    repository.insert_pending().await?;
+    info!("subscriber stored");
+    Ok(())
+}
+```
+
+| Record                         | Avoid                                   |
+| ------------------------------ | --------------------------------------- |
+| request/trace ID               | passwords, tokens, raw session cookies  |
+| route name and status class    | full sensitive request bodies           |
+| sanitized error chain          | silently discarded causes               |
+| dependency latency and outcome | high-cardinality secrets as field names |
+| deployment/version metadata    | relying only on free-form strings       |
+
+Propagate tracing context into blocking tasks and async work. Logs without causality
+become a pile of unrelated sentences under concurrency.
+
+#### Production Boundary Checklist
+
+| Concern       | Minimum deliberate decision                              |
+| ------------- | -------------------------------------------------------- |
+| timeouts      | connect, request, database, and shutdown deadlines       |
+| retries       | which errors, how many, with what backoff/jitter         |
+| limits        | body size, concurrency, pool size, queue depth           |
+| errors        | stable public response; detailed internal cause          |
+| auth/session  | secret rotation, cookie attributes, expiry, revocation   |
+| migrations    | forward/backward compatibility during rolling deployment |
+| shutdown      | stop new work, drain bounded work, close resources       |
+| observability | metrics, traces, sanitized structured logs               |
+| supply chain  | locked dependencies, audits, reproducible build artifact |
+
+The service is ready for production when failure paths are designed and observable—not
+merely when the happy-path request returns `200`.
+
+### 5. One Architecture Using All Four
+
+```text
+Tauri webview
+  ↕ typed commands/events
+Rust application core
+  ├── Diesel repository → project/job metadata
+  ├── compiler/runtime → parse, type, execute
+  ├── Bevy view/plugin → visualization or interactive simulation
+  └── Actix service → remote jobs, health, telemetry
+```
+
+| Layer            | Keep independent of                             |
+| ---------------- | ----------------------------------------------- |
+| domain model     | Tauri command types, Diesel row types, Bevy ECS |
+| repository trait | webview and rendering                           |
+| compiler core    | database connection and DOM                     |
+| adapters         | one another unless orchestration requires it    |
+
+This separation lets a CLI, server, Tauri app, and Bevy visualization reuse the same
+compiler core without making the core depend on every framework.
+
+> ➡️ **Next:** practical reversing reads framework and runtime boundaries backward:
+> begin with behavior and artifacts, then infer states, layouts, IPC, queries, and calls.
+
+---
+
+## 🔍 Practical x64 Windows Reverse Engineering
+
+This section draws from
+[0xZ0F's Reverse Engineering Course](https://github.com/0xZ0F/Z0FCourse_ReverseEngineering),
+which progresses from binary fundamentals through x64 assembly, tools, basic reversing,
+DLLs, and Windows internals. The course is Windows-focused, but the analysis habits
+transfer to other architectures and operating systems.
+
+Use these techniques only on binaries you own, intentionally vulnerable exercises,
+open-source programs, or targets you are explicitly authorized to analyze. Run unknown
+samples only in an isolated environment designed for that purpose.
+
+> 🔍 **Reversing habit:** separate **observation**, **hypothesis**, and **validation**.
+> Decompiler output is evidence, not ground truth.
+
+### 1. Reverse Engineering Is Model Building
+
+The goal is not to translate every instruction into English. The goal is to recover
+enough structure to explain relevant behavior.
+
+```text
+raw bytes
+    ↓ executable-format metadata
+instructions + data
+    ↓ control-flow and calling-convention analysis
+functions + variables + structures
+    ↓ behavior and state analysis
+high-level model
+```
+
+A productive model answers:
+
+| Model dimension | Question                                         |
+| --------------- | ------------------------------------------------ |
+| Inputs          | What enters the program?                         |
+| Transformation  | Which functions change it?                       |
+| State           | What memory, files, or globals are read/written? |
+| Decisions       | Which branches control behavior?                 |
+| Dependencies    | Which OS or library services are called?         |
+| Effects         | What output or side effect is produced?          |
+
+Reverse engineering is iterative. Names and types begin as guesses and become more
+precise as evidence accumulates.
+
+### 2. Start with Binary Triage
+
+Before debugging, collect facts without executing the target:
+
+| Question                        | Evidence to inspect                                 |
+| ------------------------------- | --------------------------------------------------- |
+| What format is it?              | PE headers, magic bytes, architecture               |
+| 32-bit or 64-bit?               | Machine type and optional-header format             |
+| Native or managed?              | Imports, metadata directories, runtime dependencies |
+| What does it import?            | DLL names and imported symbols                      |
+| What does it export?            | Export table and symbol names                       |
+| Are symbols/debug data present? | PDB path, symbol table, debug directory             |
+| Does it contain useful text?    | UTF-8/ASCII and UTF-16 strings                      |
+| Is it signed or versioned?      | Signature and version resources                     |
+| Does layout look ordinary?      | Sections, permissions, sizes, entropy               |
+
+Record a cryptographic hash before analysis so notes always refer to one exact file.
+
+#### PE Mental Model
+
+```text
+DOS header / stub
+    ↓ points to
+PE signature + COFF header
+    ↓
+optional header
+    ├── entry point
+    ├── image base
+    ├── alignment
+    └── data directories
+section table
+    ├── code
+    ├── read-only data
+    ├── writable data
+    ├── imports/exports
+    └── resources/relocations
+```
+
+The term **optional header** is historical; executable images rely on it.
+
+| PE coordinate/size  | Meaning                                      |
+| ------------------- | -------------------------------------------- |
+| **Raw/file offset** | Location in the file on disk                 |
+| **RVA**             | Offset from the loaded image base            |
+| **VA**              | Runtime address, normally `image_base + RVA` |
+| **Raw size**        | Bytes stored in the file for a section       |
+| **Virtual size**    | Bytes occupied by the section after loading  |
+
+Do not paste a runtime address into a file-offset field without converting it through
+the appropriate section mapping.
+
+### 3. x64 Register Roles
+
+Register names partly encode width:
+
+| 64-bit | Low 32 bits | Low 16 bits | Low 8 bits |
+| ------ | ----------- | ----------- | ---------- |
+| `RAX`  | `EAX`       | `AX`        | `AL`       |
+| `RBX`  | `EBX`       | `BX`        | `BL`       |
+| `RCX`  | `ECX`       | `CX`        | `CL`       |
+| `RDX`  | `EDX`       | `DX`        | `DL`       |
+
+| Register(s)              | Common Windows x64 role                  |
+| ------------------------ | ---------------------------------------- |
+| `RIP`                    | Address of the next instruction          |
+| `RSP`                    | Stack pointer                            |
+| `RBP`                    | Optional frame/base pointer              |
+| `RAX`                    | Integer return register and accumulator  |
+| `RCX`, `RDX`, `R8`, `R9` | First integer/pointer argument positions |
+| `XMM0`–`XMM3`            | First floating/vector argument positions |
+| `XMM0`                   | Floating-point return value              |
+
+Writing a 32-bit general register such as `EAX` clears the upper 32 bits of the
+corresponding 64-bit register. Writing only `AX` or `AL` does not.
+
+#### Volatile and Nonvolatile Registers on Windows x64
+
+| Category    | Registers                                      | Meaning at a call                       |
+| ----------- | ---------------------------------------------- | --------------------------------------- |
+| Volatile    | `RAX`, `RCX`, `RDX`, `R8`–`R11`                | Caller must assume they are overwritten |
+| Nonvolatile | `RBX`, `RBP`, `RDI`, `RSI`, `RSP`, `R12`–`R15` | Callee must restore them if used        |
+
+This classification is evidence. A function that stores a value in `RBX` and restores
+`RBX` before returning may be keeping that value alive across several calls.
+
+### 4. Flags, Comparisons, and Branches
+
+`cmp left, right` behaves like a subtraction used only to update flags:
+
+```text
+left - right → flags
+```
+
+| Flag   | Interpretation           |
+| ------ | ------------------------ |
+| **ZF** | Result was zero          |
+| **CF** | Unsigned carry or borrow |
+| **SF** | Result sign bit          |
+| **OF** | Signed overflow          |
+| **PF** | Parity of the low byte   |
+
+Signed and unsigned conditional jumps interpret flags differently:
+
+| Meaning          | Signed jump   | Unsigned jump |
+| ---------------- | ------------- | ------------- |
+| Equal            | `je` / `jz`   | `je` / `jz`   |
+| Not equal        | `jne` / `jnz` | `jne` / `jnz` |
+| Greater than     | `jg`          | `ja`          |
+| Greater or equal | `jge`         | `jae`         |
+| Less than        | `jl`          | `jb`          |
+| Less or equal    | `jle`         | `jbe`         |
+
+Choosing `jg` versus `ja` is a clue about whether the compiler treated a value as signed
+or unsigned.
+
+### 5. Read Instructions by Effect
+
+Group instruction variants by the effect that matters to the current question:
+
+| Family                     | Mental effect                      |
+| -------------------------- | ---------------------------------- |
+| `mov`, `movzx`, `movsx`    | Copy or extend a value             |
+| `lea`                      | Compute an address-like expression |
+| `add`, `sub`, `inc`, `dec` | Arithmetic/state update            |
+| `and`, `or`, `xor`, `test` | Bit manipulation or flag test      |
+| `cmp` + conditional jump   | Decision                           |
+| `push`, `pop`              | Stack update                       |
+| `call`, `ret`              | Function control flow              |
+| `shl`, `shr`, `sar`        | Shift or scale                     |
+| `imul`, `idiv`             | Signed multiply/divide             |
+
+Do not assume `lea` means "load a pointer." Compilers also use it for arithmetic such
+as:
+
+```asm
+lea eax, [rcx + rcx*4] ; eax = rcx * 5
+```
+
+Likewise, `xor eax, eax` is commonly a compact way to set `EAX` to zero.
+
+### 6. Windows x64 Calling Convention
+
+| Calling-convention concern | Windows x64 rule                                     |
+| -------------------------- | ---------------------------------------------------- |
+| Integer args 1–4           | `RCX`, `RDX`, `R8`, `R9`                             |
+| Float/vector args 1–4      | Corresponding `XMM0`–`XMM3` positions                |
+| Later arguments            | Passed on the stack                                  |
+| Shadow/home space          | Caller reserves 32 bytes                             |
+| Stack alignment            | Follows the ABI's 16-byte call-boundary rule         |
+| Integer return             | Commonly `RAX`                                       |
+| Floating return            | Commonly `XMM0`                                      |
+| C++ `this`                 | Usually occupies the first integer argument position |
+
+Conceptual call:
+
+```c
+result = transform(context, 10, buffer, length, flags);
+```
+
+Possible setup:
+
+```asm
+mov  rcx, context       ; argument 1
+mov  edx, 10            ; argument 2
+mov  r8, buffer         ; argument 3
+mov  r9d, length        ; argument 4
+mov  [rsp+20h], flags   ; argument 5, after shadow space
+call transform
+; integer-like result now in RAX
+```
+
+Registers may be prepared in any order. Follow definitions reaching the `call`, not the
+visual order of setup instructions.
+
+#### Inferring a Prototype
+
+At each call site, record:
+
+1. which argument registers are assigned;
+2. which stack slots are written;
+3. whether XMM registers are used;
+4. what values flow into each position;
+5. how the return register is used afterward;
+6. whether the same function is called elsewhere with different evidence.
+
+Then propose the narrowest type that explains all observed calls.
+
+### 7. Function Boundaries, Prologues, and Epilogues
+
+A traditional function may:
+
+```text
+save nonvolatile registers
+allocate stack space
+initialize local state
+perform work and calls
+restore stack/registers
+return
+```
+
+But optimized functions may omit a frame pointer, reuse stack slots, inline calls, split
+into hot/cold regions, or end with a tail call. Do not rely on one prologue byte
+pattern.
+
+| Boundary evidence       | Why it helps                                       |
+| ----------------------- | -------------------------------------------------- |
+| Direct call target      | Names a likely entry point                         |
+| Unwind metadata         | Describes a recoverable function range             |
+| Exported symbol         | Exposes a callable entry                           |
+| Cross-references        | Show other code treating the address as a function |
+| Stack setup/restoration | Suggests a coherent frame                          |
+| Return/tail-call region | Closes a connected control-flow graph              |
+
+### 8. Static and Dynamic Analysis Work Together
+
+| Static analysis                             | Dynamic analysis                           |
+| ------------------------------------------- | ------------------------------------------ |
+| Does not execute the target                 | Observes one concrete execution            |
+| Shows broad possible control flow           | Shows the path actually taken              |
+| Good for strings, imports, cross-references | Good for runtime values and indirect calls |
+| Can inspect unreachable or rare paths       | Can reveal decoded or generated data       |
+| May struggle with packing/indirection       | Can be timing- or environment-dependent    |
+
+A productive cycle:
+
+```text
+static hypothesis
+    ↓ choose breakpoint and input
+dynamic observation
+    ↓ rename/retype/comment
+better static model
+    ↓
+repeat
+```
+
+### 9. Debugger Controls and Their Meaning
+
+| Debugger control               | Effect                                           |
+| ------------------------------ | ------------------------------------------------ |
+| **Breakpoint**                 | Stop before a chosen instruction                 |
+| **Step into**                  | Execute and follow a call target                 |
+| **Step over**                  | Let a call finish and stop after it              |
+| **Step out**                   | Run until the current function returns           |
+| **Run to cursor**              | Continue to a selected location                  |
+| **Data breakpoint/watchpoint** | Stop when a memory range is accessed or modified |
+| **Conditional breakpoint**     | Stop only when a value/count matches a condition |
+
+Before stepping, write down what you expect to change. After stepping, compare the
+registers, flags, stack, and relevant memory to that prediction.
+
+#### High-Signal Breakpoint Locations
+
+| Location                   | Question it can answer                     |
+| -------------------------- | ------------------------------------------ |
+| Known imported function    | Which external service is being used?      |
+| Comparison before a branch | Which value decides the path?              |
+| State-variable write       | Who changes the state and when?            |
+| Function entry             | Which arguments arrive?                    |
+| Function return            | How does the caller use the result?        |
+| Parser/trust boundary      | How do raw bytes become structured values? |
+
+Breakpoints are most useful when tied to a question.
+
+### 10. Recovering Function Calls
+
+Suppose disassembly prepares a format string and values before calling a printing
+function. Work backward from the call:
+
+```text
+call known_print
+    ↑ argument 4 came from R9
+    ↑ argument 3 came from R8
+    ↑ argument 2 came from RDX
+    ↑ argument 1 came from RCX
+```
+
+Then inspect:
+
+| Call-site evidence     | What it reveals                                       |
+| ---------------------- | ----------------------------------------------------- |
+| String at a pointer    | Format, path, command, or semantic landmark           |
+| Register write width   | Likely integer width and zero/sign extension          |
+| Stack arguments        | Parameters beyond the first four                      |
+| XMM arguments          | Floating-point/vector parameters                      |
+| Variadic behavior      | Extra arguments interpreted through a format/contract |
+| Shadow/alignment setup | ABI mechanics rather than source variables            |
+
+This often reconstructs a recognizable call without understanding the whole function.
+
+### 11. Recovering Loops
+
+Source keywords disappear, so identify the control-flow shape:
+
+```text
+initialize
+    ↓
+loop header / condition ←──────────┐
+    ↓ true                         │
+body                              │
+    ↓                             │
+update ───────────────────────────┘
+    ↓ false
+exit
+```
+
+| Loop clue                   | Likely meaning             |
+| --------------------------- | -------------------------- |
+| Backward branch             | Control-flow cycle         |
+| Preheader initialization    | Initial counter or pointer |
+| Increment/decrement         | Induction-variable update  |
+| Comparison with a bound     | Loop termination condition |
+| Fixed-stride pointer move   | Array/record traversal     |
+| Repeated call/memory access | Loop body operation        |
+
+`for`, `while`, and `do-while` loops may compile to nearly identical control-flow
+graphs. Recover behavior first; choose high-level syntax later.
+
+Example:
+
+```asm
+xor  ebx, ebx       ; i = 0
+loop_start:
+mov  edx, ebx       ; use i
+call process_item
+inc  ebx            ; i += 1
+cmp  ebx, 10
+jl   loop_start     ; signed i < 10
+```
+
+Possible reconstruction:
+
+```c
+for (int i = 0; i < 10; i++) {
+    process_item(i);
+}
+```
+
+### 12. Recovering Structures from Offset Patterns
+
+Repeated accesses through one base register often describe fields:
+
+```asm
+mov eax, [rcx+08h]
+add eax, [rcx+0Ch]
+mov [rcx+10h], eax
+```
+
+Working hypothesis:
+
+```c
+struct Unknown {
+    unsigned char unknown_00[8];
+    int field_08;
+    int field_0c;
+    int field_10;
+};
+```
+
+| Structure evidence              | Inference it supports           |
+| ------------------------------- | ------------------------------- |
+| Access width                    | Field size                      |
+| Signed/unsigned branch          | Possible numeric interpretation |
+| Pointer dereference             | Pointer-like field              |
+| Constructor-like initialization | Initial layout and defaults     |
+| Repeated offsets                | Stable field positions          |
+| Type-specific imported API      | Likely semantic type            |
+| Array stride                    | Element size                    |
+
+Rename `field_08` only when evidence supports a semantic name. Until then, a stable
+offset-based name is more honest than a confident guess.
+
+### 13. Arrays and Indexing
+
+An address expression such as:
+
+```asm
+mov eax, [rcx + rdx*4]
+```
+
+suggests:
+
+```text
+base = RCX
+index = RDX
+element size = 4 bytes
+```
+
+Possible source:
+
+```c
+value = array[index];
+```
+
+Scale factors 1, 2, 4, and 8 directly fit x86 addressing modes. Other structure sizes
+may use several instructions or pointer increments.
+
+### 14. DLLs, Imports, and Exports
+
+A Windows DLL is a PE image intended to provide code or data to other modules.
+
+| DLL concept                    | Meaning                                              |
+| ------------------------------ | ---------------------------------------------------- |
+| **Export table**               | Names/ordinals made available to callers             |
+| **Import table**               | External symbols required from other DLLs            |
+| **Import address table (IAT)** | Runtime slots containing resolved function addresses |
+| **Module base**                | Address where the image is mapped                    |
+| **RVA**                        | Offset relative to the module base                   |
+| **Loader lock**                | Synchronization context affecting DLL initialization |
+
+For a normal imported call, code may call indirectly through an IAT slot:
+
+```asm
+call qword ptr [imported_function_slot]
+```
+
+The instruction references a slot in the current module; the loader places the actual
+library function address into that slot.
+
+When reconstructing an undocumented exported function:
+
+1. start from its export entry;
+2. inspect all known call sites;
+3. infer argument positions from the ABI;
+4. observe return-value use;
+5. identify referenced structures and globals;
+6. build a small prototype only after the evidence agrees.
+
+### 15. Tool-Agnostic Analysis Views
+
+Different tools use different names, but the useful views are consistent:
+
+| View               | Question it answers                                    |
+| ------------------ | ------------------------------------------------------ |
+| Hex/bytes          | What is physically encoded here?                       |
+| Disassembly        | Which instructions will execute?                       |
+| Decompiler         | What high-level model does the tool infer?             |
+| Control-flow graph | Where can execution branch or loop?                    |
+| Cross-references   | Who uses this function, string, or address?            |
+| Imports/exports    | Which module boundaries are visible?                   |
+| Memory map         | Which runtime regions exist and with what permissions? |
+| Registers/flags    | What is the current CPU state?                         |
+| Stack              | Who called whom, and what values are nearby?           |
+| Breakpoints/trace  | What happened during this run?                         |
+
+Treat a decompiler as an editable hypothesis generator. Correct its types, function
+boundaries, names, and signatures as evidence improves.
+
+### 16. A Repeatable Authorized Lab
+
+Use a tiny program you compile yourself:
+
+```c
+#include <stdio.h>
+
+static int sum_positive(const int *items, int count) {
+    int total = 0;
+    for (int i = 0; i < count; i++) {
+        if (items[i] > 0) {
+            total += items[i];
+        }
+    }
+    return total;
+}
+
+int main(void) {
+    int values[] = {3, -2, 7, 0};
+    printf("%d\n", sum_positive(values, 4));
+    return 0;
+}
+```
+
+Practice:
+
+1. compile debug and optimized builds;
+2. identify the executable format and architecture;
+3. locate the output string or imported print function;
+4. find the call to `sum_positive`;
+5. map the arguments using the platform ABI;
+6. identify the loop's backward edge;
+7. infer the 4-byte element stride;
+8. identify the signed `> 0` test;
+9. compare debug and optimized control flow;
+10. annotate the binary until another reader can follow it.
+
+### 17. CTF Challenge Patterns as Safe Practice
+
+The public
+[crackmes.one RE CTF 2026 repository](https://github.com/crackmesone/ctf-2026-challenges-public/tree/main)
+contains handouts and, for some challenges, source and official writeups. Use only the
+published challenge artifacts inside an isolated lab; do not transfer techniques to
+systems or binaries you are not authorized to analyze.
+
+| Challenge pattern in the repository | Skill to practice                               |
+| ----------------------------------- | ----------------------------------------------- |
+| custom virtual machine/compiler     | recover instruction format and VM state         |
+| nested executable/library layers    | identify loaders, formats, and handoff points   |
+| custom encoding/validation          | derive transforms from observed code            |
+| time-derived input                  | distinguish entropy from a bounded search space |
+| simulated routers/switches          | reconstruct packet and distributed state models |
+| Windows screensaver/registry state  | follow OS-specific configuration and execution  |
+| small server artifact               | combine static triage with controlled behavior  |
+
+#### The Custom-VM Workflow
+
+`FlipVM` is especially relevant to creating and reversing languages because the
+repository includes a compiler, virtual machine, bytecode-like files, and a syntax
+highlighter.
+
+```text
+virtual source
+    ↓ compiler
+custom instruction file
+    ↓ VM fetch/decode/execute
+virtual registers + memory + syscalls
+    ↓
+observable validation behavior
+```
+
+| Builder question                    | Reverser's mirror question                           |
+| ----------------------------------- | ---------------------------------------------------- |
+| How are opcodes encoded?            | Which bytes select each operation?                   |
+| What is the operand format?         | Where are registers, immediates, and offsets?        |
+| How is control flow represented?    | Which fields change the virtual instruction pointer? |
+| What state does the VM own?         | Which memory region/struct stores virtual state?     |
+| Which operations cross to the host? | Where are virtual syscalls dispatched?               |
+| Is code transformed or randomized?  | Which representation remains invariant?              |
+
+Start by documenting the VM format and state transition; do not begin by renaming every
+host instruction.
+
+#### Layered Challenge Triage
+
+```text
+1. hash and identify the handout
+2. read the challenge's supported OS/architecture notes
+3. inspect format, sections, imports, strings, and entropy
+4. run only in the appropriate isolated snapshot
+5. capture one baseline behavior
+6. change one input
+7. locate the first comparison or transformation affected
+8. reconstruct the smallest relevant state machine
+9. validate on a fresh input
+10. compare with published source/writeup only after your attempt
+```
+
+| Evidence            | Record                                            |
+| ------------------- | ------------------------------------------------- |
+| artifact            | cryptographic hash and repository path            |
+| environment         | OS, architecture, loader, arguments, snapshot     |
+| static observation  | address/file offset, bytes, xrefs, inferred type  |
+| dynamic observation | breakpoint, input, register/memory change         |
+| hypothesis          | predicted transformation or state transition      |
+| validation          | new case that could have disproved the hypothesis |
+
+The simulated-network challenge is a useful reminder that an IP-looking value may be
+part of a **custom model**, not a real protocol implementation. Recover the program's
+actual frame layout and handlers rather than assuming standards from familiar names.
+
+> 🛡️ **Lab rule:** keep challenge networking disconnected or routed only to controlled
+> local services. Treat bundled executables as untrusted even when they are educational.
+
+### 18. Nightmare: Memory-Corruption Labs & Mitigations
+
+[Nightmare](https://guyinatuxedo.github.io/) organizes binary-exploitation practice
+around assembly, reversing, Ghidra, GDB, Python tooling, stack bugs, and common
+mitigations. The most durable lesson is not a particular payload: it is learning to
+connect a source-level memory bug to machine state and then explain what each mitigation
+does—and does **not**—prevent.
+
+> 🧪 **Authorized-lab boundary:** use deliberately vulnerable CTF programs, binaries you
+> compiled yourself, or targets with explicit written authorization. Keep them in an
+> isolated environment. The goal here is root-cause analysis and defense.
+
+#### Build the Model Before Studying Exploitability
+
+```text
+untrusted bytes
+    ↓ parse/copy/index
+stack or heap object
+    ↓ bug violates bounds/lifetime/type invariant
+adjacent state may change
+    ↓
+crash, corrupted output, or altered control/data flow
+```
+
+| Evidence layer      | Question                                                       |
+| ------------------- | -------------------------------------------------------------- |
+| source              | Which check or ownership rule is missing?                      |
+| compiler output     | Where are objects, bounds, and branches represented?           |
+| ABI/frame           | Which registers and stack slots have calling-convention roles? |
+| memory map          | Which pages are readable, writable, or executable?             |
+| debugger state      | Which instruction first observes the invalid state?            |
+| mitigation metadata | Which hardening features are present in this build?            |
+
+Do not equate “program crashed” with “control flow is exploitable.” Exploitability also
+depends on reachable data, overwrite precision, memory layout, mitigations, allocator
+behavior, concurrency, and environmental constraints.
+
+#### Common Memory-Bug Families
+
+| Bug class            | Broken invariant                                  | Defensive direction                       |
+| -------------------- | ------------------------------------------------- | ----------------------------------------- |
+| out-of-bounds write  | index/range lies within allocated object          | checked indexing, slices, fuzzing, ASan   |
+| out-of-bounds read   | every read refers to initialized accessible bytes | bounds checks, length-aware parsing, MSan |
+| use-after-free       | object outlives every reference                   | ownership, RAII, temporal sanitizers      |
+| double free          | exactly one owner performs destruction            | single ownership and invalidation         |
+| integer overflow     | size arithmetic represents intended allocation    | checked math before allocation/copy       |
+| format-string misuse | data is not interpreted as a format program       | constant format strings, typed formatting |
+| uninitialized data   | value is written before it is observed            | initialization, compiler warnings, MSan   |
+
+```c
+#include <stdbool.h>
+#include <stddef.h>
+#include <string.h>
+
+bool copy_name(char out[32], const char *src, size_t len) {
+    if (src == NULL || len >= 32) {
+        return false;
+    }
+
+    memcpy(out, src, len);
+    out[len] = '\0';
+    return true;
+}
+```
+
+The length check is part of the API contract. In real code, prefer a destination slice
+or a function that receives the actual destination capacity instead of relying on an
+array-looking parameter that decays to a pointer.
+
+#### Mitigations Form Layers, Not a Substitute for a Fix
+
+| Mitigation   | What it changes                                 | What remains true                              |
+| ------------ | ----------------------------------------------- | ---------------------------------------------- |
+| NX/DEP       | writable data pages are normally non-executable | data corruption and code reuse may remain      |
+| ASLR         | runtime locations vary                          | information disclosure can weaken it           |
+| PIE          | main executable can be relocated                | bug still exists                               |
+| stack canary | detects some overwrites before returning        | not every corruption touches the canary        |
+| RELRO        | hardens dynamic-link relocation metadata        | other writable data remains                    |
+| CFI          | restricts allowed indirect control-flow targets | data-only attacks and logic bugs remain        |
+| sanitizers   | expose violations during testing                | production builds may not use full checks      |
+| safe Rust    | prevents broad classes in safe code             | `unsafe`, FFI, logic, and resource bugs remain |
+
+Return-oriented programming is a **code-reuse** concept motivated partly by
+non-executable data. At a high level, an attacker attempts to compose short existing
+instruction sequences while satisfying the ABI, stack alignment, and control-flow
+constraints. For defensive study, recognize why NX alone is insufficient and why ASLR,
+CFI, shadow stacks, reduced gadget surfaces, and eliminating the original write
+primitive matter.
+
+#### Controlled Crash-to-Fix Workflow
+
+```text
+1. record source/binary hash, compiler, flags, architecture, and mitigations
+2. reproduce with one minimal local input
+3. capture the first invalid read/write—not merely the final crash
+4. map the instruction back to an object, length, and ownership invariant
+5. write a regression test that fails safely
+6. fix the source-level invariant
+7. rerun warnings, sanitizers, tests, and fuzz cases
+8. compare hardened and unhardened builds to understand mitigation evidence
+```
+
+| Notebook claim                      | Strong evidence                                 |
+| ----------------------------------- | ----------------------------------------------- |
+| “overflow begins here”              | sanitizer report plus instruction/memory access |
+| “this field controls the branch”    | data-flow trace and changed-input experiment    |
+| “ASLR is active”                    | build metadata and changing runtime mappings    |
+| “the fix works”                     | regression case plus broader randomized testing |
+| “the issue is unreachable remotely” | proven input path and deployment configuration  |
+
+### 19. Authorized Memory Inspection & Tooling Labs
+
+The following sources cover dual-use tools and ideas:
+
+- [Black Hat Rust](https://github.com/skerkour/black-hat-rust/) uses offensive-security
+  projects to teach async I/O, trait-based modules, crawling, fuzzing, `no_std`,
+  cross-compilation, and security thinking.
+- [GameHackingCode](https://github.com/GameHackingBook/GameHackingCode) contains
+  chapter-oriented Windows examples for memory, pointers, debugging, scanning, state
+  machines, control flow, and graphics.
+- The [Cheat Engine wiki](https://wiki.cheatengine.org/index.php?title=Main_Page)
+  documents value scans, pointers, structures, debugging, assembly, and Lua automation.
+
+Use these ideas on **your own toy process, an included tutorial target, an offline
+open-source sample, or an explicitly authorized assessment**. Do not bypass
+anti-cheat/DRM, alter multiplayer software, collect another user's data, conceal
+activity, or deploy persistence.
+
+#### Reframe Offensive Projects as General Systems Lessons
+
+| Source topic                 | General-purpose lesson                             | Safe exercise                            |
+| ---------------------------- | -------------------------------------------------- | ---------------------------------------- |
+| concurrent reconnaissance    | bounded work queues, timeouts, backpressure        | inventory services on a loopback lab     |
+| async scanner                | many I/O waits without one thread per socket       | probe ports on containers you started    |
+| trait-object modules         | heterogeneous plugins behind one contract          | pluggable file-format inspectors         |
+| crawler                      | URL normalization, deduplication, rate limits      | crawl a local documentation server       |
+| fuzzing                      | generate inputs that violate parser assumptions    | fuzz your own language lexer/parser      |
+| `no_std`/cross-compilation   | runtime dependencies, targets, object layout       | tiny freestanding diagnostic program     |
+| memory scanner               | typed representation and search-space refinement   | search a byte buffer or tutorial process |
+| state-machine recognition    | infer state from transitions and observable fields | reverse a toy offline game you compiled  |
+| graphics/control-flow sample | API boundaries, callbacks, render-loop structure   | instrument your own SDL sample           |
+
+Some source chapters go further into phishing, implants, worms, injection, and
+evasion. Those are **not implementation exercises for these notes**. Study them as
+threat-model categories: identify trust boundaries, telemetry signals, least privilege,
+egress controls, code-signing policy, and incident-response evidence.
+
+#### Bounded Concurrency for an Authorized Inventory Tool
+
+```rust
+use std::{future::Future, sync::Arc};
+use tokio::sync::Semaphore;
+
+async fn run_bounded<I, F, Fut>(items: I, limit: usize, inspect: F)
+where
+    I: IntoIterator<Item = String>,
+    F: Fn(String) -> Fut + Clone + Send + 'static,
+    Fut: Future<Output = ()> + Send + 'static,
+{
+    let permits = Arc::new(Semaphore::new(limit.max(1)));
+    let mut tasks = Vec::new();
+
+    for item in items {
+        let permit = Arc::clone(&permits)
+            .acquire_owned()
+            .await
+            .expect("semaphore closed");
+        let inspect = inspect.clone();
+
+        tasks.push(tokio::spawn(async move {
+            inspect(item).await;
+            drop(permit);
+        }));
+    }
+
+    for task in tasks {
+        let _ = task.await;
+    }
+}
+```
+
+This is an architectural sketch, not a complete network scanner. A real authorized
+inventory tool also needs explicit target allowlists, per-operation deadlines, global
+rate limits, cancellation, sanitized logs, bounded results, and a record of who
+approved the scope.
+
+| Concurrency control | Failure it prevents                        |
+| ------------------- | ------------------------------------------ |
+| semaphore           | unbounded in-flight work                   |
+| timeout             | a silent peer holding work forever         |
+| rate limiter        | overwhelming the target or network         |
+| bounded channel     | producers exhausting memory                |
+| cancellation token  | abandoned work continuing after scope ends |
+| target allowlist    | accidental expansion outside authorization |
+
+#### Memory Scanning Is Iterative Set Filtering
+
+Cheat Engine's core scan model is general:
+
+```text
+candidate addresses = every readable, in-scope location
+    ↓ filter by type/alignment/value or pattern
+smaller candidate set
+    ↓ change the toy program's state
+filter by changed / unchanged / increased / decreased / new exact value
+    ↓ repeat
+one or a few hypotheses to validate in the debugger/source
+```
+
+| Scan choice           | Meaning                                                |
+| --------------------- | ------------------------------------------------------ |
+| exact value           | bytes decode to the specified typed value              |
+| unknown initial value | begin broadly, then filter by later relationships      |
+| changed/unchanged     | compare snapshots without knowing the semantic value   |
+| increased/decreased   | use an observed state transition                       |
+| array of bytes        | find a byte signature with explicit wildcard positions |
+| region filter         | search only mappings consistent with the hypothesis    |
+
+Value type is not decoration. The same bytes can represent an integer, float, pointer,
+text fragment, bitfield, or instruction. Track **width, endianness, alignment, signedness,
+and encoding**.
+
+#### Safe Scanner Example: Search an Owned Byte Buffer
+
+```rust
+fn find_u32_le(haystack: &[u8], wanted: u32) -> Vec<usize> {
+    let needle = wanted.to_le_bytes();
+
+    haystack
+        .windows(needle.len())
+        .enumerate()
+        .filter_map(|(offset, bytes)| (bytes == needle).then_some(offset))
+        .collect()
+}
+
+fn retain_changed(
+    old: &[u8],
+    new: &[u8],
+    candidates: &mut Vec<usize>,
+    width: usize,
+) {
+    candidates.retain(|&offset| {
+        let end = match offset.checked_add(width) {
+            Some(end) if end <= old.len() && end <= new.len() => end,
+            _ => return false,
+        };
+        old[offset..end] != new[offset..end]
+    });
+}
+```
+
+This teaches the algorithm without opening another process. Extend it with typed
+decoders, alignment filters, masked patterns, and snapshot labels. Keep every arithmetic
+operation checked because scanners operate near buffer boundaries.
+
+#### Stable Addressing: Modules, Offsets, and Pointer Paths
+
+A runtime address can change between launches because allocations and module bases move.
+Record addresses symbolically:
+
+```text
+module base + relative virtual address
+heap object reached through: stable root → field offset → field offset
+```
+
+| Observation                    | Interpretation to test                        |
+| ------------------------------ | --------------------------------------------- |
+| same module-relative offset    | likely code/static object within one build    |
+| new heap address every launch  | allocation is dynamic                         |
+| pointer chain survives restart | path may reflect stable object relationships  |
+| chain fails after update       | layout/build changed; never assume permanence |
+| many matching pointers         | candidates, not proof of semantic ownership   |
+
+A pointer scan searches paths through stored addresses and offsets, then rescans after
+the target moves to eliminate paths that no longer resolve. This is graph search:
+
+```text
+node = address-sized value/location
+edge = dereference plus bounded field offset
+goal = currently observed target object
+```
+
+Limit depth, offset range, regions, and alignment. Validate across multiple clean runs
+of the owned target. A surviving path is evidence, not a stable public API.
+
+#### From Value to Structure
+
+Once two or more fields appear near one another, propose a layout without naming it too
+early:
+
+```text
+object candidate
+  +0x00  unknown pointer-sized field
+  +0x08  observed f32, changes with x movement
+  +0x0C  observed f32, changes with y movement
+  +0x10  observed u32, bounded small range
+```
+
+| Validation experiment            | What it can reveal                          |
+| -------------------------------- | ------------------------------------------- |
+| watch instruction reads field    | access width and consumer                   |
+| compare several object instances | repeated stride and shared layout           |
+| change one controlled input      | candidate field/state relationship          |
+| inspect constructor/init writes  | defaults, ownership, and object extent      |
+| restart with symbols/debug build | compare inference to ground truth afterward |
+
+Use offset-based names such as `field_0c_f32?` until evidence supports a semantic name.
+This is the same discipline used when recovering an undocumented bytecode VM.
+
+#### Debugger, Scanner, and Static Tool Answer Different Questions
+
+| Tool/view            | Best question                                         |
+| -------------------- | ----------------------------------------------------- |
+| value scanner        | Where might this changing representation be stored?   |
+| memory map           | Which regions could legitimately contain it?          |
+| “who accesses” watch | Which instructions consume this address?              |
+| breakpoint/trace     | What state led to this instruction?                   |
+| disassembler         | What operations and branches exist?                   |
+| decompiler           | What higher-level hypothesis fits those instructions? |
+| symbols/source       | What was the intended contract?                       |
+
+Correlate at least two evidence types before committing to a conclusion. A changing
+number may be a display cache, previous-frame copy, network serialization buffer, or
+derived value rather than authoritative state.
+
+#### Array-of-Bytes Signatures Are Version-Specific Hypotheses
+
+```text
+exact opcode bytes + wildcard relocation/immediate bytes + surrounding context
+```
+
+| Weak signature                    | Stronger direction                           |
+| --------------------------------- | -------------------------------------------- |
+| too few common bytes              | add stable neighboring instruction structure |
+| includes absolute addresses       | wildcard relocation-dependent fields         |
+| matches many functions            | include unique semantic context              |
+| assumes one compiler optimization | test debug/release and multiple builds       |
+| silently selects first match      | require exactly one validated match          |
+
+Signatures are useful for diagnostics and regression tooling on your own builds, but
+they are brittle. Prefer exported APIs, symbols, debug information, or explicit
+instrumentation when you control the program.
+
+#### Cheat Tables and Lua Are Executable Content
+
+The Cheat Engine wiki documents a broad Lua API for scanning, processes, memory,
+debugging, forms, and automation. A table can contain scripts, so treat an untrusted
+table like an untrusted executable:
+
+| Before opening/running a table | Defensive action                              |
+| ------------------------------ | --------------------------------------------- |
+| unknown source                 | do not execute; inspect in an isolated lab    |
+| embedded Lua/assembler         | review every enabled script and callback      |
+| bundled binary/data            | hash and inventory it                         |
+| process attachment             | confirm the exact tutorial/owned target       |
+| file/network operations        | deny or isolate unless explicitly required    |
+| kernel/DBVM feature            | avoid for ordinary learning; system-wide risk |
+
+Prefer plain notebook observations over downloading opaque tables. Automation should
+make a reproducible experiment safer, not hide what it changes.
+
+#### Language-Builder Connection
+
+Memory tools reveal why a language runtime needs explicit representation contracts:
+
+| Runtime choice              | Reversing/tooling consequence                       |
+| --------------------------- | --------------------------------------------------- |
+| tagged value format         | type bits distinguish integer/object/immediate      |
+| moving garbage collector    | raw addresses are unstable across collections       |
+| handle table                | stable IDs map to movable/native objects            |
+| bytecode dispatch loop      | repeated fetch/decode state exposes VM structure    |
+| debug metadata              | source spans and names make diagnostics trustworthy |
+| capability-based FFI        | scripts cannot forge arbitrary native pointers      |
+| deterministic serialization | snapshots and replay traces become comparable       |
+
+When building your own language, add a **read-only debug protocol** that exposes object
+IDs, types, safe field summaries, stacks, and source spans. This provides legitimate
+introspection without requiring arbitrary process-memory access.
+
+### 20. Reverse-Engineering Notebook Template
+
+```text
+Target hash:
+Architecture / ABI:
+Image base:
+Tool versions:
+
+Question:
+Observation:
+Hypothesis:
+Evidence for:
+Evidence against:
+Confidence:
+Next experiment:
+
+Address/RVA:
+Proposed name:
+Proposed prototype/type:
+Callers:
+Callees:
+Important offsets:
+Side effects:
+```
+
+Separating observation from inference prevents early guesses from becoming invisible
+assumptions.
+
+### 21. Common Beginner Traps
+
+| Trap                                | Better habit                                           |
+| ----------------------------------- | ------------------------------------------------------ |
+| Read assembly top-to-bottom         | Follow control flow and data dependencies              |
+| Treat stack adjustments as locals   | Separate ABI mechanics from source values              |
+| Forget the calling convention       | Annotate argument, return, and preserved registers     |
+| Treat every hex value as a pointer  | Classify it from use and valid address ranges          |
+| Mix RVA/file offset/VA              | Write down the coordinate system                       |
+| Trust decompiler names/types        | Verify against instructions and call sites             |
+| Rename unknown fields early         | Keep stable offset-based names until evidence improves |
+| Ignore width/signedness             | Track each access width and branch interpretation      |
+| Step into every library call        | Stay centered on the analysis question                 |
+| Inspect one call site               | Compare multiple callers and inputs                    |
+| Expect source-shaped optimized code | Recover behavior before syntax                         |
+| Save screenshots without context    | Record addresses, inputs, hashes, and conclusions      |
+
+---
+
 ## 🔨 Developer Tooling: The Missing Semester
 
 [The Missing Semester of Your CS Education](https://missing.csail.mit.edu/) treats tool
@@ -9107,6 +11394,396 @@ format → lint → unit tests → integration tests → artifact checks
 The tooling interface is part of the language. Stable exit codes, diagnostics, source
 locations, and machine-readable output make editors, CI systems, and external tools
 possible.
+
+---
+
+## 🐍 Practical Python Automation
+
+[Automate the Boring Stuff with Python, 3rd Edition](https://automatetheboringstuff.com/3e/)
+progresses from Python basics and debugging into files, command-line programs, web
+scraping, spreadsheets, databases, documents, structured data, scheduling,
+notifications, images, OCR, GUI control, and speech.
+
+> 🤖 **Automation mental model:** a script is a tiny data pipeline with side effects.
+> Make inputs explicit, validate the transformation, preview the output, then commit the
+> external change.
+
+### 1. Choose Automation by Boundary
+
+| Repetitive work             | Prefer                                           |
+| --------------------------- | ------------------------------------------------ |
+| rename/sort local files     | `pathlib`, metadata, explicit destination plan   |
+| edit structured text        | CSV/JSON/XML parser, not ad hoc string splitting |
+| collect web data            | documented API first; respectful HTTP otherwise  |
+| update spreadsheet values   | workbook library with formula/style awareness    |
+| query durable local records | SQLite with parameters and transactions          |
+| extract document text       | format-specific PDF/Word library                 |
+| schedule a recurring job    | OS scheduler plus idempotent script              |
+| notify a person/system      | email/message API with preview and rate limit    |
+| manipulate images           | image library with original preserved            |
+| drive a GUI                 | last resort; screenshots, focus, and timing vary |
+
+Use the **highest-level stable interface** available:
+
+```text
+library/API > documented CLI > file format > browser automation > mouse coordinates
+```
+
+### 2. Every Useful Script Has the Same Skeleton
+
+```python
+from dataclasses import dataclass
+from pathlib import Path
+
+
+@dataclass(frozen=True)
+class Rename:
+    source: Path
+    destination: Path
+
+
+def plan_renames(root: Path) -> list[Rename]:
+    plans: list[Rename] = []
+    for source in sorted(root.glob("*.txt")):
+        destination = source.with_name(source.stem.strip().lower() + source.suffix)
+        if source != destination:
+            plans.append(Rename(source, destination))
+    return plans
+
+
+def validate(plans: list[Rename]) -> None:
+    destinations = [plan.destination for plan in plans]
+    if len(destinations) != len(set(destinations)):
+        raise ValueError("two inputs map to the same destination")
+    if any(path.exists() for path in destinations):
+        raise FileExistsError("a destination already exists")
+
+
+def apply(plans: list[Rename], *, dry_run: bool) -> None:
+    for plan in plans:
+        print(f"{plan.source.name} -> {plan.destination.name}")
+        if not dry_run:
+            plan.source.rename(plan.destination)
+```
+
+| Phase    | Invariant                                                |
+| -------- | -------------------------------------------------------- |
+| discover | only intended inputs are selected                        |
+| parse    | bytes/strings become typed values                        |
+| plan     | intended changes are represented without performing them |
+| validate | no collision, escape, invalid state, or missing resource |
+| preview  | a human or test can inspect the plan                     |
+| apply    | each external mutation is checked                        |
+| verify   | final state matches the plan                             |
+| report   | failures identify the item and operation                 |
+
+### 3. Filesystem Automation Needs a Blast-Radius Limit
+
+```python
+from pathlib import Path
+
+
+def resolved_child(root: Path, user_name: str) -> Path:
+    root = root.resolve(strict=True)
+    candidate = (root / user_name).resolve()
+
+    if not candidate.is_relative_to(root):
+        raise ValueError("path escapes the allowed root")
+    return candidate
+```
+
+| Risk                          | Safer design                                  |
+| ----------------------------- | --------------------------------------------- |
+| broad recursive glob          | explicit root, extension, and file-count cap  |
+| overwrite destination         | fail unless an explicit overwrite mode exists |
+| partial multi-file operation  | plan, journal, and resumable/idempotent steps |
+| extension mistaken for format | inspect magic/header and parse defensively    |
+| symbolic-link escape          | resolve and re-check containment              |
+| lost original                 | backup/version control or recoverable move    |
+
+Start with a temporary directory containing synthetic files. A script that is safe only
+when all inputs are perfect is not ready for valuable data.
+
+### 4. Text and Regular Expressions
+
+Regular expressions are small pattern languages. Use them when the input is genuinely
+textual and local—not as a substitute for an HTML, JSON, CSV, or programming-language
+parser.
+
+```python
+import re
+
+LOG_LINE = re.compile(
+    r"^(?P<level>INFO|WARN|ERROR)\s+"
+    r"request_id=(?P<request_id>[A-Za-z0-9_-]{1,64})\s+"
+    r"message=(?P<message>.*)$"
+)
+
+
+def parse_log_line(line: str) -> dict[str, str] | None:
+    match = LOG_LINE.fullmatch(line.rstrip("\n"))
+    return match.groupdict() if match else None
+```
+
+| Regex habit              | Reason                                              |
+| ------------------------ | --------------------------------------------------- |
+| raw string literal       | reduces double escaping                             |
+| named groups             | documents field meaning                             |
+| `fullmatch` when parsing | rejects trailing/leading surprises                  |
+| bounded repetitions      | limits pathological work and absurd fields          |
+| test near-misses         | proves the pattern rejects almost-valid input       |
+| compile once             | centralizes the pattern and avoids repeated parsing |
+
+For your own language, use regex for simple tokens only when it keeps precedence and
+source spans clear. Balanced nesting and contextual syntax belong in a parser.
+
+### 5. Structured Files Preserve Types and Context
+
+```python
+import csv
+import json
+from pathlib import Path
+
+
+def csv_to_json(source: Path, destination: Path) -> None:
+    with source.open(newline="", encoding="utf-8") as input_file:
+        rows = list(csv.DictReader(input_file))
+
+    normalized = [
+        {
+            "name": row["name"].strip(),
+            "score": int(row["score"]),
+        }
+        for row in rows
+    ]
+
+    temporary = destination.with_suffix(destination.suffix + ".tmp")
+    temporary.write_text(
+        json.dumps(normalized, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    temporary.replace(destination)
+```
+
+| Format | Important edge                                   |
+| ------ | ------------------------------------------------ |
+| CSV    | dialect, quoting, newline handling, column names |
+| JSON   | number precision, missing vs `null`, encoding    |
+| XML    | namespaces, entity/security settings, mixed text |
+| YAML   | implicit types and unsafe object construction    |
+
+Parse into a validated domain type before acting. Preserve unknown fields only when the
+round-trip contract requires them.
+
+### 6. SQLite Turns a Script into a Small Durable System
+
+```python
+import sqlite3
+from pathlib import Path
+
+
+def record_run(database: Path, input_name: str, output_hash: str) -> None:
+    with sqlite3.connect(database) as connection:
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS runs (
+                input_name TEXT PRIMARY KEY,
+                output_hash TEXT NOT NULL
+            )
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO runs(input_name, output_hash)
+            VALUES (?, ?)
+            ON CONFLICT(input_name)
+            DO UPDATE SET output_hash = excluded.output_hash
+            """,
+            (input_name, output_hash),
+        )
+```
+
+Placeholders keep data separate from SQL syntax. The context manager commits on success
+and rolls back on an exception.
+
+| Need                  | SQLite feature                                |
+| --------------------- | --------------------------------------------- |
+| avoid duplicate work  | unique key plus upsert                        |
+| multi-step invariant  | transaction                                   |
+| evolve stored records | numbered schema migrations                    |
+| inspect/debug state   | ordinary queries and a schema                 |
+| concurrent automation | short transactions and explicit busy handling |
+
+SQLite is not merely a bigger dictionary. Define a schema, constraints, migration
+strategy, backup, and failure behavior.
+
+### 7. Web Automation Starts with Permission and Protocols
+
+```python
+import requests
+
+
+def fetch_json(url: str) -> dict:
+    response = requests.get(
+        url,
+        headers={"User-Agent": "personal-automation/1.0"},
+        timeout=(3.0, 15.0),
+    )
+    response.raise_for_status()
+    if "application/json" not in response.headers.get("content-type", ""):
+        raise ValueError("unexpected content type")
+    return response.json()
+```
+
+Before scraping:
+
+| Check                    | Why                                               |
+| ------------------------ | ------------------------------------------------- |
+| documented API/feed      | more stable and less ambiguous                    |
+| terms and authorization  | access does not imply permission to republish     |
+| `robots.txt`/site policy | communicates automated-access expectations        |
+| authentication boundary  | never bypass login, paywall, or access control    |
+| request rate and caching | avoid unnecessary load                            |
+| pagination/retry limits  | prevent infinite or explosive work                |
+| data minimization        | do not collect personal/sensitive fields casually |
+
+HTML selectors are assumptions about a changing document. Save a small permitted fixture
+for parser tests, and fail visibly when required elements disappear.
+
+### 8. Spreadsheets, Documents, and Images Have Hidden Structure
+
+| Artifact    | Preserve/check                                         |
+| ----------- | ------------------------------------------------------ |
+| spreadsheet | formulas vs cached values, types, merged cells, styles |
+| PDF         | pages, coordinates, text extraction order, OCR limits  |
+| Word file   | paragraphs, runs, tables, styles, relationships        |
+| image       | dimensions, color mode, orientation metadata, format   |
+| OCR output  | confidence, reading order, and manual review           |
+
+Never assume that a visually empty spreadsheet cell is absent, that PDF text extraction
+matches reading order, or that OCR output is exact. Keep the original artifact and
+render the generated result for visual verification when layout matters.
+
+```python
+from PIL import Image, ImageOps
+
+
+def make_thumbnail(source: str, destination: str) -> None:
+    with Image.open(source) as image:
+        image = ImageOps.exif_transpose(image)
+        image.thumbnail((512, 512))
+        image.convert("RGB").save(destination, quality=90)
+```
+
+### 9. Scheduling Requires Idempotency
+
+```text
+scheduler triggers job
+    ↓ acquire single-run lock
+load checkpoint
+    ↓ discover only pending work
+perform bounded/idempotent steps
+    ↓ atomically store checkpoint
+emit summary and exit status
+```
+
+| Scheduled-job failure     | Design response                                 |
+| ------------------------- | ----------------------------------------------- |
+| runs twice                | idempotency key or uniqueness constraint        |
+| previous run still active | lock with stale-owner policy                    |
+| machine sleeps/offline    | explicit catch-up or skip policy                |
+| network fails halfway     | checkpoint and bounded retry                    |
+| credentials expire        | actionable alert without leaking the credential |
+| output grows forever      | retention and quota policy                      |
+
+The scheduler should invoke a normal command-line program. Keep scheduling policy out
+of the transformation core so the same job can be tested manually.
+
+### 10. Notifications Are External Mutations
+
+Separate rendering from sending:
+
+```python
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Message:
+    recipient: str
+    subject: str
+    body: str
+
+
+def build_summary(recipient: str, changed: int) -> Message:
+    return Message(
+        recipient=recipient,
+        subject="Automation summary",
+        body=f"Changed items: {changed}\n",
+    )
+```
+
+Test the `Message` value, preview it, then let a narrow adapter send it. Use recipient
+allowlists in test/staging, deduplication keys, rate limits, and a clear distinction
+between retryable and permanent delivery failures. Never log credentials or full
+sensitive message bodies.
+
+### 11. GUI Automation Is a Fragile Last Resort
+
+Mouse/keyboard automation depends on focus, coordinates, scale, timing, window state,
+and accessibility. Prefer a programmatic API. If GUI control is unavoidable:
+
+| Guardrail              | Purpose                                          |
+| ---------------------- | ------------------------------------------------ |
+| dedicated test profile | protects personal data and settings              |
+| visible countdown      | gives the operator time to cancel                |
+| fail-safe gesture/key  | stops runaway input                              |
+| screenshot assertion   | confirms the expected screen before action       |
+| bounded repetitions    | prevents infinite clicking/typing                |
+| no irreversible action | require a human confirmation at the final commit |
+
+Automate navigation and data entry; pause before sending, purchasing, deleting, or
+publishing unless the workflow has explicit authorization and a verified preview.
+
+### 12. CLI Design Makes Automation Reusable
+
+```text
+my-tool INPUT --output OUTPUT --dry-run --format json
+```
+
+| CLI contract  | Good behavior                                      |
+| ------------- | -------------------------------------------------- |
+| arguments     | explicit paths/modes; helpful validation errors    |
+| stdout        | requested data, optionally machine-readable        |
+| stderr        | diagnostics and progress                           |
+| exit status   | stable success/failure meaning                     |
+| dry run       | shows planned mutations without applying them      |
+| configuration | documented precedence and no secret echo           |
+| interruption  | cleans temporary state or leaves resumable journal |
+
+Keep `main()` thin:
+
+```text
+parse CLI → load config → call pure planner → validate → preview/apply adapter → report
+```
+
+The same architecture works for a compiler driver, asset pipeline, database maintenance
+job, or personal file organizer.
+
+### 13. Automation Review Card
+
+| Before the first real run    | After the run                                  |
+| ---------------------------- | ---------------------------------------------- |
+| synthetic test inputs        | verify counts, hashes, or database constraints |
+| narrow input and destination | inspect a sample of outputs                    |
+| dry-run plan                 | retain an audit summary                        |
+| backup/recovery path         | confirm originals are recoverable              |
+| timeout and item-count limit | record failures for retry                      |
+| redacted logging             | remove temporary secrets/files                 |
+| explicit authorization       | confirm no scope expansion                     |
+
+> 🧭 **Progression:** automate one deterministic transformation first. Then add a CLI,
+> dry-run mode, structured logs, durable checkpoints, scheduling, and notifications in
+> that order.
 
 ---
 
