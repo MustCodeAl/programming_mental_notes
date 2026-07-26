@@ -1,51 +1,89 @@
-# Programming & Compiler Mental Notes
+# 🧠 Programming & Compiler Mental Notes
 
 > A practical map from source text to syntax trees, bytecode, machine code, memory, and
 > network protocols—with the same ideas viewed from both the builder's and reverse
 > engineer's perspective.
 
-## How to Use These Notes
+## 🗺️ How to Use These Notes
 
 These notes work best as a reference rather than a book that must be read strictly front
 to back:
 
-- **Building a language:** follow grammar → AST → interpreter → types → IR → code
+- 🏗️ **Building a language:** follow grammar → AST → interpreter → types → IR → code
   generation → runtime.
-- **Learning low-level systems:** follow CPU → assembly → memory → executable formats →
+- ⚙️ **Learning low-level systems:** follow CPU → assembly → memory → executable formats →
   ABI → networking.
-- **Reverse engineering:** read the same pipeline backward, starting with bytes,
+- 🔍 **Reverse engineering:** read the same pipeline backward, starting with bytes,
   instructions, runtime state, and observable behavior.
-- **Debugging:** reduce the problem to one stage, inspect that stage's input and output,
+- 🐛 **Debugging:** reduce the problem to one stage, inspect that stage's input and output,
   and record the smallest reproducible example.
 
-### Quick Navigation
+### Recommended Top-to-Bottom Reading Order
 
-| Goal                   | Start here                                                                  | Then continue to                                                                     |
-| ---------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| Build a parser         | [Grammar](#grammar)                                                         | [Building a Parser](#building-a-parser)                                              |
-| Build an interpreter   | [Execution Pipeline](#iii-the-execution-pipeline--ast)                      | [Bytecode & VMs](#iv-bytecode--virtual-machines)                                     |
-| Add static types       | [Types & Type Inference](#v-types--type-inference)                          | [LLVM IR](#vii-llvm-ir--advanced-code-generation)                                    |
-| Understand memory      | [Memory Layout](#memory-layout)                                             | [Low-Level Memory](#low-level-memory-binary-analysis--language-runtime-architecture) |
-| Reverse a binary or VM | [Reverse Engineering](#reverse-engineering--debugging-compiled-binaries)    | [Reversing a Binary](#7-reversing-a-binary-bytecode-vm-or-language)                  |
-| Write safer Rust tools | [Idiomatic Rust](#idiomatic-rust-for-compilers-parsers-and-low-level-tools) | [Networking](#networking-protocols--wire-formats)                                    |
+The document is arranged as a dependency ladder. Read these phases **in order** on a
+first pass; use the goal index afterward as a reference.
+
+| Phase                          | Build understanding in this order                                 | Why it comes here                                       |
+| ------------------------------ | ----------------------------------------------------------------- | ------------------------------------------------------- |
+| **1 · Foundations**            | grammar vocabulary → CPU → assembly → memory → translation levels | Establish what languages eventually control             |
+| **2 · Front end**              | hand-built parser → Pest PEGs → AST → evaluation                  | Turn text into trusted structure                        |
+| **3 · Execution**              | recursion → bytecode → VM/runtime → Lua case study                | Give the structure behavior and state                   |
+| **4 · Semantics**              | types → optimization concepts                                     | Define meaning before transforming it                   |
+| **5 · Native backend**         | LLVM IR → Inkwell tests → object layout/codegen → debugging       | Emit native code and prove it is valid                  |
+| **6 · Safe systems work**      | low-level memory → idiomatic Rust → patterns → algorithms         | Build reusable low-level implementation habits          |
+| **7 · Connected systems**      | system design → networking → `smoltcp` → Actix/Wasm/DOM           | Move from local programs to bounded external interfaces |
+| **8 · Read programs backward** | x64 reversing → OS → executables/ABI → bare metal → concurrency   | Use the earlier models to recover hidden behavior       |
+| **9 · Daily practice**         | terminal/tooling → practical workflow → progression map           | Apply and extend everything above                       |
+
+> 🧭 **First-pass rule:** when a later section mentions an unfamiliar earlier concept,
+> follow its link backward, learn that prerequisite, then return. The later sections
+> deliberately reuse the same ideas—**state machines, ownership, representation,
+> invariants, and trust boundaries**—at larger scales.
+
+### Jump to a Goal
+
+| Goal                       | Start here                                                                   | Then continue to                                                                      |
+| -------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 🧱 Build a parser          | [Grammar](#-grammar)                                                         | [Building a Parser](#-building-a-parser)                                              |
+| 🦗 Design a PEG grammar    | [Pest in Practice](#-pest-peg-parsing-in-practice)                           | [Execution Pipeline](#-iii-the-execution-pipeline--ast)                               |
+| 🌳 Build an interpreter    | [Execution Pipeline](#-iii-the-execution-pipeline--ast)                      | [Bytecode & VMs](#-iv-bytecode--virtual-machines)                                     |
+| 🏠 Build a hosted runtime  | [Hosted Runtime Design](#-hosted-language-runtime-design-in-rust)            | [Minimal Lua Interpreter](#-building-a-minimal-lua-interpreter-in-rust)               |
+| 🏷️ Add static types        | [Types & Type Inference](#-v-types--type-inference)                          | [LLVM IR](#-vii-llvm-ir--advanced-code-generation)                                    |
+| 🏭 Test LLVM codegen       | [Inkwell Test Patterns](#-testing-llvm-codegen-with-inkwell)                 | [Compiler Debugging](#compiler-pipeline-debugging)                                    |
+| 🧠 Understand memory       | [Memory Layout](#memory-layout)                                              | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) |
+| 🖥️ Understand the OS       | [Processes & the Kernel](#-operating-systems-from-the-bottom-up)             | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         |
+| 🔍 Reverse x64 Windows     | [x64 Windows Reversing](#-practical-x64-windows-reverse-engineering)         | [Calling Conventions](#6-calling-conventions)                                         |
+| 🧩 Reverse a binary or VM  | [Reverse Engineering](#reverse-engineering--debugging-compiled-binaries)     | [Reversing a Binary](#7-reversing-a-binary-bytecode-vm-or-language)                   |
+| 🦀 Write safer Rust tools  | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools) | [Networking](#-networking-protocols--wire-formats)                                    |
+| 🧮 Practice algorithms     | [Algorithms in Rust](#-algorithms-in-idiomatic-rust)                         | [Compiler Applications](#13-where-algorithms-appear-in-language-tools)                |
+| 🏗️ Design a service        | [System Design in Rust](#-system-design-patterns-in-rust)                    | [Networking](#-networking-protocols--wire-formats)                                    |
+| 🔩 Write low-level Rust    | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)  | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         |
+| 🧱 Design Rust APIs        | [Rust Patterns & Recipes](#-practical-rust-patterns--cookbook-recipes)       | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          |
+| 📡 Embed a TCP/IP stack    | [smoltcp](#-embedded-networking-with-smoltcp)                                | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)           |
+| 🕸 Build Rust web code     | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)         | [Networking](#-networking-protocols--wire-formats)                                    |
+| 🌳 Control the browser DOM | [DOM from Rust](#14-the-dom-is-a-host-owned-object-graph)                    | [Wasm Ownership](#17-dom-event-listeners-need-lifetime-design)                        |
+| ⌨️ Master developer tools  | [Developer Tooling](#-developer-tooling-the-missing-semester)                | [Practical Workflow](#-practical-low-level-workflow)                                  |
 
 ### Reading Conventions
 
-- **Definition** introduces a concept.
-- **Mental model** gives a useful approximation, not a formal guarantee.
-- **Invariant** is a condition that must remain true for an implementation to be
+- 📖 **Definition** introduces a concept.
+- 🧠 **Mental model** gives a useful approximation, not a formal guarantee.
+- 🧭 **Invariant** is a condition that must remain true for an implementation to be
   correct.
-- **Boundary** is where data changes representation or trust level.
-- **Failure mode** names what can go wrong and why.
-- Code examples favor clarity and explicit checks over cleverness.
+- 🚧 **Boundary** is where data changes representation or trust level.
+- ⚠️ **Failure mode** names what can go wrong and why.
+- 🦀 **Rust examples** favor clarity and explicit checks over cleverness.
 
 ---
 
-## Grammar
+## 🧩 Grammar
 
 A _**formal grammar**_ is a set of rules that define what makes valid code in a
 programming language. Think of it like the grammar of English: “The cat sat” is valid,
 but “Cat the sat” is not.
+
+> 🧠 **Mental model:** a grammar is the language's structural contract; the parser is
+> the program that checks that contract and turns matching text into structure.
 
 For programming languages, a grammar specifies:
 
@@ -57,7 +95,7 @@ For programming languages, a grammar specifies:
 
 ---
 
-## I. Hardware Fundamentals
+## 🔧 I. Hardware Fundamentals
 
 ### The CPU
 
@@ -70,6 +108,9 @@ abstract model defining data types, registers, hardware support, and I/O. Togeth
 make up **Machine Language**, the lowest-level language of computing.
 
 The CPU continuously runs a **fetch-decode-execute** loop:
+
+> 🔁 **Core loop:** **fetch** an instruction, **decode** what it means, then
+> **execute** its effect.
 
 1. **Fetch** — Retrieve the instruction addressed by the **Instruction Pointer (IP)** /
    Program Counter (PC).
@@ -178,7 +219,7 @@ specific format it doesn't recognize.
 
 ---
 
-## II. The Language Hierarchy & Translation
+## 🪜 II. The Language Hierarchy & Translation
 
 Informally, a **language** is structured text with syntax and semantics. Source code
 written in a programming language needs:
@@ -221,13 +262,45 @@ interpreter together with the source/bytecode it runs.
 > ultimately answers to the same question: how does this text become something the CPU
 > executes?
 
+### Compilers
+
+A **compiler** is any program that translates (maps, encodes) Language A → Language B.
+Its two core components:
+
+- **Frontend** — Maps source code strings to a structured format called an **Abstract
+  Syntax Tree (AST)**.
+- **Backend (Code Generator)** — Translates the AST to Bytecode, IR, or Assembly.
+
+Most often, when we talk about compiler, we mean Ahead-Of-Time (AOT) compiler where the
+translation happens before execution. Another form of translation is Just-In-Time (JIT)
+compilation where translation happens right at the time of the execution.
+
+| Translation Type        | When It Happens  | Examples               |
+| ----------------------- | ---------------- | ---------------------- |
+| **AOT (Ahead-of-Time)** | Before execution | `rustc`, `gcc`         |
+| **JIT (Just-in-Time)**  | During execution | V8 (JS), PyPy (Python) |
+| **Transpiler**          | Source-to-source | Python → Java          |
+
+### Virtual Machines (VMs)
+
+Hardware instructions are vendor-specific — Intel and AMD instructions differ. A
+**Virtual Machine (VM)** abstracts away hardware details so that code compiled to the
+VM's language becomes **platform-agnostic**.
+
+The most famous example: the **Java Virtual Machine (JVM)**. Any valid Java Bytecode
+runs on any platform with a **Java Runtime Environment (JRE)**, regardless of where it
+was compiled.
+
 ---
 
-## Building a Parser
+## 🧱 Building a Parser
 
 A parser takes raw source code (a string) and converts it into a structured **Abstract
 Syntax Tree (AST)** that a computer can evaluate or compile. Think of source code as a
 sentence and the AST as its grammatical diagram. It captures _structure_, not just text.
+
+> 🧭 **Parser invariant:** every accepted input produces a well-formed structure, and
+> every rejected input produces a bounded, useful diagnostic rather than a crash.
 
 Here is the step-by-step process of building one from scratch using Rust and the `pest`
 crate:
@@ -532,40 +605,214 @@ fn build_ast_from_term(pair: pest::iterators::Pair<Rule>) -> Node {
 
 ---
 
-### The Compiler
+## 🦗 Pest PEG Parsing in Practice
 
-A **compiler** is any program that translates (maps, encodes) Language A → Language B.
-Its two core components:
+[Pest](https://pest.rs/book/) turns a **parsing expression grammar** (PEG) into a Rust
+parser. It is a good fit for a small language because the grammar remains readable while
+Rust code handles AST construction, validation, diagnostics, and later compiler phases.
 
-- **Frontend** — Maps source code strings to a structured format called an **Abstract
-  Syntax Tree (AST)**.
-- **Backend (Code Generator)** — Translates the AST to Bytecode, IR, or Assembly.
+> 🧠 **Mental model:** a Pest grammar recognizes concrete syntax. Your Rust conversion
+> code decides which recognized details become meaningful AST nodes.
 
-Most often, when we talk about compiler, we mean Ahead-Of-Time (AOT) compiler where the
-translation happens before execution. Another form of translation is Just-In-Time (JIT)
-compilation where translation happens right at the time of the execution.
+### 1. PEG Choice Is Ordered
 
-| Translation Type        | When It Happens  | Examples               |
-| ----------------------- | ---------------- | ---------------------- |
-| **AOT (Ahead-of-Time)** | Before execution | `rustc`, `gcc`         |
-| **JIT (Just-in-Time)**  | During execution | V8 (JS), PyPy (Python) |
-| **Transpiler**          | Source-to-source | Python → Java          |
+In a PEG, `a | b` means **try `a` first; try `b` only if `a` fails**. This differs from
+thinking of alternatives as an unordered mathematical set.
 
----
+```pest
+keyword_if = { "if" }
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
 
-### Virtual Machines (VMs)
+// Put the more specific alternative first.
+atom = { keyword_if | identifier }
+```
 
-Hardware instructions are vendor-specific — Intel and AMD instructions differ. A
-**Virtual Machine (VM)** abstracts away hardware details so that code compiled to the
-VM's language becomes **platform-agnostic**.
+| Operator | Meaning            | Compiler use                         |
+| -------- | ------------------ | ------------------------------------ |
+| `~`      | Sequence           | `let` then name then `=` then value  |
+| \|       | Ordered choice     | statement form or expression form    |
+| `*`      | Zero or more       | arguments, statements, suffixes      |
+| `+`      | One or more        | digits, identifier characters        |
+| `?`      | Optional           | type annotation or trailing comma    |
+| `&rule`  | Positive lookahead | Require a prefix without consuming   |
+| `!rule`  | Negative lookahead | Reject reserved words or terminators |
 
-The most famous example: the **Java Virtual Machine (JVM)**. Any valid Java Bytecode
-runs on any platform with a **Java Runtime Environment (JRE)**, regardless of where it
-was compiled.
+Repetition binds more tightly than predicates, then sequence, then ordered choice. Add
+parentheses when a reader might otherwise have to remember that precedence.
 
----
+### 2. Whitespace Is a Grammar Policy
 
-## III. The Execution Pipeline & AST
+When rules named `WHITESPACE` or `COMMENT` exist, Pest can insert them implicitly
+between sequence and repetition expressions. That is convenient for language-level
+tokens, but dangerous inside indivisible tokens such as identifiers and numbers.
+
+```pest
+WHITESPACE = _{ " " | "\t" | NEWLINE }
+COMMENT = _{ "//" ~ (!NEWLINE ~ ANY)* }
+
+identifier = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
+integer = @{ "-"? ~ ASCII_DIGIT+ }
+```
+
+| Modifier | Parse-tree effect                      | Whitespace effect             | Typical use             |
+| -------- | -------------------------------------- | ----------------------------- | ----------------------- |
+| `_`      | Silent: omit this rule                 | Normal                        | punctuation, whitespace |
+| `@`      | Atomic: inner rules become silent      | Disable implicit whitespace   | identifiers, numbers    |
+| `$`      | Compound atomic: keep inner rule pairs | Disable implicit whitespace   | structured string token |
+| `!`      | Non-atomic inside an atomic context    | Re-enable implicit whitespace | interpolation           |
+
+**Atomic does not mean thread-safe.** Here it means “match this grammar region as one
+whitespace-sensitive unit.”
+
+### 3. Anchor Complete Inputs
+
+Without `SOI` and `EOI`, a parser may recognize only a valid prefix and leave unexpected
+text behind.
+
+```pest
+program = { SOI ~ statement* ~ EOI }
+
+statement = _{ let_stmt | print_stmt }
+let_stmt = { "let" ~ identifier ~ "=" ~ expression ~ ";" }
+print_stmt = { "print" ~ expression ~ ";" }
+
+expression = { term ~ (add_op ~ term)* }
+add_op = { "+" | "-" }
+term = _{ integer | identifier | "(" ~ expression ~ ")" }
+```
+
+| Entry rule      | Appropriate contract                                  |
+| --------------- | ----------------------------------------------------- |
+| `program`       | Must consume the whole source file                    |
+| `expression`    | May parse a nested region selected by another rule    |
+| editor fragment | May intentionally accept incomplete, recoverable text |
+
+### 4. `Pair` Is a Concrete-Syntax View, Not the AST
+
+Each `Pair<Rule>` identifies the matched rule, matched text, byte span, and nested pairs.
+Convert it promptly into your own AST so the rest of the compiler is independent of
+Pest's tree shape.
+
+```rust
+use pest::iterators::Pair;
+use std::ops::Range;
+
+#[derive(Debug)]
+struct Spanned<T> {
+    node: T,
+    bytes: Range<usize>,
+}
+
+#[derive(Debug)]
+enum Expr {
+    Integer(i64),
+    Name(String),
+    Add(Box<Spanned<Expr>>, Box<Spanned<Expr>>),
+}
+
+fn byte_range(pair: &Pair<'_, Rule>) -> Range<usize> {
+    let span = pair.as_span();
+    span.start()..span.end()
+}
+```
+
+Pest spans are **byte offsets** into the original UTF-8 input. If diagnostics also need
+line and column, compute or cache that view deliberately; never treat a byte offset as
+a character index.
+
+### 5. Keep Syntax and Semantic Errors Separate
+
+| Failure layer | Example                           | Best owner           |
+| ------------- | --------------------------------- | -------------------- |
+| Grammar       | Missing `)`                       | Pest parse error     |
+| AST lowering  | Integer does not fit in `i64`     | AST conversion error |
+| Name binding  | Unknown variable                  | Resolver             |
+| Type checking | Add integer to function           | Type checker         |
+| Codegen       | Unsupported target representation | Backend              |
+
+```rust
+#[derive(Debug)]
+enum FrontendError {
+    Syntax(Box<pest::error::Error<Rule>>),
+    IntegerOutOfRange { text: String, bytes: Range<usize> },
+}
+
+fn parse_integer(pair: Pair<'_, Rule>) -> Result<Spanned<Expr>, FrontendError> {
+    let bytes = byte_range(&pair);
+    let text = pair.as_str();
+    let value = text.parse::<i64>().map_err(|_| {
+        FrontendError::IntegerOutOfRange {
+            text: text.to_owned(),
+            bytes: bytes.clone(),
+        }
+    })?;
+
+    Ok(Spanned {
+        node: Expr::Integer(value),
+        bytes,
+    })
+}
+```
+
+### 6. Use Pratt Parsing for Expression Precedence
+
+Pest's `PrattParser` maps a flat operator/operand stream into the intended precedence
+and associativity. Define operators from **lowest to highest precedence**.
+
+```rust
+use pest::pratt_parser::{Assoc, Op, PrattParser};
+use std::sync::LazyLock;
+
+static PRATT: LazyLock<PrattParser<Rule>> = LazyLock::new(|| {
+    PrattParser::new()
+        .op(Op::infix(Rule::add, Assoc::Left)
+            | Op::infix(Rule::subtract, Assoc::Left))
+        .op(Op::infix(Rule::multiply, Assoc::Left)
+            | Op::infix(Rule::divide, Assoc::Left))
+        .op(Op::infix(Rule::power, Assoc::Right))
+        .op(Op::prefix(Rule::negate))
+});
+```
+
+| Expression   | Required shape   | Reason                              |
+| ------------ | ---------------- | ----------------------------------- |
+| `2 + 3 * 4`  | `2 + (3 * 4)`    | Multiplication is higher            |
+| `10 - 3 - 2` | `(10 - 3) - 2`   | Subtraction is left-associative     |
+| `2 ^ 3 ^ 2`  | `2 ^ (3 ^ 2)`    | Power is commonly right-associative |
+| `-x ^ 2`     | Language-defined | Prefix precedence must be explicit  |
+
+> 🧭 **Invariant:** after AST construction, precedence is encoded by tree shape. Later
+> compiler phases should not need to remember the grammar's precedence table.
+
+### 7. Test the Grammar at Three Scales
+
+| Scale       | Test input                              | Assertion                            |
+| ----------- | --------------------------------------- | ------------------------------------ |
+| Rule        | one identifier, literal, or operator    | exact match and rejection cases      |
+| Construct   | one expression or statement             | AST shape, span, associativity       |
+| Program     | a small file                            | complete parse and diagnostics       |
+| Adversarial | truncation, deep nesting, huge literals | bounded behavior and clear rejection |
+
+```rust
+#[test]
+fn multiplication_binds_more_tightly_than_addition() {
+    let ast = parse_expression("2 + 3 * 4").expect("valid test expression");
+    assert_eq!(format!("{ast:?}"), "Add(Integer(2), Multiply(Integer(3), Integer(4)))");
+}
+
+#[test]
+fn program_rejects_trailing_garbage() {
+    assert!(LanguageParser::parse(Rule::program, "print 1; ???").is_err());
+}
+```
+
+Snapshotting a debug string is useful early, but mature compilers should compare typed
+AST values so formatting changes do not break semantic tests.
+
+> ➡️ **Next:** the execution-pipeline section treats the AST as the trusted input to an
+> interpreter or backend. Pest-specific details stop here; the language model continues.
+
+## 🌳 III. The Execution Pipeline & AST
 
 ### The Pipeline
 
@@ -632,13 +879,15 @@ node types.
 A calculator is **stateless** — input goes in, output comes out, nothing persists. A
 real language is a **state machine**:
 
-- **Variables** — Named storage (`n`).
-- **Functions** (`fib`) — Abstraction and reuse.
-- **Parameters** (passing `n`) — Data flow.
-- **Conditionals** (`if`/`else`) — Branching.
-- **Operators** (`<`, `-`) — Computation.
-- **Recursion** (`fib` calls `fib`) — Self-reference.
-- **Call stack** (tracks each frame) — Memory management.
+| Language feature | Example             | Role in execution                  |
+| ---------------- | ------------------- | ---------------------------------- |
+| **Variables**    | `n`                 | Named storage                      |
+| **Functions**    | `fib`               | Abstraction and reuse              |
+| **Parameters**   | passing `n`         | Data flow into a call              |
+| **Conditionals** | `if` / `else`       | Control-flow branching             |
+| **Operators**    | `<`, `-`            | Computation                        |
+| **Recursion**    | `fib` calling `fib` | Self-reference                     |
+| **Call stack**   | one frame per call  | Tracks local execution and returns |
 
 The AST becomes a _program to execute_, not just an expression to evaluate.
 
@@ -752,7 +1001,7 @@ memory locations. (In Secondlang, `if` compiles to LLVM IR's `br` instruction.)
 
 ---
 
-## Recursion
+## 🔁 Recursion
 
 Recursion is when a function calls itself. It seems paradoxical — how can a function
 call itself mid-execution? — but the call stack makes it work cleanly.
@@ -947,7 +1196,7 @@ evaluate the accumulated input.
 
 ---
 
-## IV. Bytecode & Virtual Machines
+## 🧮 IV. Bytecode & Virtual Machines
 
 **Bytecode** is another technique for translating source code toward machine code: it
 emulates the instruction set with a new, simplified, human-friendly encoding — an
@@ -1068,12 +1317,719 @@ The VM reads instructions left-to-right with the **Instruction Pointer** (`ip`):
 
 ---
 
-## V. Types & Type Inference
+## 🏠 Hosted Language Runtime Design in Rust
+
+This section draws from
+[Writing Interpreters in Rust: a Guide](https://rust-hosted-langs.github.io/book/introduction.html).
+Its central problem is deeper than parsing: how can a Rust host safely implement a
+dynamic guest language whose objects, aliases, and garbage-collection rules are not
+known to Rust's borrow checker?
+
+> 🏠 **Host/guest boundary:** Rust owns the runtime implementation; the guest language
+> defines the behavior of values that live inside it.
+
+### 1. Host Language Versus Guest Language
+
+- The **host language** implements the runtime. Here, the host is Rust.
+- The **guest language** is parsed, compiled, and executed by that runtime.
+- The **mutator** is ordinary guest-program execution that allocates and changes
+  objects.
+- The **collector** traces, moves, marks, or reclaims guest objects.
+
+Rust statically enforces Rust ownership. It cannot automatically prove the guest
+language's runtime ownership model.
+
+```text
+Rust compiler proves host-level invariants
+        ↓
+runtime abstraction validates guest references
+        ↓
+guest program manipulates dynamic objects
+```
+
+This means runtime authors must design a safe public abstraction around a small,
+carefully reviewed unsafe core.
+
+### 2. Separate Runtime Layers
+
+A useful architecture has explicit boundaries:
+
+```text
+source text
+    ↓ parser
+guest syntax / AST
+    ↓ compiler
+bytecode + literal pools
+    ↓ virtual machine
+dynamic values + call frames
+    ↓ allocation interface
+heap objects + object headers
+    ↓ collector
+mark / trace / reclaim
+```
+
+Each layer should depend on the narrowest interface below it:
+
+| Layer         | Should understand              | Should not depend on                |
+| ------------- | ------------------------------ | ----------------------------------- |
+| **Parser**    | tokens, grammar, AST nodes     | heap-block layout                   |
+| **Compiler**  | AST, constants, bytecode       | raw-pointer manipulation            |
+| **VM**        | instructions, values, handles  | parser internals                    |
+| **Allocator** | sizes, alignments, object kind | source-language grammar             |
+| **Collector** | roots and tracing metadata     | syntax or source-level declarations |
+
+### 3. Allocation Is More Than Getting Bytes
+
+A runtime allocation request must answer:
+
+| Allocation property | Question the runtime must answer                        |
+| ------------------- | ------------------------------------------------------- |
+| **Size**            | How many bytes are required?                            |
+| **Alignment**       | At which address boundary may the object begin?         |
+| **Type**            | Which runtime object layout is being allocated?         |
+| **Tracing**         | Does it contain references to other managed objects?    |
+| **Initialization**  | When do all fields become safe for the GC to observe?   |
+| **Header lookup**   | How does a payload locate its metadata?                 |
+| **Movement**        | May collection change the object's address?             |
+| **Failure**         | Does failure trigger GC, return an error, or terminate? |
+
+Conceptually:
+
+```rust
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum RuntimeType {
+    Text,
+    Pair,
+    Function,
+    Bytecode,
+}
+
+#[derive(Clone, Copy, Debug)]
+struct ObjectHeader {
+    kind: RuntimeType,
+    size_bytes: u32,
+    marked: bool,
+}
+```
+
+The real header layout is part of the runtime ABI. Changing it affects allocation,
+tracing, debugging, and possibly serialized heap images.
+
+### 4. Bump Allocation Mental Model
+
+A bump allocator keeps a cursor inside a block:
+
+```text
+block start                         block end
+| allocated objects | free space          |
+                    ^
+                  cursor
+```
+
+To allocate:
+
+1. round the cursor up to the required alignment;
+2. check whether `aligned_cursor + size` fits;
+3. reserve that range;
+4. advance the cursor;
+5. initialize the object before exposing it.
+
+Bump allocation is fast because the common path is arithmetic plus a bounds check. It
+does not individually reclaim objects; a collector or arena reset handles reclamation.
+
+Checked alignment helper:
+
+```rust
+fn align_up(offset: usize, alignment: usize) -> Option<usize> {
+    if !alignment.is_power_of_two() {
+        return None;
+    }
+    offset.checked_add(alignment - 1).map(|n| n & !(alignment - 1))
+}
+
+assert_eq!(align_up(13, 8), Some(16));
+```
+
+### 5. Runtime Values
+
+A dynamically typed language binds type information to values at runtime:
+
+```rust
+#[derive(Clone, Debug)]
+enum Value {
+    Nil,
+    Bool(bool),
+    Int(i64),
+    Float(f64),
+    Text(GcRef),
+    Function(FunctionId),
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct GcRef(u32);
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+struct FunctionId(u32);
+```
+
+This handle-based sketch keeps raw heap addresses out of most code. A real runtime may
+use direct pointers, indices, generations, tagged words, or a mixture.
+
+| Representation decision | Common choices                             |
+| ----------------------- | ------------------------------------------ |
+| Small integers          | Inline/tagged or boxed                     |
+| Booleans and `nil`      | Immediate singleton values or heap objects |
+| Strings                 | Interned, uniquely allocated, or mixed     |
+| Object addresses        | Stable or movable during collection        |
+| Equality                | Identity, contents, or type-dependent      |
+| Stale handles           | Generation counters, tables, or validation |
+
+### 6. Tagged Values and Tagged Pointers
+
+Aligned pointers have low bits that are normally zero. Some runtimes use those bits as a
+small type tag:
+
+```text
+aligned pointer: ppppppppppppp000
+tagged value:    pppppppppppppttt
+```
+
+Possible tags might mean:
+
+```text
+000 → heap object pointer
+001 → small integer
+010 → symbol/interned identifier
+011 → special value
+```
+
+| Tagged-value advantage                                 | Tagged-value cost                                               |
+| ------------------------------------------------------ | --------------------------------------------------------------- |
+| Identify common types without reading an object header | Masking and shifting require carefully reviewed unsafe code     |
+| Keep small integers out of the heap                    | The inline integer range becomes smaller                        |
+| Fit a complete dynamic value in one machine word       | Available tag bits depend on guaranteed alignment               |
+| Reduce indirection for common values                   | Debuggers and sanitizers see encoded pointers                   |
+| Improve locality for value stacks and register arrays  | Portability and pointer-provenance rules need deliberate design |
+
+Keep the encoded representation private. Expose safe constructors and accessors that
+validate tags before decoding.
+
+### 7. Object Headers Versus Inline Tags
+
+Inline tags cannot represent unlimited types. A hybrid runtime may use:
+
+```text
+value word
+    ├── immediate integer/special value
+    ├── directly tagged common object
+    └── generic object pointer ──→ header contains full RuntimeType
+```
+
+The header is also a natural place for:
+
+| Header field           | Purpose                                      |
+| ---------------------- | -------------------------------------------- |
+| Mark bits              | Record tracing state                         |
+| Size or size class     | Locate boundaries and choose reclamation bin |
+| Generation or age      | Support generational collection              |
+| Forwarding information | Redirect references after movement           |
+| Immutable/frozen state | Enforce guest-language mutation rules        |
+| Identity hash          | Preserve stable identity-based hashing       |
+
+Every extra header field costs memory for every object, so header design is a workload
+trade-off.
+
+### 8. Mutator Scopes and Rooting
+
+The mutator and collector have conflicting views:
+
+- normal execution wants stable access to individual objects;
+- a moving collector may need exclusive access to the whole heap and must update every
+  reference.
+
+A safe design ensures they cannot run simultaneously.
+
+```text
+enter mutator scope
+    ↓ obtain scoped handles
+parse / compile / execute / allocate
+    ↓ all temporary borrows end
+leave mutator scope
+    ↓ collector may trace or move objects
+```
+
+Long-lived guest references should normally be represented as traceable roots or
+handles, not as unconstrained Rust references.
+
+| Root source                   | Why it keeps objects alive                      |
+| ----------------------------- | ----------------------------------------------- |
+| VM value stack/register array | Contains currently executing values             |
+| Active call frames            | Hold locals, closures, and return state         |
+| Globals and modules           | Remain reachable by name                        |
+| Interned symbols              | Are retained by the runtime's intern table      |
+| Host-visible native handles   | Represent guest objects borrowed by native code |
+| Pending exceptions            | Carry values until handled                      |
+| Executable compiler constants | Remain reachable from live functions            |
+
+If one live reference is absent from the root graph, a collector may reclaim a reachable
+object.
+
+### 9. Garbage-Collection Invariants
+
+The exact collector can vary, but these invariants transfer:
+
+| GC invariant       | Required property                                             |
+| ------------------ | ------------------------------------------------------------- |
+| Reachability       | Every live object is reachable through traceable edges        |
+| Initialization     | Traceable fields are initialized before GC can observe them   |
+| Layout knowledge   | The collector knows each object's layout or tracing procedure |
+| Write barriers     | Mutator writes preserve the collector's required metadata     |
+| Movement           | Every reference is updated when an object moves               |
+| Reclamation        | No valid handle can reach reclaimed memory                    |
+| Finalization       | Objects cannot resurrect through an untracked reference       |
+| Collection failure | The heap remains in a defined state                           |
+
+Basic tracing shape:
+
+```text
+roots
+  ↓ mark
+reachable object graph
+  ↓ sweep unmarked
+free space
+```
+
+Do not hold a normal Rust reference across an operation that may allocate if allocation
+can trigger a moving collection.
+
+### 10. Register-Based Bytecode
+
+The hosted-languages guide uses a register-oriented VM influenced by Lua. Each compiled
+function owns bytecode and literals, while call frames provide that function's
+registers.
+
+```rust
+#[derive(Clone, Copy, Debug)]
+struct Register(u16);
+
+#[derive(Clone, Copy, Debug)]
+struct LiteralId(u16);
+
+#[derive(Clone, Debug)]
+enum Opcode {
+    LoadLiteral {
+        dst: Register,
+        literal: LiteralId,
+    },
+    Move {
+        dst: Register,
+        src: Register,
+    },
+    Add {
+        dst: Register,
+        left: Register,
+        right: Register,
+    },
+    Return {
+        src: Register,
+    },
+}
+
+struct Bytecode {
+    code: Vec<Opcode>,
+    literals: Vec<Value>,
+    register_count: u16,
+}
+```
+
+The compiler sees a construction interface:
+
+- append an instruction;
+- append/deduplicate a literal;
+- reserve a register;
+- patch a forward jump after its destination is known.
+
+The VM sees an execution interface:
+
+- fetch the instruction at the instruction pointer;
+- advance or replace the instruction pointer;
+- access frame registers;
+- switch bytecode when calling or returning.
+
+These are two views of the same data, much like ELF's linking and execution views.
+
+### 11. Call Frames
+
+A register VM frame may contain:
+
+```rust
+struct CallFrame {
+    function: FunctionId,
+    instruction_pointer: usize,
+    registers: Vec<Value>,
+    return_destination: Option<Register>,
+}
+```
+
+Real implementations often store all registers in one contiguous VM stack and let each
+frame refer to a window. That avoids one `Vec` allocation per call.
+
+| Frame invariant     | Required relationship                              |
+| ------------------- | -------------------------------------------------- |
+| Instruction pointer | Refers to the frame's own bytecode                 |
+| Register index      | Is below the function's declared register count    |
+| Arguments           | Occupy the calling convention's expected registers |
+| Return destination  | Belongs to the caller and remains valid            |
+| Live values         | Are visible to the garbage collector               |
+
+### 12. Safe-Unsafe Boundary Checklist
+
+| Area             | Review requirement                                                   |
+| ---------------- | -------------------------------------------------------------------- |
+| Isolation        | Keep raw allocation and pointer arithmetic in one small module       |
+| Safety contract  | State alignment, initialization, aliasing, and lifetime requirements |
+| Tagged pointers  | Never expose an encoded value as directly dereferenceable            |
+| Domain types     | Use newtypes for IDs, sizes, offsets, handles, and registers         |
+| GC coordination  | Make collection and mutation mutually exclusive                      |
+| Edge tests       | Cover zero, maximum, overflow, and alignment-edge allocations        |
+| Dynamic checks   | Run Miri and sanitizers where applicable                             |
+| Fuzzing          | Fuzz bytecode verification and object decoding                       |
+| Stable identity  | Prefer handles when raw addresses may move                           |
+| Allocation audit | Treat every allocation point as a possible collection point          |
+
+---
+
+## 🌙 Building a Minimal Lua Interpreter in Rust
+
+This section follows the incremental idea from
+[Build a Lua Interpreter in Rust](https://wubingzheng.github.io/build-lua-in-rust/en/ch01-00.hello_world.html):
+implement one tiny program through the complete pipeline, then grow the language without
+discarding the architecture.
+
+> 🌱 **Growth strategy:** make one tiny program work **end to end**, then expand one
+> language feature and one test at a time.
+
+### 1. A Small Program Contains Many Concepts
+
+```lua
+print "hello, world!"
+```
+
+Even this one line crosses the complete language pipeline:
+
+| Stage              | Work required for `print "hello, world!"`            |
+| ------------------ | ---------------------------------------------------- |
+| Tokenizer          | Recognize an identifier and string literal           |
+| Parser             | Build a function-call expression                     |
+| Value model        | Represent a dynamic string and callable value        |
+| Name resolution    | Resolve the global name `print`                      |
+| Compiler           | Store the string constant and emit call instructions |
+| Calling convention | Place the argument where the callee expects it       |
+| Native boundary    | Invoke the standard-library implementation           |
+| VM                 | Fetch, decode, and execute the generated bytecode    |
+
+This is a good vertical slice: tiny surface area, complete pipeline.
+
+### 2. Define Bytecode Before Filling in the Pipeline
+
+Bytecode becomes a contract between compiler and VM:
+
+```text
+source
+  ↓ lexer + parser + compiler
+bytecode chunk
+  ↓ virtual machine
+observable result
+```
+
+For the tiny program:
+
+```rust
+#[derive(Clone, Copy, Debug)]
+struct Register(u8);
+
+#[derive(Clone, Copy, Debug)]
+struct ConstantId(u16);
+
+#[derive(Clone, Debug)]
+enum Instruction {
+    GetGlobal {
+        dst: Register,
+        name: ConstantId,
+    },
+    LoadConstant {
+        dst: Register,
+        constant: ConstantId,
+    },
+    Call {
+        function: Register,
+        argument_count: u8,
+        result_count: u8,
+    },
+    Return,
+}
+```
+
+Semantic trace:
+
+```text
+GetGlobal r0, "print"       r0 = built-in print function
+LoadConstant r1, "hello"    r1 = string value
+Call r0, 1, 0               call r0 with one argument, no results
+Return                      finish the chunk
+```
+
+The exact bytecode is an implementation decision, not part of the Lua language
+specification. Another compatible Lua implementation may use different instructions.
+
+### 3. Chunk, Constants, and Globals Are Different
+
+```rust
+struct Chunk {
+    code: Vec<Instruction>,
+    constants: Vec<Value>,
+    register_count: u8,
+}
+
+type Globals = std::collections::HashMap<String, Value>;
+```
+
+- The **constant table** belongs to compiled code and is addressed by compact indexes.
+- The **global table** belongs to execution state and is addressed by language-level
+  names.
+- Bytecode can first load a name from constants, then use that name to query globals.
+
+Keeping these separate prevents compile-time representation from being confused with
+runtime state.
+
+### 4. Dynamic Values as an Enum
+
+```rust
+type Builtin = fn(&[Value]) -> Result<Vec<Value>, RuntimeError>;
+
+#[derive(Clone)]
+enum Value {
+    Nil,
+    Bool(bool),
+    Integer(i64),
+    Float(f64),
+    String(String),
+    Builtin(Builtin),
+}
+
+#[derive(Debug)]
+enum RuntimeError {
+    UnknownGlobal(String),
+    RegisterOutOfRange,
+    ConstantOutOfRange,
+    NotCallable,
+    WrongArgumentCount,
+}
+```
+
+The enum makes every operation explicitly handle the dynamic type. Later, heap-backed
+strings, tables, closures, and userdata may use reference-counted or garbage-collected
+handles instead of owned `String`.
+
+### 5. Keep the First VM Loop Obvious
+
+```rust
+fn execute(chunk: &Chunk, globals: &Globals) -> Result<(), RuntimeError> {
+    let mut registers = vec![Value::Nil; chunk.register_count as usize];
+    let mut ip = 0;
+
+    while let Some(instruction) = chunk.code.get(ip) {
+        ip += 1;
+
+        match instruction {
+            Instruction::GetGlobal { dst, name } => {
+                let name = match chunk.constants.get(name.0 as usize) {
+                    Some(Value::String(name)) => name,
+                    _ => return Err(RuntimeError::UnknownGlobal("<invalid name>".into())),
+                };
+                let value = globals
+                    .get(name)
+                    .cloned()
+                    .ok_or_else(|| RuntimeError::UnknownGlobal(name.clone()))?;
+                *registers
+                    .get_mut(dst.0 as usize)
+                    .ok_or(RuntimeError::RegisterOutOfRange)? = value;
+            }
+            Instruction::LoadConstant { dst, constant } => {
+                let value = chunk
+                    .constants
+                    .get(constant.0 as usize)
+                    .cloned()
+                    .ok_or(RuntimeError::ConstantOutOfRange)?;
+                *registers
+                    .get_mut(dst.0 as usize)
+                    .ok_or(RuntimeError::RegisterOutOfRange)? = value;
+            }
+            Instruction::Call {
+                function,
+                argument_count,
+                result_count,
+            } => {
+                if *result_count != 0 {
+                    return Err(RuntimeError::WrongArgumentCount);
+                }
+                let function_index = function.0 as usize;
+                let args_start = function_index + 1;
+                let args_end = args_start + *argument_count as usize;
+                let args = registers
+                    .get(args_start..args_end)
+                    .ok_or(RuntimeError::RegisterOutOfRange)?;
+
+                match registers.get(function_index) {
+                    Some(Value::Builtin(function)) => {
+                        let results = function(args)?;
+                        if !results.is_empty() {
+                            return Err(RuntimeError::WrongArgumentCount);
+                        }
+                    }
+                    _ => return Err(RuntimeError::NotCallable),
+                }
+            }
+            Instruction::Return => return Ok(()),
+        }
+    }
+
+    Ok(())
+}
+```
+
+This version favors clarity over optimization. Before adding features, add a bytecode
+verifier so malformed instructions cannot index arbitrary registers or constants.
+
+### 6. Module Layout That Can Grow
+
+```text
+src/
+├── main.rs          # command-line entry point
+├── lexer.rs         # source → tokens
+├── parser.rs        # tokens → syntax / emitted bytecode
+├── bytecode.rs      # instructions, chunk, indexes
+├── value.rs         # dynamic runtime values
+├── vm.rs            # execution state and dispatch loop
+├── builtins.rs      # print and later standard-library functions
+└── error.rs         # lexical, parse, compile, runtime errors
+```
+
+Split by runtime domain and responsibility. Do not make every internal type public.
+
+### 7. Lexer and Parser Contract
+
+The tiny grammar can be:
+
+```text
+program  := statement* EOF
+statement := IDENTIFIER STRING
+```
+
+Tokens:
+
+```rust
+#[derive(Debug, PartialEq)]
+enum Token<'a> {
+    Identifier(&'a str),
+    StringLiteral(String),
+    End,
+}
+```
+
+Even at this stage, retain source spans:
+
+```rust
+#[derive(Clone, Copy, Debug)]
+struct Span {
+    start: usize,
+    end: usize,
+}
+
+struct Spanned<T> {
+    item: T,
+    span: Span,
+}
+```
+
+Spans let later compiler and runtime errors point back to the original source.
+
+### 8. Grow by Preserving Invariants
+
+| Feature             | Compiler/runtime addition                   |
+| ------------------- | ------------------------------------------- |
+| Multiple statements | Loop until end-of-file                      |
+| Local variables     | Scope table + register allocation           |
+| Assignment          | L-value representation + store instruction  |
+| Arithmetic          | Numeric coercion rules + arithmetic opcodes |
+| Tables              | Heap object + indexed/name lookup           |
+| Conditionals        | Conditional jump + patching                 |
+| Loops               | Backward jumps + break targets              |
+| Functions           | Prototypes, frames, call/return             |
+| Closures            | Upvalues and open/closed capture state      |
+| Garbage collection  | Roots, tracing, reclamation                 |
+
+A jump offset may begin as forward-only and later need to become signed when loops add
+backward edges. Representation choices should evolve when language semantics demand it.
+
+### 9. Closures and Escaping Upvalues
+
+An inner function may outlive the outer frame it references:
+
+```lua
+function make_counter()
+    local count = 0
+    return function()
+        count = count + 1
+        return count
+    end
+end
+```
+
+While the outer call is active, `count` can be an **open upvalue** referring to a stack
+slot. When that frame returns, the runtime must **close** the upvalue by moving or
+copying the captured value into heap-managed storage.
+
+```text
+active outer frame:
+closure ──→ open upvalue ──→ stack slot
+
+after outer return:
+closure ──→ closed upvalue ──→ heap value
+```
+
+All closures sharing the same captured local must share the same upvalue cell, not
+independent copies.
+
+### 10. Differential and Layered Testing
+
+| Test layer          | Assertion                                                   |
+| ------------------- | ----------------------------------------------------------- |
+| **Lexer**           | Exact token and span sequence                               |
+| **Parser/compiler** | Exact instructions and constants                            |
+| **Verifier**        | Malformed register, constant, and jump indexes are rejected |
+| **VM**              | Hand-built chunks execute independently of parsing          |
+| **End-to-end**      | Source text produces expected output                        |
+| **Differential**    | Visible behavior matches reference Lua where intended       |
+| **Snapshot**        | Bytecode listings and diagnostics remain readable/stable    |
+
+When a test fails, ask which boundary first differs:
+
+```text
+source → tokens → chunk → VM state → output
+```
+
+---
+
+## 🔖 V. Types & Type Inference
 
 ### Static vs. Dynamic Typing
 
 Types act as **contracts** — when you write `a: int`, you promise `a` will always be an
 integer. The compiler enforces that promise.
+
+> 🏷️ **Type-system goal:** reject impossible or unsafe programs early while preserving
+> useful expressiveness.
 
 | Approach    | When Checked                  | Examples                 |
 | ----------- | ----------------------------- | ------------------------ |
@@ -1198,11 +2154,14 @@ not the grammar.
 
 ---
 
-## VI. Compiler Optimizations
+## 🚀 VI. Compiler Optimizations
 
 Optimizations simplify the AST before code generation, producing faster output, cleaner
 debug trees, and less work for the backend. They are chained into a **pass pipeline** —
 order matters!
+
+> ⚠️ **Optimization invariant:** the transformed program must preserve every behavior
+> the language specification says is observable.
 
 ```
 AST → [Constant Folding] → [Algebraic Simplification] → [Dead Code Elimination] → Optimized AST
@@ -1223,11 +2182,14 @@ AST → [Constant Folding] → [Algebraic Simplification] → [Dead Code Elimina
 
 ---
 
-## VII. LLVM IR & Advanced Code Generation
+## 🏭 VII. LLVM IR & Advanced Code Generation
 
 > LLVM is like a universal translator for CPUs. You speak LLVM IR; LLVM translates it to
 > x86, ARM, WebAssembly — whatever you need. Write your compiler frontend once; LLVM
 > gives you every platform for free.
+>
+> 🏭 **Backend boundary:** your frontend must produce **valid, well-typed IR**; LLVM
+> cannot repair incorrect language semantics or undefined assumptions.
 
 **LLVM IR** is a universal, low-level assembly language not tied to any specific CPU. It
 is used by Rust, Swift, Julia, Kotlin/Native, and more. By targeting LLVM IR, you get
@@ -1531,7 +2493,170 @@ thirdlang --passes "default<O2>" examples/point.tl # LLVM O2 preset
 
 ---
 
-## VIII. Object-Oriented Concepts (Classes)
+## 🧪 Testing LLVM Codegen with Inkwell
+
+The [`tests/all` suite in Inkwell](https://github.com/TheDan64/inkwell/tree/master/tests/all)
+is useful as **executable API documentation**. Its files are organized around LLVM
+concepts—builders, blocks, contexts, modules, targets, types, values, passes, debug
+information, object files, and the execution engine—rather than around one large demo.
+
+### 1. Read Upstream Tests as a Capability Map
+
+| Upstream test area                        | Question for your compiler                        |
+| ----------------------------------------- | ------------------------------------------------- |
+| `test_types.rs` / `test_values.rs`        | Are guest types represented exactly as intended?  |
+| `test_builder.rs` / `test_basic_block.rs` | Is every block well formed and terminated?        |
+| `test_module.rs`                          | Can modules verify, link, clone, and serialize?   |
+| `test_execution_engine.rs`                | Does generated IR compute the correct result?     |
+| `test_targets.rs` / `test_object_file.rs` | Can the backend emit for the selected target?     |
+| `test_passes*.rs`                         | Does optimization preserve behavior?              |
+| `test_debug_info.rs`                      | Can source spans survive into debugger metadata?  |
+| `test_attributes.rs`                      | Are calling and optimization contracts attached?  |
+| `test_intrinsics.rs`                      | Are target-independent LLVM operations declared?  |
+| `test_memory_buffer.rs`                   | Can IR/bitcode enter through a byte-oriented API? |
+
+Inkwell's `tests/all/main.rs` declares these as modules so Cargo builds them into a
+single integration-test binary. It also uses `cfg` conditions for LLVM-version-sensitive
+tests. That is a strong model for a backend supporting several LLVM versions:
+
+```text
+shared semantic contract
+    ├── always-on type, value, builder, and module tests
+    ├── target-dependent emission tests
+    └── LLVM-version-gated pass and feature tests
+```
+
+### 2. Verify Every Constructed Module
+
+LLVM IR is typed, but a sequence of individually valid builder calls can still produce
+an invalid function or module. Run the verifier immediately after the smallest useful
+construction.
+
+```rust
+use inkwell::context::Context;
+use inkwell::module::Module;
+
+fn build_add<'ctx>(context: &'ctx Context) -> Module<'ctx> {
+    let module = context.create_module("arithmetic");
+    let builder = context.create_builder();
+    let i64_type = context.i64_type();
+    let function_type = i64_type.fn_type(
+        &[i64_type.into(), i64_type.into()],
+        false,
+    );
+    let function = module.add_function("add_i64", function_type, None);
+    let entry = context.append_basic_block(function, "entry");
+    builder.position_at_end(entry);
+
+    let lhs = function
+        .get_nth_param(0)
+        .expect("parameter 0 exists")
+        .into_int_value();
+    let rhs = function
+        .get_nth_param(1)
+        .expect("parameter 1 exists")
+        .into_int_value();
+    let sum = builder
+        .build_int_add(lhs, rhs, "sum")
+        .expect("builder is positioned in a block");
+    builder
+        .build_return(Some(&sum))
+        .expect("return type matches function type");
+
+    module.verify().expect("generated module must be valid");
+    module
+}
+```
+
+> 🧭 **Backend invariant:** each reachable basic block ends with exactly one terminator,
+> every SSA use is dominated by its definition, and instruction/result types agree.
+
+### 3. Test at Increasing Levels of Meaning
+
+| Test level       | What it catches                              | Typical assertion                 |
+| ---------------- | -------------------------------------------- | --------------------------------- |
+| Builder result   | Missing insertion point or invalid operation | `Result` is `Ok`                  |
+| Function verify  | Local control-flow/type defects              | `function.verify(true)`           |
+| Module verify    | Cross-function/module defects                | `module.verify().is_ok()`         |
+| IR inspection    | Names, structure, attributes, calling form   | selected normalized IR fragments  |
+| JIT execution    | Wrong semantics despite valid IR             | returned value equals oracle      |
+| Object emission  | Target/data-layout/relocation mistakes       | object parses and symbols exist   |
+| Differential run | Optimization or backend disagreement         | interpreter result equals JIT/AOT |
+
+Do not snapshot an entire LLVM module for every test. Full snapshots are noisy across
+LLVM versions. Prefer semantic execution tests plus focused IR assertions for features
+whose representation matters.
+
+### 4. JIT Lookup Is an Unsafe ABI Boundary
+
+`ExecutionEngine::get_function` is unsafe because Rust must promise that the requested
+function-pointer type matches the generated function's ABI and signature. The engine
+must also outlive the pointer.
+
+```rust
+use inkwell::OptimizationLevel;
+
+type AddI64 = unsafe extern "C" fn(i64, i64) -> i64;
+
+#[test]
+fn generated_add_has_the_expected_semantics() {
+    let context = Context::create();
+    let module = build_add(&context);
+    let engine = module
+        .create_jit_execution_engine(OptimizationLevel::None)
+        .expect("native JIT is available");
+
+    // SAFETY:
+    // - generated `add_i64` uses the C ABI;
+    // - it accepts exactly two i64 values and returns one i64;
+    // - `engine` remains alive while the JIT function is called.
+    let add = unsafe {
+        engine
+            .get_function::<AddI64>("add_i64")
+            .expect("generated function exists")
+    };
+
+    // SAFETY: the lookup contract above establishes the callable signature.
+    assert_eq!(unsafe { add.call(20, 22) }, 42);
+}
+```
+
+Wrap this unsafe lookup behind a small, typed backend API. Do not let arbitrary strings
+and arbitrary Rust function-pointer types spread through the compiler.
+
+### 5. Build a Compiler Compatibility Matrix
+
+| Dimension      | Minimum matrix                                       |
+| -------------- | ---------------------------------------------------- |
+| LLVM version   | each version/feature combination you claim           |
+| Optimization   | unoptimized plus the production pass pipeline        |
+| Target         | host plus every cross-target you distribute          |
+| Execution mode | interpreter/reference, JIT, and AOT where applicable |
+| Numeric edges  | zero, extrema, overflow policy, NaN where applicable |
+| Control flow   | both branch arms, loop zero/one/many iterations      |
+| Debug mode     | verifier and debug-info checks enabled               |
+
+For your own language, a high-value oracle is:
+
+```text
+source
+  ├── tree-walking interpreter ──→ expected value
+  ├── unoptimized LLVM JIT ──────→ actual value A
+  └── optimized LLVM JIT/AOT ───→ actual value B
+
+require expected == A == B
+```
+
+When those disagree, preserve the source, seed, IR before/after optimization, LLVM
+version, target triple, and data layout. That turns a mysterious codegen bug into a
+reproducible backend test.
+
+> ➡️ **Next:** object layout applies the same type, memory, and code-generation rules to
+> user-defined data. The debugging section then shows how to isolate failures by stage.
+
+---
+
+## 📦 VIII. Object-Oriented Concepts (Classes)
 
 ### Why Classes?
 
@@ -2050,14 +3175,14 @@ q.x           // BUG — q points to freed memory
 
 ---
 
-## IX. Debugging
+## 🐛 IX. Debugging
 
 ### Compiler Pipeline Debugging
 
 > Your language is a pipeline: `Source → Tokens → AST → Output`. When something breaks,
 > find which stage produced the wrong output.
 
-**Systematic approach:**
+**🐛 Systematic approach:**
 
 1. **Reproduce** — Find the smallest input that triggers the bug.
 2. **Isolate** — Which stage is producing wrong output?
@@ -2103,7 +3228,7 @@ Add a regression test for every bug fixed.
 Everything above is about debugging _your own_ compiler pipeline while you have the
 source. A different (and complementary) skill is understanding **someone else's
 already-compiled binary**, where you only have opcodes — this is the mirror image of
-everything in [Hardware Fundamentals](#i-hardware-fundamentals): instead of going source
+everything in [Hardware Fundamentals](#-i-hardware-fundamentals): instead of going source
 → assembly → opcodes, you're going opcodes → assembly → (partial) understanding.
 
 **Static vs. dynamic analysis:**
@@ -2194,7 +3319,7 @@ Two more building blocks that show up constantly once you're reading real system
 
 ---
 
-## Low-Level Memory, Binary Analysis & Language Runtime Architecture
+## 🧠 Low-Level Memory, Binary Analysis & Language Runtime Architecture
 
 Understanding memory is useful in three directions at once:
 
@@ -2208,6 +3333,9 @@ Understanding memory is useful in three directions at once:
 Use these techniques only on software, memory dumps, packet captures, and systems you
 own or are explicitly authorized to study. Prefer an isolated VM, disposable test
 program, local server, or purpose-built target.
+
+> ⚠️ **Safety and authorization boundary:** low-level visibility is powerful. Practice
+> on software and systems you own or have explicit permission to inspect.
 
 ---
 
@@ -2223,13 +3351,15 @@ ASCII:       H  e  l  l  o \0
 u16 (LE):  0x6548 0x6c6c 0x006f
 ```
 
-The bytes do not change; the interpretation does. This is the core idea behind:
+The bytes do not change; the interpretation does:
 
-- decoding instructions in a disassembler;
-- parsing an executable or packet header;
-- interpreting a tagged value in a VM;
-- viewing a runtime object in a debugger;
-- reverse engineering an unknown file format.
+| Context                  | Interpretation applied to the same bytes         |
+| ------------------------ | ------------------------------------------------ |
+| Disassembler             | Opcodes, operands, and instruction boundaries    |
+| Executable/packet parser | Header fields, lengths, flags, and sections      |
+| Virtual machine          | Tagged values, handles, or bytecode instructions |
+| Debugger                 | Runtime objects, fields, pointers, and strings   |
+| File-format reversing    | Hypothesized records and relationships           |
 
 #### Endianness
 
@@ -2318,12 +3448,14 @@ target ABI when calling external functions.
 
 #### Heap lifetime hazards
 
-- **Leak** — allocated memory becomes unreachable but is never released.
-- **Double free** — one allocation is released twice.
-- **Use after free** — a stale pointer is used after its allocation ended.
-- **Out-of-bounds access** — an index or pointer escapes the allocation.
-- **Uninitialized read** — bytes are interpreted before being given a valid value.
-- **Data race** — threads access shared state without required synchronization.
+| Hazard                   | What went wrong                                           |
+| ------------------------ | --------------------------------------------------------- |
+| **Leak**                 | Unreachable memory is never released                      |
+| **Double free**          | One allocation is released twice                          |
+| **Use after free**       | A stale pointer outlives its allocation                   |
+| **Out-of-bounds access** | An index or pointer escapes the allocation                |
+| **Uninitialized read**   | Bytes are interpreted before receiving a valid value      |
+| **Data race**            | Shared state is accessed without required synchronization |
 
 These hazards explain the trade-offs among manual allocation, garbage collection,
 reference counting, region/arena allocation, and Rust-style ownership.
@@ -2451,16 +3583,16 @@ fn rejects_truncation() {
 }
 ```
 
-Parser checklist:
-
-- bound every length and collection count;
-- use `checked_add`, `checked_mul`, and checked slicing;
-- reject unknown mandatory tags and invalid enum values;
-- decide whether trailing bytes are allowed;
-- cap recursion depth and decompressed output size;
-- never assume one read returns an entire file or network message;
-- preserve byte offsets in errors so malformed inputs are debuggable;
-- fuzz the parser with arbitrary byte strings.
+| Parser concern     | Defensive requirement                                     |
+| ------------------ | --------------------------------------------------------- |
+| Lengths/counts     | Bound them before allocating or looping                   |
+| Arithmetic         | Use checked addition, multiplication, and slicing         |
+| Tags/enums         | Reject unknown mandatory tags and invalid values          |
+| Trailing bytes     | Define whether they are permitted                         |
+| Structural limits  | Cap recursion depth and decompressed output               |
+| Input delivery     | Never assume one read contains a complete file or message |
+| Diagnostics        | Preserve byte offsets in errors                           |
+| Robustness testing | Fuzz with arbitrary byte strings                          |
 
 The same parser architecture works for bytecode, object files, save files, image
 formats, and network frames.
@@ -2539,14 +3671,14 @@ most useful when it helps you recognize what your compiler or runtime must preve
 | Integer overflow | Size calculation wraps               | Checked arithmetic and limits      |
 | Data race        | Unsynchronized shared mutation       | Send/sync rules, actors, locks     |
 
-Important platform mitigations:
-
-- **Stack canaries** detect some stack overwrites before a function returns.
-- **NX/DEP** marks data pages non-executable.
-- **ASLR** randomizes important memory regions between runs.
-- **PIE** allows the main executable to be relocated.
-- **RELRO** makes selected relocation data read-only after linking.
-- **Control-flow integrity** restricts indirect branches to valid targets.
+| Platform mitigation        | What it hardens                                       |
+| -------------------------- | ----------------------------------------------------- |
+| **Stack canaries**         | Detect some stack overwrites before return            |
+| **NX/DEP**                 | Mark data pages non-executable                        |
+| **ASLR**                   | Randomize important memory regions between runs       |
+| **PIE**                    | Allow the main executable to be relocated             |
+| **RELRO**                  | Make selected relocation data read-only after linking |
+| **Control-flow integrity** | Restrict indirect branches to approved targets        |
 
 Mitigations are layers, not substitutes for memory-safe design.
 
@@ -2566,14 +3698,14 @@ int main(void) {
 }
 ```
 
-Compiler/runtime testing ideas:
-
-- build with warnings enabled and treat them seriously;
-- use sanitizers on C/C++ runtime components;
-- fuzz lexer, parser, bytecode verifier, deserializer, and protocol decoder;
-- test zero, maximum, and one-past-maximum lengths;
-- run malformed bytecode through a verifier before execution;
-- keep `unsafe` code small and document its invariants.
+| Testing layer     | Recommended practice                                  |
+| ----------------- | ----------------------------------------------------- |
+| Compiler warnings | Enable them and treat new warnings seriously          |
+| Native runtime    | Use sanitizers on C/C++ components                    |
+| Input boundaries  | Fuzz lexers, parsers, verifiers, and decoders         |
+| Numeric limits    | Test zero, maximum, and one-past-maximum values       |
+| Bytecode          | Verify malformed input before execution               |
+| Unsafe Rust       | Keep it small and document the relied-upon invariants |
 
 ---
 
@@ -2586,14 +3718,14 @@ source → tokens → AST → typed IR → machine IR → assembly → bytes
 bytes  → instructions → control-flow graph → data-flow facts → hypotheses
 ```
 
-Information is lost during compilation:
-
-- variable and function names may disappear;
-- comments and formatting disappear;
-- multiple source forms optimize to the same instructions;
-- inlining erases a call boundary;
-- constant folding erases the original expression;
-- types may be only partially recoverable.
+| Lost information        | Reverse-engineering consequence                          |
+| ----------------------- | -------------------------------------------------------- |
+| Variable/function names | Recovered names are hypotheses or tool-generated labels  |
+| Comments/formatting     | Intent and original organization cannot be reconstructed |
+| Source distinctions     | Several source forms may produce identical instructions  |
+| Call boundaries         | Inlining can merge a callee into its caller              |
+| Expressions             | Constant folding can erase the original computation      |
+| Source types            | Only layout and operation clues may remain               |
 
 Therefore, decompilation is a **model**, not restoration of the original source.
 
@@ -2672,19 +3804,19 @@ fn disassemble(mut bytes: &[u8]) -> Result<Vec<Instr>, &'static str> {
 
 #### Designing for reversibility
 
-If you want your own language tools to be easy to debug:
-
-- include a bytecode version and magic number;
-- keep a documented section table;
-- provide source maps and optional symbol names;
-- ship an official bytecode dumper/disassembler;
-- separate verification from execution;
-- make unknown versions fail closed;
-- use deterministic output when possible.
+| Reversibility feature           | Benefit                                         |
+| ------------------------------- | ----------------------------------------------- |
+| Magic number + bytecode version | Reliable format identification                  |
+| Documented section table        | Predictable navigation and extension            |
+| Source maps/symbol names        | Better diagnostics and debugging                |
+| Official dumper/disassembler    | One canonical inspection path                   |
+| Separate verifier               | Safe validation without execution               |
+| Fail-closed versioning          | Unknown formats cannot be misinterpreted        |
+| Deterministic output            | Reproducible builds and meaningful binary diffs |
 
 ---
 
-## Idiomatic Rust for Compilers, Parsers, and Low-Level Tools
+## 🦀 Idiomatic Rust for Compilers, Parsers, and Low-Level Tools
 
 The notes in this section draw on
 [Idiomatic Rust Snippets](https://idiomatic-rust-snippets.org/), the
@@ -2812,14 +3944,14 @@ fn report_error(at: ByteOffset, message: &str) {
 This prevents accidentally passing a register number where a file offset is required.
 The wrapper normally has no runtime cost.
 
-Good newtype candidates:
-
-- byte offset vs. virtual address;
-- source line vs. source byte;
-- token ID vs. AST node ID;
-- VM register vs. local slot;
-- host-order vs. network-order integer;
-- compressed size vs. uncompressed size.
+| Values that look alike           | Why they need separate types               |
+| -------------------------------- | ------------------------------------------ |
+| Byte offset / virtual address    | Different coordinate systems               |
+| Source line / source byte        | Different location units                   |
+| Token ID / AST node ID           | Different entity domains                   |
+| VM register / local slot         | Different storage namespaces               |
+| Host-order / network-order value | Different byte encodings                   |
+| Compressed / uncompressed size   | Different allocation and validation limits |
 
 ### 4. Errors Are Part of the Language Tool's Interface
 
@@ -2848,13 +3980,13 @@ fn require_opcode(byte: u8, at: ByteOffset) -> Result<&'static str, DecodeError>
 }
 ```
 
-Error messages for a compiler should answer:
-
-- what went wrong;
-- where it happened;
-- what was expected;
-- what was found;
-- what the user can do next.
+| Diagnostic field | Question it answers                  |
+| ---------------- | ------------------------------------ |
+| Problem          | **What** went wrong?                 |
+| Location         | **Where** did it happen?             |
+| Expectation      | What was valid or expected here?     |
+| Observation      | What did the compiler actually find? |
+| Recovery         | What can the user do next?           |
 
 ### 5. Iterators Express Token and Byte Pipelines
 
@@ -2927,37 +4059,1406 @@ Only reach for raw pointers or `read_unaligned` when a safe byte-slice solution 
 meet the requirement. `#[repr(packed)]` is not a shortcut for parsing arbitrary bytes
 into a struct.
 
-Useful review questions:
-
-- Who allocated this memory?
-- How long is it valid?
-- Is it initialized for this type?
-- Is the pointer aligned?
-- Is aliasing permitted?
-- Can another thread mutate it?
-- How is its length proven?
+| Unsafe concern | Review question                                       |
+| -------------- | ----------------------------------------------------- |
+| Ownership      | Who allocated this memory and who releases it?        |
+| Lifetime       | How long is the allocation valid?                     |
+| Initialization | Is every byte valid for the interpreted type?         |
+| Alignment      | Does the address meet the type's requirement?         |
+| Aliasing       | Are simultaneous references permitted?                |
+| Concurrency    | Can another thread or interrupt mutate it?            |
+| Bounds         | How are the pointer and length proven to be in range? |
 
 ### 8. Rust Anti-Patterns to Avoid
 
-- Cloning an AST subtree just to satisfy a borrow error without understanding ownership.
-- Accepting `&String` or `&Vec<T>` when `&str` or `&[T]` is enough.
-- Using `usize` for every ID, offset, and size even when the concepts differ.
-- Calling `unwrap()` on input-dependent parsing or network operations.
-- Indexing byte slices before validating their lengths.
-- Mapping malformed input to a generic "failed" message with no offset.
-- Holding a mutex guard across a blocking operation or `.await`.
-- Exposing all internal AST fields as `pub`, which freezes implementation details.
-- Casting a byte buffer directly to a struct and assuming layout, padding, alignment,
-  and endianness match.
-- Using recursion on attacker-controlled structure without a depth limit.
+| Anti-pattern                         | Better direction                                      |
+| ------------------------------------ | ----------------------------------------------------- |
+| Clone to silence a borrow error      | Model ownership and borrowing deliberately            |
+| Accept `&String` or `&Vec<T>`        | Accept `&str` or `&[T]` when ownership is unnecessary |
+| Use `usize` for every numeric domain | Introduce newtypes for IDs, offsets, sizes, and slots |
+| `unwrap()` input-dependent results   | Propagate a contextual `Result`                       |
+| Index before checking length         | Use checked slicing or `get`                          |
+| Return only `"failed"`               | Include error kind and byte/source offset             |
+| Hold a lock across blocking/`.await` | Shorten the guard's scope                             |
+| Make every AST field `pub`           | Expose a small, stable API                            |
+| Cast bytes directly to a struct      | Parse layout, alignment, and endianness explicitly    |
+| Recurse over attacker input          | Enforce a depth limit or use an explicit stack        |
 
 ---
 
-## Networking, Protocols & Wire Formats
+## 🧱 Practical Rust Patterns & Cookbook Recipes
+
+[Rust Design Patterns](https://rust-unofficial.github.io/patterns/) separates reusable
+Rust knowledge into **idioms**, **design patterns**, and **anti-patterns**. The
+[Rust Cookbook](https://rust-lang-nursery.github.io/rust-cookbook/intro.html) complements
+that vocabulary with small recipes for common tasks.
+
+> 🧠 **Selection rule:** use a pattern because its trade-off matches the problem, not
+> because the pattern has a familiar name.
+
+### 1. Idiom, Pattern, or Recipe?
+
+| Kind               | Purpose                                               | Example                      |
+| ------------------ | ----------------------------------------------------- | ---------------------------- |
+| **Idiom**          | Conventional Rust expression of a common idea         | `?`, iterators, `Default`    |
+| **Design pattern** | Reusable structure for a recurring design problem     | Builder, Command, RAII guard |
+| **Anti-pattern**   | Tempting approach whose costs usually exceed benefits | Clone-to-fix-borrowing       |
+| **Recipe**         | Focused example that accomplishes one practical task  | Stream a file line by line   |
+
+Patterns are not automatically abstractions worth keeping. A direct struct constructor
+is clearer than a builder with no optional choices; an enum can be clearer than a
+trait-object hierarchy with only two closed variants.
+
+### 2. Pattern Selection Table
+
+| Problem shape                                     | Rust-oriented pattern               |
+| ------------------------------------------------- | ----------------------------------- |
+| Several values share one primitive representation | **Newtype**                         |
+| Construction has many optional settings           | **Builder**                         |
+| Cleanup must happen on every exit path            | **RAII guard**                      |
+| Actions must be queued, logged, or undone         | **Command**                         |
+| Behavior varies behind one stable interface       | Trait/generic **Strategy**          |
+| Legal operations depend on current state          | **Typestate** or an exhaustive enum |
+| A closed set of variants has different data       | Enum + `match`                      |
+| Heterogeneous extensions are loaded dynamically   | Trait objects                       |
+
+### 3. Newtypes Encode Meaning
+
+Newtypes prevent values with the same representation from being mixed:
+
+```rust
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct ByteOffset(usize);
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct VirtualAddress(u64);
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct RequestId(u64);
+
+fn seek_to(offset: ByteOffset) {
+    println!("seek to byte {}", offset.0);
+}
+```
+
+| Newtype benefit    | Result                                                |
+| ------------------ | ----------------------------------------------------- |
+| Domain separation  | Offsets, addresses, counts, and IDs cannot be swapped |
+| Central validation | Constructors can enforce range or formatting rules    |
+| API clarity        | Signatures explain what a number means                |
+| Future evolution   | Representation can change behind the public type      |
+
+Implement only operations that make semantic sense. Adding two byte lengths may be
+valid; adding two virtual addresses usually is not.
+
+### 4. Builder for Complicated Construction
+
+Rust has no overloaded functions or default arguments. A builder is useful when a
+configuration has required fields plus several optional policies:
+
+```rust
+#[derive(Debug)]
+struct CompilerOptions {
+    target: String,
+    optimize: bool,
+    warnings_as_errors: bool,
+    max_errors: usize,
+}
+
+#[derive(Debug)]
+struct CompilerOptionsBuilder {
+    target: String,
+    optimize: bool,
+    warnings_as_errors: bool,
+    max_errors: usize,
+}
+
+impl CompilerOptions {
+    fn builder(target: impl Into<String>) -> CompilerOptionsBuilder {
+        CompilerOptionsBuilder {
+            target: target.into(),
+            optimize: false,
+            warnings_as_errors: false,
+            max_errors: 20,
+        }
+    }
+}
+
+impl CompilerOptionsBuilder {
+    fn optimize(mut self, enabled: bool) -> Self {
+        self.optimize = enabled;
+        self
+    }
+
+    fn warnings_as_errors(mut self, enabled: bool) -> Self {
+        self.warnings_as_errors = enabled;
+        self
+    }
+
+    fn max_errors(mut self, limit: usize) -> Self {
+        self.max_errors = limit.max(1);
+        self
+    }
+
+    fn build(self) -> CompilerOptions {
+        CompilerOptions {
+            target: self.target,
+            optimize: self.optimize,
+            warnings_as_errors: self.warnings_as_errors,
+            max_errors: self.max_errors,
+        }
+    }
+}
+```
+
+```rust
+let options = CompilerOptions::builder("wasm32-unknown-unknown")
+    .optimize(true)
+    .warnings_as_errors(true)
+    .max_errors(50)
+    .build();
+```
+
+| Use a builder when...                               | Prefer a constructor when...               |
+| --------------------------------------------------- | ------------------------------------------ |
+| Many settings are optional                          | Every argument is required                 |
+| Defaults should remain centralized                  | There are only a few obvious fields        |
+| Construction needs validation or staged preparation | A struct literal is already clear          |
+| Adding an option should not break callers           | The type is private and construction local |
+
+### 5. RAII Guards Make Cleanup Structural
+
+An RAII guard acquires or changes state during construction and restores/finalizes it in
+`Drop`. Cleanup then occurs on normal return, early `?`, and panic unwinding.
+
+```rust
+use std::cell::Cell;
+
+struct RecursionGuard<'a> {
+    depth: &'a Cell<usize>,
+}
+
+impl Drop for RecursionGuard<'_> {
+    fn drop(&mut self) {
+        self.depth.set(self.depth.get() - 1);
+    }
+}
+
+fn enter_recursion(
+    depth: &Cell<usize>,
+    limit: usize,
+) -> Result<RecursionGuard<'_>, &'static str> {
+    if depth.get() >= limit {
+        return Err("recursion limit exceeded");
+    }
+
+    depth.set(depth.get() + 1);
+    Ok(RecursionGuard { depth })
+}
+```
+
+The guard should mediate access to the resource when using the resource after
+finalization would be invalid. Common examples are mutex guards, temporary directory
+owners, transaction guards, scoped tracing spans, and VM root guards.
+
+> ⚠️ **Drop is not a general error channel:** destructors cannot conveniently return
+> cleanup errors. Provide an explicit `finish`, `commit`, or `flush` operation when the
+> caller must observe failure.
+
+### 6. Command Pattern for Compiler Passes
+
+The Command pattern turns an action into a value that can be stored and invoked later.
+Trait objects suit an open, heterogeneous pass pipeline:
+
+```rust
+#[derive(Debug)]
+struct Module {
+    instructions: Vec<String>,
+}
+
+trait Pass {
+    fn name(&self) -> &'static str;
+    fn run(&self, module: &mut Module) -> Result<(), String>;
+}
+
+struct PassPipeline {
+    passes: Vec<Box<dyn Pass>>,
+}
+
+impl PassPipeline {
+    fn run(&self, module: &mut Module) -> Result<(), String> {
+        for pass in &self.passes {
+            pass.run(module)
+                .map_err(|error| format!("{}: {error}", pass.name()))?;
+        }
+        Ok(())
+    }
+}
+```
+
+| Representation         | Best fit                                        |
+| ---------------------- | ----------------------------------------------- |
+| Enum of commands       | Closed command set; exhaustive dispatch         |
+| `fn` pointers/closures | Small stateless actions                         |
+| `Box<dyn Command>`     | Open plugin-like set with per-command state     |
+| Generic command type   | One command type on a performance-critical path |
+
+Undo requires more than an `undo()` method name. The command must retain enough prior
+state, and failure halfway through a multi-command transaction needs an explicit
+rollback policy.
+
+### 7. Strategy: Static or Dynamic Dispatch
+
+```rust
+trait DiagnosticSink {
+    fn emit(&mut self, message: &str);
+}
+
+fn type_check<S: DiagnosticSink>(source: &str, sink: &mut S) {
+    if source.is_empty() {
+        sink.emit("source is empty");
+    }
+}
+```
+
+| Dispatch form      | Benefit                                | Cost/constraint                        |
+| ------------------ | -------------------------------------- | -------------------------------------- |
+| Generic `S: Trait` | Inlining and static type knowledge     | One instantiation per concrete type    |
+| `&mut dyn Trait`   | Runtime-pluggable heterogeneous values | Indirect call and object-safety limits |
+| Enum + `match`     | Exhaustive, compact closed set         | Adding a variant changes central code  |
+
+Prefer generics at reusable performance-sensitive boundaries and trait objects where
+runtime extensibility is the actual requirement.
+
+### 8. Cookbook Mindset
+
+The Rust Cookbook covers practical categories such as algorithms, command-line tools,
+encoding, filesystems, concurrency, networking, and asynchronous work.
+
+| Recipe category | Transferable lesson                                |
+| --------------- | -------------------------------------------------- |
+| Command line    | Preserve non-UTF-8 paths with `args_os`            |
+| File I/O        | Stream large input and buffer many small writes    |
+| Encoding        | Make byte order and text format explicit           |
+| Concurrency     | Select ownership transfer before shared mutation   |
+| Networking      | Bound reads, writes, timeouts, and decoded sizes   |
+| Compression     | Treat expanded size and archive paths as untrusted |
+| Async           | Bound task counts, channels, and wait time         |
+
+Cookbook snippets are starting points. Before adopting a recipe, check current crate
+documentation, pin an intentional dependency range, test errors, and add limits suitable
+for the input's trust level.
+
+### 9. Stream Large Text Instead of Loading It Whole
+
+```rust
+use std::fs::File;
+use std::io::{self, BufRead, BufReader};
+use std::path::Path;
+
+fn count_nonempty_lines(path: &Path) -> io::Result<usize> {
+    let file = File::open(path)?;
+    let reader = BufReader::new(file);
+    let mut count = 0;
+
+    for line in reader.lines() {
+        if !line?.trim().is_empty() {
+            count += 1;
+        }
+    }
+
+    Ok(count)
+}
+```
+
+| Input shape                       | Preferred approach                |
+| --------------------------------- | --------------------------------- |
+| Small trusted UTF-8 configuration | `fs::read_to_string`              |
+| Large line-oriented text          | `BufReader::lines`                |
+| Arbitrary binary input            | `Read` into a bounded byte buffer |
+| Many small output writes          | `BufWriter` + explicit `flush`    |
+| In-memory test fixture            | `Cursor<Vec<u8>>`                 |
+
+### 10. Spawn Programs Without Re-parsing a Shell String
+
+```rust
+use std::io;
+use std::process::{Command, Output};
+
+fn rustc_version() -> io::Result<Output> {
+    Command::new("rustc")
+        .arg("--version")
+        .output()
+}
+
+fn checked_output() -> Result<String, String> {
+    let output = rustc_version().map_err(|error| error.to_string())?;
+    if !output.status.success() {
+        return Err(format!("rustc exited with {}", output.status));
+    }
+
+    String::from_utf8(output.stdout).map_err(|error| error.to_string())
+}
+```
+
+Passing arguments separately avoids shell quoting and injection problems. Use a shell
+only when shell semantics—pipes, expansion, or redirection—are deliberately required,
+and never concatenate untrusted text into a shell program.
+
+### 11. Recipe Adoption Checklist
+
+| Review area  | Question                                                     |
+| ------------ | ------------------------------------------------------------ |
+| Ownership    | Can inputs be borrowed rather than cloned?                   |
+| Errors       | Does every failure preserve useful context?                  |
+| Limits       | Are memory, recursion, file, task, and output sizes bounded? |
+| Portability  | Do path, process, newline, and filesystem assumptions hold?  |
+| Dependencies | Is the crate current, maintained, and necessary?             |
+| Security     | Which bytes, paths, URLs, and arguments are untrusted?       |
+| Testing      | Are success, boundary, partial-failure, and cleanup tested?  |
+
+---
+
+## 🧮 Algorithms in Idiomatic Rust
+
+This section expands the algorithm categories from
+[Idiomatic Rust Snippets](https://idiomatic-rust-snippets.org/algorithms/intro.html):
+sorting, searching, graph traversal, and dynamic programming. The emphasis here is on
+interfaces and invariants useful in compilers, interpreters, and low-level tools.
+
+> 🧠 **Algorithm-selection rule:** choose from the **contract and constraints**, not
+> from whichever algorithm name is easiest to remember.
+
+### 1. Start with the Contract
+
+Before choosing an algorithm, define its contract:
+
+| Contract dimension | Decision to make                                   |
+| ------------------ | -------------------------------------------------- |
+| Input              | Shape, ownership, and validity                     |
+| Output             | Required result and failure representation         |
+| Comparison         | Ordering and equality rules                        |
+| Mutation           | Whether the input may be changed                   |
+| Scale              | Expected data size and worst-case limit            |
+| Stability          | Whether equal items must preserve relative order   |
+| Invalid input      | Reject, ignore, repair, or return a partial result |
+
+Prefer slices for algorithms that do not need to own or resize data:
+
+```rust
+fn is_sorted<T: Ord>(items: &[T]) -> bool {
+    items.windows(2).all(|pair| pair[0] <= pair[1])
+}
+
+fn reverse_in_place<T>(items: &mut [T]) {
+    items.reverse();
+}
+```
+
+`&[T]` accepts arrays, vectors, boxed slices, and subslices without allocation.
+
+### 2. Complexity Is a Growth Model
+
+| Complexity      | Typical example       | Interpretation                         |
+| --------------- | --------------------- | -------------------------------------- |
+| \(O(1)\)        | Index an array        | Work does not grow with input length   |
+| \(O(\log n)\)   | Binary search         | Repeatedly halves the search space     |
+| \(O(n)\)        | Scan for a token      | Visits input once                      |
+| \(O(n \log n)\) | Comparison sort       | Common efficient general sorting bound |
+| \(O(n^2)\)      | Compare every pair    | Often acceptable only for small inputs |
+| \(O(2^n)\)      | Enumerate all subsets | Becomes infeasible quickly             |
+
+| Performance dimension  | Why it matters                                         |
+| ---------------------- | ------------------------------------------------------ |
+| **Space complexity**   | Bounds extra memory use                                |
+| **Amortized cost**     | Spreads occasional expensive work over many operations |
+| **Worst-case latency** | Matters for services, tools, and real-time paths       |
+| **Constant factors**   | Separate practical implementations with similar big-O  |
+| **Locality**           | Contiguous access can beat pointer-heavy structures    |
+
+### 3. Sorting Choices
+
+| Algorithm   | Average time    | Worst time      | Extra space     | Stable?    |
+| ----------- | --------------- | --------------- | --------------- | ---------- |
+| Bubble sort | \(O(n^2)\)      | \(O(n^2)\)      | \(O(1)\)        | Yes        |
+| Quicksort   | \(O(n \log n)\) | \(O(n^2)\)      | Recursion stack | Usually no |
+| Merge sort  | \(O(n \log n)\) | \(O(n \log n)\) | \(O(n)\)        | Yes        |
+| Heap sort   | \(O(n \log n)\) | \(O(n \log n)\) | \(O(1)\)        | No         |
+
+In application code, use the standard library unless implementing an algorithm for
+learning or a specialized constraint:
+
+```rust
+let mut diagnostics = vec![
+    ("warning", 20),
+    ("error", 5),
+    ("note", 12),
+];
+
+diagnostics.sort_by_key(|(_, byte_offset)| *byte_offset);
+```
+
+Rust slice sorting:
+
+- `sort` and `sort_by_key` preserve the relative order of equal elements;
+- `sort_unstable` and `sort_unstable_by_key` may be faster or use less temporary memory
+  when stability is unnecessary.
+
+#### In-Place Quicksort for Study
+
+```rust
+fn quick_sort<T: Ord>(items: &mut [T]) {
+    if items.len() < 2 {
+        return;
+    }
+
+    let pivot = partition(items);
+    let (left, right_with_pivot) = items.split_at_mut(pivot);
+    let (_, right) = right_with_pivot.split_first_mut().expect("pivot exists");
+
+    quick_sort(left);
+    quick_sort(right);
+}
+
+fn partition<T: Ord>(items: &mut [T]) -> usize {
+    let last = items.len() - 1;
+    items.swap(items.len() / 2, last);
+
+    let mut store = 0;
+    for current in 0..last {
+        if items[current] < items[last] {
+            items.swap(current, store);
+            store += 1;
+        }
+    }
+
+    items.swap(store, last);
+    store
+}
+```
+
+> 🧭 **Partition invariant:** values left of the boundary are smaller than the pivot;
+> unchecked values remain in the middle.
+
+```text
+[ values < pivot | unchecked values | pivot ]
+                    ^
+                  current
+```
+
+After partitioning, the pivot is in its final position. The two remaining slices can be
+sorted independently.
+
+### 4. Linear and Binary Search
+
+Linear search works on any sequence:
+
+```rust
+fn find_token(tokens: &[Token], wanted: &Token) -> Option<usize> {
+    tokens.iter().position(|token| token == wanted)
+}
+
+#[derive(PartialEq)]
+enum Token {
+    Identifier(String),
+    Number(i64),
+    Plus,
+}
+```
+
+Binary search requires sorted input:
+
+```rust
+let symbols = ["add", "main", "print", "read"];
+assert_eq!(symbols.binary_search(&"print"), Ok(2));
+assert_eq!(symbols.binary_search(&"parse"), Err(2));
+```
+
+For duplicate values, `binary_search` may return any matching position. Use a boundary
+search when the first valid insertion point matters:
+
+```rust
+fn lower_bound<T: Ord>(items: &[T], target: &T) -> usize {
+    let mut low = 0;
+    let mut high = items.len();
+
+    while low < high {
+        let mid = low + (high - low) / 2;
+        if &items[mid] < target {
+            low = mid + 1;
+        } else {
+            high = mid;
+        }
+    }
+
+    low
+}
+
+assert_eq!(lower_bound(&[1, 2, 2, 2, 5], &2), 1);
+assert_eq!(lower_bound(&[1, 2, 2, 2, 5], &4), 4);
+```
+
+> 🧭 **Loop invariant:** the answer always remains inside the current search interval.
+
+- indexes below `low` contain values less than `target`;
+- indexes at or above `high` are not part of the remaining uncertainty;
+- the answer remains in `low..=high`.
+
+### 5. Breadth-First Search
+
+BFS explores by increasing edge distance. Use `VecDeque`, not `Vec::remove(0)`.
+
+```rust
+use std::collections::VecDeque;
+
+fn bfs_distances(graph: &[Vec<usize>], start: usize) -> Vec<Option<usize>> {
+    let mut distance = vec![None; graph.len()];
+    let mut queue = VecDeque::new();
+
+    if start >= graph.len() {
+        return distance;
+    }
+
+    distance[start] = Some(0);
+    queue.push_back(start);
+
+    while let Some(node) = queue.pop_front() {
+        let next_distance = distance[node].expect("queued nodes have a distance") + 1;
+
+        for &neighbor in &graph[node] {
+            if neighbor < graph.len() && distance[neighbor].is_none() {
+                distance[neighbor] = Some(next_distance);
+                queue.push_back(neighbor);
+            }
+        }
+    }
+
+    distance
+}
+```
+
+| BFS application          | Why breadth-first order helps                   |
+| ------------------------ | ----------------------------------------------- |
+| Unweighted shortest path | First arrival uses the fewest edges             |
+| Nearest state            | Explores states by increasing transition count  |
+| Dependency distance      | Assigns layers from a starting node             |
+| Level-order traversal    | Visits a tree one depth at a time               |
+| Minimum transformations  | Finds the smallest number of uniform-cost steps |
+
+Mark a node visited when enqueuing it, not when dequeuing, to avoid duplicate queue
+entries.
+
+### 6. Depth-First Search
+
+DFS explores one path before backtracking. An explicit stack avoids overflowing the Rust
+call stack on a deep graph:
+
+```rust
+fn dfs_order(graph: &[Vec<usize>], start: usize) -> Vec<usize> {
+    let mut order = Vec::new();
+    let mut visited = vec![false; graph.len()];
+    let mut stack = vec![start];
+
+    while let Some(node) = stack.pop() {
+        if node >= graph.len() || visited[node] {
+            continue;
+        }
+
+        visited[node] = true;
+        order.push(node);
+
+        // Reverse so the first listed neighbor is visited first.
+        stack.extend(graph[node].iter().rev().copied());
+    }
+
+    order
+}
+```
+
+| DFS application               | Useful traversal property                  |
+| ----------------------------- | ------------------------------------------ |
+| AST/syntax-tree walk          | Follow a subtree before its siblings       |
+| Reachability                  | Explore an entire connected region         |
+| Cycle detection               | Track active recursion/visit state         |
+| Strongly connected components | Use DFS ordering in classic SCC algorithms |
+| Postorder code generation     | Process children before parents            |
+| GC marking                    | Trace object references to completion      |
+
+Choose recursive DFS when the input depth is strictly bounded and recursion clarifies
+the algorithm. Otherwise prefer an explicit stack.
+
+### 7. Topological Sorting
+
+A directed acyclic graph can be ordered so every dependency appears before its users.
+Kahn's algorithm repeatedly removes nodes with zero incoming edges:
+
+```rust
+use std::collections::VecDeque;
+
+fn topological_sort(graph: &[Vec<usize>]) -> Option<Vec<usize>> {
+    let mut incoming = vec![0usize; graph.len()];
+
+    for neighbors in graph {
+        for &neighbor in neighbors {
+            if neighbor >= graph.len() {
+                return None;
+            }
+            incoming[neighbor] += 1;
+        }
+    }
+
+    let mut ready: VecDeque<_> = incoming
+        .iter()
+        .enumerate()
+        .filter_map(|(node, &count)| (count == 0).then_some(node))
+        .collect();
+
+    let mut order = Vec::with_capacity(graph.len());
+
+    while let Some(node) = ready.pop_front() {
+        order.push(node);
+        for &neighbor in &graph[node] {
+            incoming[neighbor] -= 1;
+            if incoming[neighbor] == 0 {
+                ready.push_back(neighbor);
+            }
+        }
+    }
+
+    (order.len() == graph.len()).then_some(order)
+}
+```
+
+If not every node is emitted, the graph contains a cycle.
+
+| Topological-sort use    | Dependency represented by each edge          |
+| ----------------------- | -------------------------------------------- |
+| Module build order      | Imported module must be available first      |
+| Constant initialization | Dependency value must be initialized first   |
+| IR scheduling           | Producer operation must precede its consumer |
+| Pass/migration ordering | Prerequisite step must run first             |
+| Cycle diagnosis         | Unemitted nodes reveal a dependency cycle    |
+
+### 8. Dynamic Programming
+
+Dynamic programming applies when:
+
+- the problem decomposes into subproblems;
+- subproblems overlap;
+- the best answer can be built from smaller answers.
+
+Two styles:
+
+- **memoization:** recursive, cache results on demand;
+- **tabulation:** iterative, fill a table in dependency order.
+
+Example: longest common subsequence length with rolling rows:
+
+```rust
+fn lcs_length<T: Eq>(left: &[T], right: &[T]) -> usize {
+    let mut previous = vec![0usize; right.len() + 1];
+    let mut current = vec![0usize; right.len() + 1];
+
+    for left_item in left {
+        for (column, right_item) in right.iter().enumerate() {
+            current[column + 1] = if left_item == right_item {
+                previous[column] + 1
+            } else {
+                current[column].max(previous[column + 1])
+            };
+        }
+
+        std::mem::swap(&mut previous, &mut current);
+        current.fill(0);
+    }
+
+    previous[right.len()]
+}
+
+assert_eq!(lcs_length(b"compiler", b"compare"), 5);
+```
+
+The full \(O(mn)\) table is unnecessary when each row depends only on the previous row.
+This reduces extra space to \(O(n)\).
+
+| DP use in language tools | Optimized subproblem                        |
+| ------------------------ | ------------------------------------------- |
+| Sequence/tree diff       | Best alignment of smaller prefixes/subtrees |
+| Parser recovery          | Lowest-cost repair path                     |
+| Instruction selection    | Cheapest covering of IR patterns            |
+| Parenthesization         | Lowest-cost evaluation order                |
+| Diagnostic edit distance | Minimum edits between names                 |
+| Layout/line breaking     | Best formatting up to each position         |
+
+### 9. Weighted Graphs and Dijkstra's Algorithm
+
+Use Dijkstra's algorithm when edge weights are non-negative and the goal is the
+shortest distance from one source. The key operation is **relaxation**:
+
+```text
+candidate = distance[current] + edge_weight
+if candidate < distance[neighbor]:
+    distance[neighbor] = candidate
+```
+
+Rust's `BinaryHeap` is a max-heap, so reverse the comparison to make the cheapest
+pending state come out first:
+
+```rust
+use std::cmp::Ordering;
+use std::collections::BinaryHeap;
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct Edge {
+    to: usize,
+    cost: u64,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+struct State {
+    node: usize,
+    cost: u64,
+}
+
+impl Ord for State {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other
+            .cost
+            .cmp(&self.cost)
+            .then_with(|| self.node.cmp(&other.node))
+    }
+}
+
+impl PartialOrd for State {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+fn dijkstra(graph: &[Vec<Edge>], start: usize) -> Option<Vec<Option<u64>>> {
+    if start >= graph.len() {
+        return None;
+    }
+
+    let mut distance = vec![None; graph.len()];
+    let mut frontier = BinaryHeap::new();
+    distance[start] = Some(0);
+    frontier.push(State {
+        node: start,
+        cost: 0,
+    });
+
+    while let Some(State { node, cost }) = frontier.pop() {
+        if distance[node].is_some_and(|best| cost > best) {
+            continue; // Stale queue entry.
+        }
+
+        for edge in &graph[node] {
+            if edge.to >= graph.len() {
+                return None;
+            }
+
+            let candidate = cost.checked_add(edge.cost)?;
+            let improves = distance[edge.to].is_none_or(|best| candidate < best);
+
+            if improves {
+                distance[edge.to] = Some(candidate);
+                frontier.push(State {
+                    node: edge.to,
+                    cost: candidate,
+                });
+            }
+        }
+    }
+
+    Some(distance)
+}
+```
+
+Important details:
+
+- Skip stale heap entries instead of trying to decrease a key in place.
+- Use checked addition when costs can come from untrusted input.
+- `None` represents infinity without reserving a magic integer value.
+- Dijkstra is incorrect for negative edges; use Bellman–Ford or reformulate the
+  problem.
+- With an adjacency list and binary heap, the usual bound is
+  \(O((V + E)\log V)\).
+
+Compiler and reversing uses include weighted instruction selection, cheapest conversion
+paths, control-flow navigation, and finding a minimum-cost sequence of state
+transitions.
+
+### 10. Disjoint Sets (Union-Find)
+
+A disjoint-set structure maintains equivalence classes. It supports:
+
+- `find(x)` — return the representative of `x`;
+- `union(a, b)` — merge the two sets.
+
+Path compression and union by rank make a long sequence of operations nearly linear:
+
+```rust
+#[derive(Debug)]
+struct DisjointSet {
+    parent: Vec<usize>,
+    rank: Vec<u8>,
+}
+
+impl DisjointSet {
+    fn new(len: usize) -> Self {
+        Self {
+            parent: (0..len).collect(),
+            rank: vec![0; len],
+        }
+    }
+
+    fn find(&mut self, item: usize) -> Option<usize> {
+        let parent = *self.parent.get(item)?;
+        if parent != item {
+            let root = self.find(parent)?;
+            self.parent[item] = root;
+        }
+        Some(self.parent[item])
+    }
+
+    fn union(&mut self, left: usize, right: usize) -> Option<bool> {
+        let mut left_root = self.find(left)?;
+        let mut right_root = self.find(right)?;
+
+        if left_root == right_root {
+            return Some(false);
+        }
+
+        if self.rank[left_root] < self.rank[right_root] {
+            std::mem::swap(&mut left_root, &mut right_root);
+        }
+
+        self.parent[right_root] = left_root;
+        if self.rank[left_root] == self.rank[right_root] {
+            self.rank[left_root] = self.rank[left_root].saturating_add(1);
+        }
+
+        Some(true)
+    }
+}
+```
+
+| Union-find application | Equivalence being maintained                 |
+| ---------------------- | -------------------------------------------- |
+| Kruskal's algorithm    | Vertices already connected by selected edges |
+| Type unification       | Type variables known to be equal             |
+| Alias analysis         | Values that may refer to the same region     |
+| Connected components   | Nodes belonging to one component             |
+| Symbols/relocations    | Records known to represent one entity        |
+
+The invariant is that every parent chain ends at a root whose parent is itself.
+
+### 11. More Dynamic Programming: 0/1 Knapsack
+
+The 0/1 knapsack problem chooses each item at most once while maximizing value under a
+capacity limit. A one-dimensional table is enough if capacities are visited in reverse:
+
+```rust
+#[derive(Clone, Copy, Debug)]
+struct Item {
+    weight: usize,
+    value: u64,
+}
+
+fn knapsack(items: &[Item], capacity: usize) -> Option<u64> {
+    let mut best = vec![0u64; capacity.checked_add(1)?];
+
+    for item in items {
+        if item.weight == 0 {
+            return None; // Define zero-weight semantics explicitly.
+        }
+
+        for remaining in (item.weight..=capacity).rev() {
+            let with_item = best[remaining - item.weight].checked_add(item.value)?;
+            best[remaining] = best[remaining].max(with_item);
+        }
+    }
+
+    best.last().copied()
+}
+```
+
+Reverse iteration is the essential invariant. Forward iteration would allow the newly
+updated entry to be reused, silently changing the problem into **unbounded** knapsack.
+
+Language-tool analogies:
+
+- select optimizations under a compile-time budget;
+- choose instructions under a byte-size limit;
+- pack constants or sections under an alignment/size constraint;
+- choose diagnostic repairs with bounded cost.
+
+The table uses \(O(\text{capacity})\) memory and the algorithm uses
+\(O(\text{items} \times \text{capacity})\) time. This is pseudo-polynomial: a numerically
+large capacity can still make it impractical.
+
+### 12. Cryptographic Algorithms: Learn the Shape, Use a Library
+
+Cryptography combines algorithms with strict protocol rules. A mathematically correct
+primitive can still be insecure because of nonce reuse, weak randomness, timing leaks,
+bad serialization, missing authentication, or poor key handling.
+
+| Goal                         | Appropriate primitive                         |
+| ---------------------------- | --------------------------------------------- |
+| Detect accidental corruption | Non-cryptographic checksum                    |
+| Integrity without a key      | Cryptographic hash                            |
+| Integrity with a shared key  | Message authentication code (MAC)             |
+| Confidentiality + integrity  | Authenticated encryption with associated data |
+| Store passwords              | Password KDF with salt and work factor        |
+| Establish a shared secret    | Authenticated key-exchange protocol           |
+| Prove who signed data        | Digital signature                             |
+
+| Cryptographic rule        | Practical meaning                                       |
+| ------------------------- | ------------------------------------------------------- |
+| Authenticate encryption   | Confidentiality alone does not prevent tampering        |
+| Respect nonce rules       | Public does not mean reusable                           |
+| Distinguish salts/keys    | A salt is neither a password nor an encryption key      |
+| Hashes are one-way        | Hashing is not encryption                               |
+| Use a password KDF        | Fast general hashes are unsuitable for password storage |
+| Compare in constant time  | Use the library's authenticator comparison              |
+| Minimize key exposure     | Keep keys scoped and never log them                     |
+| Version the format        | Record algorithms and parameters alongside ciphertext   |
+| Use audited constructions | Do not invent production ciphers or protocols           |
+
+#### Educational Building Block: Modular Exponentiation
+
+RSA and Diffie–Hellman use modular arithmetic, but real implementations also require
+large integers, carefully generated parameters, padding/encoding rules, side-channel
+resistance, and secure randomness. The following is only the square-and-multiply
+arithmetic pattern:
+
+```rust
+fn mod_pow(mut base: u128, mut exponent: u128, modulus: u128) -> Option<u128> {
+    if modulus == 0 {
+        return None;
+    }
+
+    base %= modulus;
+    let mut result = 1 % modulus;
+
+    while exponent != 0 {
+        if exponent & 1 == 1 {
+            result = result.checked_mul(base)? % modulus;
+        }
+        exponent >>= 1;
+        if exponent != 0 {
+            base = base.checked_mul(base)? % modulus;
+        }
+    }
+
+    Some(result)
+}
+```
+
+This function is useful for learning exponentiation by squaring, but it is **not**
+constant time and ordinary `u128` multiplication can overflow before reduction. It is
+not a production cryptographic implementation.
+
+#### Cryptography as a Parser and Protocol Problem
+
+Treat authenticated data as a precisely encoded structure:
+
+```text
+version || algorithm_id || nonce || associated_data || ciphertext || tag
+```
+
+The decoder should:
+
+1. bound all lengths before allocating;
+2. reject unknown or forbidden algorithm identifiers;
+3. authenticate before releasing plaintext;
+4. reject duplicate/replayed nonces when the protocol requires it;
+5. keep parsing errors from becoming a useful oracle;
+6. preserve exact bytes used as associated data;
+7. fail closed.
+
+This is directly relevant to designing a language runtime: signed packages, bytecode
+modules, plugin manifests, update files, and network messages are all binary formats
+with trust boundaries.
+
+### 13. Where Algorithms Appear in Language Tools
+
+| Language-tool problem           | Useful algorithm/data structure |
+| ------------------------------- | ------------------------------- |
+| Token lookup                    | Hash table or trie              |
+| Source-offset lookup            | Binary search                   |
+| AST walk                        | DFS                             |
+| Shortest unweighted path in CFG | BFS                             |
+| Module dependency order         | Topological sort                |
+| Recursive call groups           | Strongly connected components   |
+| Type equivalence classes        | Union-find/disjoint set         |
+| Data-flow analysis              | Worklist fixed-point iteration  |
+| Register allocation             | Graph coloring or linear scan   |
+| Constant propagation            | Lattice + worklist              |
+| Garbage-collector marking       | DFS/BFS over object graph       |
+| Diagnostic suggestions          | Edit distance                   |
+| Instruction scheduling          | Dependency DAG                  |
+
+### 14. Worklist Fixed-Point Pattern
+
+Many compiler analyses repeatedly propagate facts until nothing changes:
+
+```text
+initialize facts
+enqueue affected nodes
+
+while worklist is not empty:
+    node = pop
+    new_fact = transfer(predecessor facts)
+    if new_fact changed:
+        store it
+        enqueue successors
+```
+
+| Fixed-point component | Requirement                                   |
+| --------------------- | --------------------------------------------- |
+| Fact domain           | Finite height or another convergence argument |
+| Transfer function     | Monotone with respect to the fact ordering    |
+| Change detection      | Reliable equality or improvement test         |
+| Dependencies          | Precise successors to re-enqueue              |
+| Tests                 | Deterministic expected final facts            |
+
+### 15. Algorithm Engineering Checklist
+
+| Area            | Preferred practice                                                       |
+| --------------- | ------------------------------------------------------------------------ |
+| Standard tools  | Use library sorting/searching in production                              |
+| Invariants      | State them beside non-obvious loops                                      |
+| Arithmetic      | Check indexes, capacities, and input-derived costs                       |
+| Depth           | Avoid recursion over unbounded adversarial input                         |
+| Allocation      | Preallocate only from trustworthy estimates                              |
+| Queues/heaps    | Use `VecDeque` for FIFO and `BinaryHeap` for priority                    |
+| Membership      | Use a set or boolean vector instead of repeated scans                    |
+| Reproducibility | Preserve stable ordering when output must be deterministic               |
+| Edge cases      | Test empty, duplicate, cyclic, disconnected, and maximum inputs          |
+| Performance     | Benchmark realistic workloads; big-O is not the whole result             |
+| Generics        | Generalize only when reuse improves without hiding the algorithm         |
+| Failure         | Return `Option`/`Result` when absence or failure is part of the contract |
+
+---
+
+## 🏢 System Design Patterns in Rust
+
+[DesignDeck](https://deckly.dev/designdeck/) presents system-design decisions as a
+connected set of trade-offs: traffic, data, consistency, caching, partitioning,
+messaging, and failure handling. This section translates several of those decisions
+into Rust-shaped interfaces.
+
+> 🏗️ **Design principle:** begin with **quantities, guarantees, and failure behavior**;
+> only then choose components.
+
+### 1. Start with Quantities and Guarantees
+
+Before drawing services and databases, write down:
+
+| Design input       | Questions to answer                                      |
+| ------------------ | -------------------------------------------------------- |
+| Traffic            | Peak reads and writes per second?                        |
+| Payloads           | Typical and maximum request/response sizes?              |
+| Storage            | Daily growth and retention period?                       |
+| Latency            | Acceptable median and tail latency?                      |
+| Reliability        | Availability, recovery time, and recovery point targets? |
+| Consistency        | What does each operation guarantee?                      |
+| Message behavior   | Is loss, duplication, or reordering acceptable?          |
+| Security           | Where are trust and authorization boundaries?            |
+| Dependency failure | What happens when a dependency is slow or unavailable?   |
+
+Useful rough estimates:
+
+```text
+bandwidth        ≈ requests/second × bytes/request
+daily storage    ≈ writes/second × bytes/write × 86,400
+concurrent work  ≈ arrival rate × average service time
+```
+
+These are estimates, not capacity promises. Validate them with measurement and leave
+headroom for bursts, retries, replication, metadata, indexes, and uneven partitions.
+
+### 2. Cache-Aside
+
+In cache-aside, the application checks the cache, loads a miss from the source of truth,
+and then fills the cache. The cache does not independently query storage.
+
+```text
+read:
+    cache hit  ──→ return
+    cache miss ──→ read database ──→ populate cache ──→ return
+
+write:
+    update database ──→ invalidate or update cache
+```
+
+A small interface keeps policy separate from storage:
+
+```rust
+trait KeyValue<K, V> {
+    type Error;
+
+    fn get(&self, key: &K) -> Result<Option<V>, Self::Error>;
+    fn put(&mut self, key: K, value: V) -> Result<(), Self::Error>;
+}
+
+fn cache_aside<K, V, E>(
+    cache: &mut impl KeyValue<K, V, Error = E>,
+    source: &impl KeyValue<K, V, Error = E>,
+    key: &K,
+) -> Result<Option<V>, E>
+where
+    K: Clone,
+    V: Clone,
+{
+    if let Some(value) = cache.get(key)? {
+        return Ok(Some(value));
+    }
+
+    let Some(value) = source.get(key)? else {
+        return Ok(None);
+    };
+
+    cache.put(key.clone(), value.clone())?;
+    Ok(Some(value))
+}
+```
+
+| Cache decision   | Question                                                  |
+| ---------------- | --------------------------------------------------------- |
+| Staleness        | How long may an old value remain visible?                 |
+| Negative caching | Should missing values be cached?                          |
+| Stampede control | What protects a hot key during a miss?                    |
+| Fill failure     | Does cache failure fail the request or only reduce speed? |
+| Write policy     | Write-through, write-back, or invalidation?               |
+| Eviction         | LRU, LFU, FIFO, or a domain-specific policy?              |
+
+The database remains the source of truth unless the design explicitly chooses a
+different consistency model.
+
+### 3. Token-Bucket Rate Limiting
+
+A token bucket allows controlled bursts while enforcing a long-term rate. Tokens refill
+over time up to a fixed capacity; each accepted operation spends tokens.
+
+```rust
+use std::time::Instant;
+
+#[derive(Debug)]
+struct TokenBucket {
+    capacity: f64,
+    available: f64,
+    refill_per_second: f64,
+    last_update: Instant,
+}
+
+impl TokenBucket {
+    fn new(capacity: u32, refill_per_second: f64, now: Instant) -> Option<Self> {
+        if capacity == 0 || !refill_per_second.is_finite() || refill_per_second <= 0.0 {
+            return None;
+        }
+
+        Some(Self {
+            capacity: f64::from(capacity),
+            available: f64::from(capacity),
+            refill_per_second,
+            last_update: now,
+        })
+    }
+
+    fn try_take(&mut self, amount: u32, now: Instant) -> bool {
+        let elapsed = now.saturating_duration_since(self.last_update);
+        self.available = (self.available + elapsed.as_secs_f64() * self.refill_per_second)
+            .min(self.capacity);
+        self.last_update = now;
+
+        let amount = f64::from(amount);
+        if amount > self.available {
+            return false;
+        }
+
+        self.available -= amount;
+        true
+    }
+}
+```
+
+| Rate-limit decision | Choices to define                                 |
+| ------------------- | ------------------------------------------------- |
+| Identity            | User, IP, token, tenant, endpoint, or resource    |
+| Scope               | Per process or coordinated across replicas        |
+| Store failure       | Fail open, fail closed, or use a local fallback   |
+| Over-limit action   | Reject, queue, or degrade                         |
+| Client feedback     | Retry timing, remaining quota, and reset metadata |
+
+A leaky-bucket queue smooths output at a regular rate. It is useful when work can wait;
+a token bucket is useful when short bursts are legitimate.
+
+### 4. Circuit Breakers, Timeouts, and Backoff
+
+A circuit breaker prevents repeated calls to a dependency that is already failing:
+
+```rust
+use std::time::Instant;
+
+#[derive(Clone, Copy, Debug)]
+enum CircuitState {
+    Closed { consecutive_failures: u32 },
+    Open { retry_after: Instant },
+    HalfOpen,
+}
+```
+
+State transitions:
+
+```text
+Closed --failure threshold--> Open
+Open   --cooldown elapsed---> HalfOpen
+HalfOpen --probe succeeds---> Closed
+HalfOpen --probe fails------> Open
+```
+
+Use the patterns together:
+
+| Resilience pattern      | Responsibility                                  |
+| ----------------------- | ----------------------------------------------- |
+| **Timeout**             | Limit one attempt                               |
+| **Retry budget**        | Limit total extra work                          |
+| **Exponential backoff** | Increase spacing between attempts               |
+| **Jitter**              | Prevent synchronized retry storms               |
+| **Circuit breaker**     | Stop calls during sustained dependency failure  |
+| **Load shedding**       | Reject low-priority work before global collapse |
+
+Retry only operations that are safe to repeat, or attach an idempotency key. Never let
+every layer retry independently without a shared budget; multiplicative retries can
+turn a small outage into overload.
+
+### 5. Delivery Is Not Processing
+
+Networks and processes can fail between any two observable steps. Messages may be
+delayed, duplicated, dropped, or reordered.
+
+| Delivery model   | What the consumer must expect                     |
+| ---------------- | ------------------------------------------------- |
+| At most once     | Loss is possible; duplicates are suppressed       |
+| At least once    | Duplicates are possible; retry covers some losses |
+| Effectively once | Deduplication makes repeated processing harmless  |
+
+Exactly-once network delivery is not a general guarantee. Systems usually approach
+exactly-once **effects** through idempotency, durable deduplication, and atomic state
+changes.
+
+```rust
+use std::collections::HashSet;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+struct EventId(u128);
+
+#[derive(Debug)]
+struct Event {
+    id: EventId,
+    delta: i64,
+}
+
+fn apply_once(
+    event: &Event,
+    processed: &mut HashSet<EventId>,
+    total: &mut i64,
+) -> Result<bool, &'static str> {
+    if processed.contains(&event.id) {
+        return Ok(false);
+    }
+
+    let next = total.checked_add(event.delta).ok_or("total overflow")?;
+    *total = next;
+    processed.insert(event.id);
+    Ok(true)
+}
+```
+
+This in-memory example explains the invariant but is not crash safe. In a real system,
+the deduplication record and business update must be committed atomically in durable
+storage, or a crash can occur between them.
+
+An **event log** retains ordered records for replay and multiple consumers. A **queue**
+typically distributes work so one consumer handles each message. Choose based on replay,
+fan-out, ordering, and retention needs.
+
+### 6. Consistent Hashing and Partition Movement
+
+Ordinary `hash(key) % node_count` remaps most keys when the number of nodes changes.
+Consistent hashing places keys and nodes in a hash space so adding or removing a node
+moves a smaller portion of the data.
+
+```text
+hash ring:
+0 ───── node A ───── node B ───── node C ───── max
+          ↑ key x                  ↑ key y
+```
+
+Virtual nodes give each physical node multiple positions, which can improve balance.
+Jump consistent hashing is another option when a compact computation is preferable to
+maintaining a ring.
+
+| Partition concern | Required decision                                         |
+| ----------------- | --------------------------------------------------------- |
+| Hash stability    | Is the mapping stable across versions and languages?      |
+| Hot keys          | How are skewed workloads isolated or replicated?          |
+| Replication       | How many owners does each partition have?                 |
+| Membership        | How are node changes proposed and observed?               |
+| Rebalancing       | Can reads and writes continue while data moves?           |
+| Recovery          | How are partially moved partitions detected and repaired? |
+
+If the key is a compiler module, bytecode package, or analysis artifact, stable
+partitioning can also support distributed builds and content-addressed caches.
+
+### 7. Consistency Is Per Operation
+
+Do not label an entire system merely "strong" or "eventual." State what each operation
+guarantees:
+
+| Consistency guarantee        | Meaning                                                |
+| ---------------------------- | ------------------------------------------------------ |
+| Read-your-writes             | A client observes its own completed writes             |
+| Monotonic reads              | A client does not move backward to older state         |
+| Causal ordering              | Causally related events are observed in order          |
+| Linearizable compare-and-set | The update behaves as one atomic real-time operation   |
+| Bounded staleness            | Reads lag by no more than a defined time/version bound |
+| Eventual convergence         | Replicas agree once updates and failures stop          |
+
+The CAP trade-off matters during a network partition: a distributed system cannot
+simultaneously guarantee both availability for every request and linearizable
+consistency across the partition. Different operations may make different choices.
+
+### 8. System-Design Review Checklist
+
+| Area            | Review criterion                                                |
+| --------------- | --------------------------------------------------------------- |
+| Data ownership  | Source of truth and derived copies are explicit                 |
+| Remote calls    | Every call has a timeout                                        |
+| Resource bounds | Queues, retries, bodies, fan-out, and concurrency are capped    |
+| Overload        | Degraded and rejected behavior is defined                       |
+| Idempotency     | Repeated messages are safe or durably detected                  |
+| Versioning      | Wire formats and stored schemas carry versions                  |
+| Deployment      | Migration, rollback, and mixed-version behavior are defined     |
+| Observability   | Saturation, errors, tail latency, and dropped work are measured |
+| Privacy         | Logs and cache keys exclude secrets and sensitive data          |
+| Failure testing | Slowness and partial failure are tested                         |
+| Recovery        | Recovery point and recovery time objectives are stated          |
+| Simplicity      | Operators can explain the important failure modes               |
+
+---
+
+## 🌐 Networking, Protocols & Wire Formats
 
 Networking is low-level I/O plus a shared language. A protocol has **syntax** (frame
 layout), **semantics** (what messages mean), and **state** (which messages are valid
 now). That makes protocol design closely related to compiler design.
+
+> 🌐 **Mental model:** a network protocol is a language spoken over an unreliable,
+> partial-I/O boundary.
 
 ### 1. Layered Mental Model
 
@@ -3102,15 +5603,223 @@ fn main() -> io::Result<()> {
 }
 ```
 
-This intentionally simple lab teaches:
+| Lab concept        | What the example demonstrates                     |
+| ------------------ | ------------------------------------------------- |
+| Endpoint           | An address combined with a port                   |
+| Server lifecycle   | Listen, accept, read, write, close                |
+| Partial I/O        | Use helpers that complete or report failure       |
+| Protocol semantics | Map a request to a defined response               |
+| Error isolation    | One connection failure need not stop the listener |
 
-- address + port endpoints;
-- listening, accepting, reading, and writing;
-- partial-I/O-safe helpers;
-- request/response semantics;
-- per-connection error isolation.
+### 5. Socket Lifecycle and Client/Server Roles
 
-### 5. Protocol State Machines
+[Beej's Guide to Network Programming](https://beej.us/guide/bgnet/html/) frames a socket
+as an operating-system handle used for network I/O. On Unix-like systems it is a file
+descriptor, so familiar resource and blocking-I/O ideas apply.
+
+Typical TCP server:
+
+```text
+resolve local address
+    ↓
+socket → bind → listen → accept
+                         ↓
+                    read/write
+                         ↓
+                       close
+```
+
+Typical TCP client:
+
+```text
+resolve remote address
+    ↓
+socket → connect → read/write → close
+```
+
+Rust wraps the resource in `TcpStream`, `TcpListener`, and `UdpSocket`. Their destructors
+close the underlying socket when ownership ends, but protocol shutdown may still need an
+explicit `shutdown`.
+
+```rust
+use std::io::{self, Read, Write};
+use std::net::{Shutdown, TcpStream};
+use std::time::Duration;
+
+fn request(address: &str, bytes: &[u8]) -> io::Result<Vec<u8>> {
+    let mut stream = TcpStream::connect(address)?;
+    stream.set_read_timeout(Some(Duration::from_secs(3)))?;
+    stream.set_write_timeout(Some(Duration::from_secs(3)))?;
+
+    stream.write_all(bytes)?;
+    stream.shutdown(Shutdown::Write)?;
+
+    let mut response = Vec::new();
+    stream.take(64 * 1024).read_to_end(&mut response)?;
+    Ok(response)
+}
+```
+
+`shutdown(Write)` sends an end-of-stream signal for the writing direction while leaving
+the reading direction open. This is useful only when the application protocol defines
+end-of-stream as the request boundary. Many protocols keep the connection open and use
+lengths or delimiters instead.
+
+### 6. Names, Addresses, and Ports
+
+An endpoint combines an IP address with a transport port:
+
+```text
+IPv4 endpoint: 192.0.2.10:443
+IPv6 endpoint: [2001:db8::10]:443
+```
+
+| Network name/value | Role                                           |
+| ------------------ | ---------------------------------------------- |
+| IP address         | Identifies an interface or routing destination |
+| Port               | Identifies a transport endpoint on a host      |
+| Host name          | Resolves to one or more IPv4/IPv6 addresses    |
+| Client local port  | Usually assigned ephemerally by the OS         |
+| Server port        | Bound to a known local address/service port    |
+
+Do not resolve a name and then use only the first address forever. Try the returned
+candidates according to policy:
+
+```rust
+use std::io;
+use std::net::{TcpStream, ToSocketAddrs};
+use std::time::Duration;
+
+fn connect_any(host: &str, port: u16) -> io::Result<TcpStream> {
+    let addresses = (host, port).to_socket_addrs()?;
+    let timeout = Duration::from_secs(3);
+    let mut last_error = None;
+
+    for address in addresses {
+        match TcpStream::connect_timeout(&address, timeout) {
+            Ok(stream) => return Ok(stream),
+            Err(error) => last_error = Some(error),
+        }
+    }
+
+    Err(last_error.unwrap_or_else(|| {
+        io::Error::new(io::ErrorKind::AddrNotAvailable, "name resolved to no addresses")
+    }))
+}
+```
+
+Resolution is not authentication. A successful DNS lookup says where to connect, not
+whether the peer is trusted. Secure protocols still authenticate the remote identity.
+
+### 7. Encapsulation and Byte Order
+
+Each layer wraps the data from the layer above:
+
+```text
+[link header [IP header [TCP/UDP header [application frame]]]]
+```
+
+On receipt, the layers remove their respective headers in reverse order. This
+separation lets the application use the same socket interface across different link
+technologies.
+
+Multi-byte integers need a specified wire order. Network protocols commonly use
+big-endian, traditionally called **network byte order**:
+
+```rust
+let request_id = 0x1234_5678u32;
+let encoded = request_id.to_be_bytes();
+assert_eq!(encoded, [0x12, 0x34, 0x56, 0x78]);
+
+let decoded = u32::from_be_bytes(encoded);
+assert_eq!(decoded, request_id);
+```
+
+Never transmit an in-memory Rust struct directly:
+
+| In-memory property     | Wire-format problem                                     |
+| ---------------------- | ------------------------------------------------------- |
+| Padding                | Bytes may be unstable or uninitialized                  |
+| Alignment/layout       | Can vary by target and compiler settings                |
+| Integer representation | May use the wrong byte order                            |
+| Pointers/references    | Have no meaning in another process                      |
+| Enum representation    | Is unstable without an explicit representation contract |
+
+Serialize each field deliberately, or use a documented format and implementation.
+
+### 8. Partial I/O, EOF, and Blocking
+
+A successful socket read or write may transfer fewer bytes than requested.
+
+| Operation/result | Meaning                                                  |
+| ---------------- | -------------------------------------------------------- |
+| `read` → `Ok(0)` | TCP end-of-stream                                        |
+| `read_exact`     | Fill the buffer or report EOF/error                      |
+| `write_all`      | Continue until all bytes are accepted or an error occurs |
+| Timeout          | Bound waiting; does not create a message boundary        |
+
+Blocking sockets put the calling thread to sleep until progress or an error is possible.
+Non-blocking sockets instead report that the operation would block. An event loop uses
+an OS readiness facility to learn which sockets may make progress.
+
+```text
+blocking model:      one waiting thread per operation or connection
+readiness model:     poll/select/epoll/kqueue → operate on ready sockets
+completion model:    submit I/O → receive completion later
+async Rust:          futures + reactor/executor hide much of this bookkeeping
+```
+
+Readiness is a hint, not a promise that an arbitrarily large operation will finish.
+Drain or fill only until the operation would block again, and keep per-connection
+buffers bounded.
+
+For TCP framing, test all of these:
+
+```text
+header split across reads
+payload split across reads
+header + payload + next frame in one read
+peer closes halfway through a frame
+declared length exceeds the limit
+write accepts only a prefix
+```
+
+### 9. UDP Is Message-Oriented but Not Reliable
+
+UDP preserves datagram boundaries, but an individual datagram may be lost, duplicated,
+or reordered. If reliability matters, the application protocol must define sequence
+numbers, acknowledgments, retransmission, deduplication, and congestion behavior—or use
+an existing transport that already does.
+
+```rust
+use std::io;
+use std::net::UdpSocket;
+use std::time::Duration;
+
+fn udp_exchange(server: &str, request: &[u8]) -> io::Result<Vec<u8>> {
+    let socket = UdpSocket::bind("127.0.0.1:0")?;
+    socket.connect(server)?;
+    socket.set_read_timeout(Some(Duration::from_secs(1)))?;
+    socket.send(request)?;
+
+    let mut buffer = vec![0u8; 1_200];
+    let received = socket.recv(&mut buffer)?;
+    buffer.truncate(received);
+    Ok(buffer)
+}
+```
+
+This example binds to loopback for a local lab. In a real UDP protocol:
+
+| UDP concern       | Defensive design                             |
+| ----------------- | -------------------------------------------- |
+| Fragmentation     | Keep datagrams within a conservative size    |
+| Authenticity      | Authenticate before acting                   |
+| Response matching | Use unpredictable request IDs                |
+| Amplification     | Bound response size relative to request size |
+| Retransmission    | Model timeout/retry as finite protocol state |
+
+### 10. Protocol State Machines
 
 A parser answers "is this frame shaped correctly?" A state machine answers "is this
 message valid now?"
@@ -3149,7 +5858,7 @@ A compiler is also a protocol state machine:
 source → parsed → typed → lowered → emitted
 ```
 
-### 6. Reverse Engineering an Unknown Protocol Safely
+### 11. Reverse Engineering an Unknown Protocol Safely
 
 packet-analysis workflow generalizes well to your own local server, interoperability
 research, and authorized captures:
@@ -3164,21 +5873,19 @@ research, and authorized captures:
 8. write a decoder that rejects malformed input;
 9. validate against fresh captures you did not use to form the hypothesis.
 
-Clues:
-
-- the first 2 or 4 bytes match the remaining length → likely framing;
-- many readable bytes → text or lightly structured data;
-- tiny input change modifies most later bytes → compression, encryption, or integrity
-  data;
-- repeated fixed prefix → magic/version/header;
-- monotonically changing field → sequence number or timestamp;
-- same message differs each time → nonce, timestamp, randomized compression, or
-  encryption.
+| Observed clue                          | Plausible interpretation                       |
+| -------------------------------------- | ---------------------------------------------- |
+| First 2/4 bytes match remaining length | Length-prefixed framing                        |
+| Many readable bytes                    | Text or lightly structured data                |
+| Tiny change affects most later bytes   | Compression, encryption, or integrity data     |
+| Repeated fixed prefix                  | Magic value, version, or header                |
+| Monotonically changing field           | Sequence number or timestamp                   |
+| Same message differs each time         | Nonce, timestamp, randomization, or encryption |
 
 Do not assume traffic is plaintext merely because a few bytes are readable. Do not
 attempt to defeat encryption or access systems without permission.
 
-### 7. Designing a Protocol for Your Own Language
+### 12. Designing a Protocol for Your Own Language
 
 Suppose your language has a remote REPL. Separate framing, message syntax, and
 semantics:
@@ -3197,42 +5904,1843 @@ Message kinds:
     4 = Cancel(request_id)
 ```
 
-Design checklist:
+| Protocol area       | Design requirement                               |
+| ------------------- | ------------------------------------------------ |
+| Versioning          | Include a version from the beginning             |
+| Integers            | Define widths and byte order                     |
+| Text                | Specify UTF-8 validity and normalization         |
+| Resource limits     | Cap frames, strings, collections, and nesting    |
+| Identifier domains  | Use newtypes for request IDs and session IDs     |
+| Extensibility       | Define optional/mandatory unknown-field behavior |
+| Authentication      | Authenticate before evaluating code              |
+| Sandboxing          | Bound CPU, memory, and execution time            |
+| Diagnostics         | Use structured fields, not scraped prose         |
+| Compatibility tests | Publish input bytes with expected decoded values |
 
-- include a version from the beginning;
-- define integer widths and byte order;
-- specify UTF-8 validity and normalization policy;
-- cap frame, string, collection, and nesting sizes;
-- distinguish request IDs from session IDs with newtypes;
-- define behavior for unknown optional and mandatory fields;
-- authenticate before evaluating code;
-- run untrusted code in a sandbox with CPU, memory, and time limits;
-- make diagnostics structured rather than scraping human-readable text;
-- publish test vectors: bytes plus expected decoded values.
+### 13. Networking Failure Modes
 
-### 8. Networking Failure Modes
-
-- assuming `read` or `write` transfers the full buffer;
-- allocating directly from an untrusted length field;
-- missing timeouts, allowing idle connections forever;
-- recursive decoding without a depth limit;
-- treating TCP connection close as a complete application message;
-- parsing before authentication or authorization boundaries are clear;
-- trusting client-supplied type tags or offsets;
-- logging secrets or entire untrusted payloads;
-- using host endianness as a wire format;
-- changing a message layout without a version strategy.
+| Failure mode               | Safer design                                         |
+| -------------------------- | ---------------------------------------------------- |
+| Assume full `read`/`write` | Loop with `read_exact`/`write_all` or buffered state |
+| Trust a length field       | Validate against protocol and resource limits        |
+| Omit timeouts              | Bound connect, read, write, and idle time            |
+| Recurse without a limit    | Enforce structural depth                             |
+| Treat TCP close as a frame | Use explicit framing semantics                       |
+| Parse before trust checks  | Place authentication/authorization deliberately      |
+| Trust client type tags     | Validate every tag, offset, and enum value           |
+| Log entire payloads        | Redact and cap diagnostic data                       |
+| Use host endianness        | Specify and encode a wire byte order                 |
+| Change layouts silently    | Version messages and define compatibility            |
 
 Tests should fragment a frame at every possible byte boundary, combine several frames
 into one read, truncate every field, and exercise maximum permitted sizes.
 
 ---
 
-## Executable Files, Linkers, ABIs & FFI
+## 📡 Embedded Networking with `smoltcp`
+
+[`smoltcp`](https://github.com/smoltcp-rs/smoltcp) is a standalone, event-driven TCP/IP
+stack designed for bare-metal and real-time systems. It can operate without heap
+allocation, making queues, socket buffers, timing, and packet work visible rather than
+hiding them behind an operating-system socket API.
+
+### 1. Stack Architecture
+
+```text
+application / language runtime
+          ↕ socket send and receive buffers
+SocketSet: TCP, UDP, ICMP, DHCP, DNS, raw sockets
+          ↕
+Interface: addressing, routes, neighbors, protocol state
+          ↕
+Device + RxToken / TxToken
+          ↕
+driver, TAP/TUN, loopback, Ethernet MAC, or radio
+```
+
+| Layer       | Owns or describes                                   |
+| ----------- | --------------------------------------------------- |
+| `Device`    | frame receive/transmit capability, MTU, medium      |
+| `Interface` | IP addresses, routes, neighbor/protocol state       |
+| `SocketSet` | heterogeneous sockets identified by stable handles  |
+| socket      | protocol state plus explicitly supplied buffers     |
+| application | when to poll, consume, produce, retry, and time out |
+
+This resembles a language runtime: the device is the host boundary, the interface is
+runtime-wide state, sockets are managed objects, and `poll` is the scheduler step.
+
+### 2. Memory Is Part of the Network Contract
+
+In hosted code, examples may provide `Vec<u8>` storage. In heapless code, the same
+buffer abstractions can borrow fixed slices.
+
+```rust
+use smoltcp::socket::tcp;
+
+static mut RX_BYTES: [u8; 1024] = [0; 1024];
+static mut TX_BYTES: [u8; 1024] = [0; 1024];
+
+// In real embedded code, obtain unique mutable access during initialization.
+// The surrounding platform code must ensure these buffers are never aliased.
+let socket = unsafe {
+    // SAFETY: initialization runs once before interrupts/tasks can access the buffers.
+    let rx = tcp::SocketBuffer::new(&mut *core::ptr::addr_of_mut!(RX_BYTES));
+    let tx = tcp::SocketBuffer::new(&mut *core::ptr::addr_of_mut!(TX_BYTES));
+    tcp::Socket::new(rx, tx)
+};
+```
+
+Prefer linker- or platform-provided single-init cells where available; the snippet makes
+the low-level ownership contract visible, not idealizes `static mut` as an everyday API.
+
+| Fixed resource              | Behavior when exhausted                          |
+| --------------------------- | ------------------------------------------------ |
+| TCP receive buffer          | advertised window shrinks; application must read |
+| TCP transmit buffer         | send capacity disappears until packets advance   |
+| UDP packet metadata/storage | datagram send/receive can fail                   |
+| neighbor cache              | entries are replaced or resolution is delayed    |
+| routes/addresses            | insertion may fail at configured capacity        |
+| reassembly storage          | oversized/excess fragmented packets are dropped  |
+
+> 🧭 **Invariant:** buffer size is observable protocol behavior. Treat it as a deliberate
+> capacity and backpressure decision, not an incidental allocation.
+
+### 3. Polling Makes Scheduling Explicit
+
+`Interface::poll(now, device, sockets)` transmits queued socket data and processes
+queued device packets. `poll_at` or `poll_delay` tells an event loop when protocol timers
+want attention.
+
+```rust
+use smoltcp::iface::{Interface, SocketSet};
+use smoltcp::phy::Device;
+use smoltcp::time::Instant;
+
+fn drive_once(
+    iface: &mut Interface,
+    device: &mut impl Device,
+    sockets: &mut SocketSet<'_>,
+    now: Instant,
+) {
+    let _changed = iface.poll(now, device, sockets);
+
+    // Inspect socket readiness and do a bounded amount of application work here.
+    // Then sleep/yield until the device is ready or iface.poll_at(...) is due.
+}
+```
+
+| Timing mistake                  | Consequence                                   |
+| ------------------------------- | --------------------------------------------- |
+| Poll too late                   | retransmissions and quality of service suffer |
+| Busy-poll continuously          | wasted CPU and energy                         |
+| Use a non-monotonic clock       | broken timeout/retransmission reasoning       |
+| Drain unlimited ingress         | other real-time work may starve               |
+| Ignore application backpressure | buffers fill and useful work is displaced     |
+
+The current interface API warns that a full `poll()` may process an unbounded number of
+queued ingress packets. In a cooperative or real-time scheduler, use
+`poll_ingress_single`, `poll_egress`, and `poll_maintenance` to create explicit yield
+points and bounded work.
+
+### 4. Socket State Is a Protocol State Machine
+
+```rust
+use smoltcp::iface::{SocketHandle, SocketSet};
+use smoltcp::socket::tcp;
+
+fn service_echo(
+    sockets: &mut SocketSet<'_>,
+    handle: SocketHandle,
+) -> Result<(), tcp::ListenError> {
+    let socket = sockets.get_mut::<tcp::Socket<'_>>(handle);
+
+    if !socket.is_open() {
+        socket.listen(7000)?;
+    }
+
+    if socket.can_recv() {
+        let _ = socket.recv(|bytes| {
+            let consumed = bytes.len();
+            // Parse or copy only what the bounded application budget permits.
+            (consumed, ())
+        });
+    }
+
+    Ok(())
+}
+```
+
+| Readiness/state query | Meaning for application logic            |
+| --------------------- | ---------------------------------------- |
+| `is_open()`           | socket is not fully closed               |
+| `is_active()`         | connection has active protocol state     |
+| `can_recv()`          | receive would produce application data   |
+| `may_recv()`          | peer may still send data in the future   |
+| `can_send()`          | transmit buffer currently has capacity   |
+| `may_send()`          | connection may still permit future sends |
+
+Do not equate `can_recv() == false` with EOF. Like a VM or coroutine, a socket can be
+temporarily unable to progress while remaining live.
+
+### 5. A Networked Language Runtime
+
+| Runtime feature       | `smoltcp` integration decision                       |
+| --------------------- | ---------------------------------------------------- |
+| remote REPL           | frame parser, source limit, authentication, timeout  |
+| debugger protocol     | request IDs, cancellation, bounded diagnostic output |
+| package transfer      | chunking, hash verification, storage budget          |
+| actor/message runtime | UDP loss policy or TCP backpressure                  |
+| embedded web endpoint | HTTP parser limits and one/many-connection policy    |
+| telemetry             | sampling, queue eviction, reconnect/backoff          |
+
+Keep protocol parsing independent from the socket. Feed it byte slices and test it with
+fragmentation, coalescing, truncation, invalid lengths, and capacity exhaustion. Then
+test the stack in a loopback or TAP-based lab you control.
+
+### 6. Test Faults, Not Only Happy Packets
+
+The upstream hosted examples support packet dropping, corruption, size limits, rate
+limits, and PCAP capture. These are valuable language-runtime tests too:
+
+| Injected condition | Runtime property to verify                     |
+| ------------------ | ---------------------------------------------- |
+| packet loss        | retry/timeout does not duplicate semantic work |
+| corruption         | checksums and parsers reject damaged input     |
+| tiny MTU           | fragmentation assumptions are not baked in     |
+| tiny socket buffer | backpressure reaches the producer              |
+| slow polling       | deadlines fail predictably                     |
+| connection reset   | pending requests finish with structured errors |
+
+Run raw-interface and fault-injection experiments only on an isolated lab interface or
+network you are authorized to control.
+
+> ➡️ **Next:** Actix shows an OS-hosted HTTP boundary; `wasm-bindgen` and `web-sys` show
+> a browser-hosted boundary. Compare their hidden resources with `smoltcp`'s explicit
+> buffers and polling.
+
+---
+
+## 🕸 Rust Web Boundaries: Actix Web & wasm-bindgen
+
+Actix Web and `wasm-bindgen` sit on opposite sides of the web:
+
+```text
+browser JavaScript
+    ↕ wasm-bindgen glue
+Rust compiled to WebAssembly
+    ↕ HTTP / structured messages
+Actix Web service
+```
+
+Both are boundary-design problems. Bytes and dynamic values enter Rust, become typed
+data, pass through application logic, and are converted back into an external
+representation.
+
+### 1. Boundary Comparison
+
+| Concern            | Actix Web boundary                        | `wasm-bindgen` boundary                    |
+| ------------------ | ----------------------------------------- | ------------------------------------------ |
+| External peer      | HTTP client                               | JavaScript host                            |
+| Input conversion   | Extractors (`Path`, `Query`, `Json`)      | Generated JS/Wasm bindings                 |
+| Error form         | HTTP status + response body               | `Result<T, JsValue>` / JS exception        |
+| Shared state       | `web::Data<T>`                            | Exported Rust object or Wasm linear memory |
+| Trust boundary     | Network request                           | Host calls and JS values                   |
+| Main resource risk | Connections, bodies, tasks, backend calls | Copies, memory growth, handles, JS GC      |
+
+---
+
+### 2. Actix Web Application Shape
+
+Current Actix Web 4 applications construct an `App` inside an `HttpServer` factory:
+
+```rust
+use actix_web::{get, web, App, HttpServer, Responder};
+
+#[get("/hello/{name}")]
+async fn hello(name: web::Path<String>) -> impl Responder {
+    let name = name.into_inner();
+    format!("Hello, {name}!")
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| App::new().service(hello))
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
+}
+```
+
+The server factory may run once per worker. Create intentionally shared state outside
+the closure and clone its `web::Data` handle into each app.
+
+### 3. Extractors Turn Requests into Typed Inputs
+
+| Extractor       | Source in the HTTP request                  |
+| --------------- | ------------------------------------------- |
+| `web::Path<T>`  | Variables captured by the route             |
+| `web::Query<T>` | URL query string                            |
+| `web::Json<T>`  | JSON request body                           |
+| `web::Data<T>`  | Application state                           |
+| `HttpRequest`   | Headers, peer data, extensions, method, URI |
+| `web::Bytes`    | Buffered raw body                           |
+
+```rust
+use actix_web::{web, HttpResponse, Responder};
+use serde::{Deserialize, Serialize};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+struct AppState {
+    next_job: AtomicU64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct CreateJob {
+    source: String,
+}
+
+#[derive(Debug, Serialize)]
+struct JobAccepted {
+    id: u64,
+    source_bytes: usize,
+}
+
+async fn create_job(
+    state: web::Data<AppState>,
+    request: web::Json<CreateJob>,
+) -> impl Responder {
+    let id = state.next_job.fetch_add(1, Ordering::Relaxed);
+    web::Json(JobAccepted {
+        id,
+        source_bytes: request.source.len(),
+    })
+}
+
+fn configure(config: &mut web::ServiceConfig) {
+    config.service(
+        web::resource("/jobs")
+            .route(web::post().to(create_job)),
+    );
+}
+```
+
+> 🚧 **Extraction is parsing:** a handler should receive values that already satisfy
+> transport-level syntax, then perform application validation such as source-size,
+> authorization, and allowed-language checks.
+
+### 4. Bound Request Resources
+
+```rust
+use actix_web::web;
+
+fn json_config() -> web::JsonConfig {
+    web::JsonConfig::default()
+        .limit(32 * 1024)
+}
+```
+
+| Resource          | Boundary to define                              |
+| ----------------- | ----------------------------------------------- |
+| Request body      | Maximum compressed and decoded size             |
+| JSON nesting      | Parser/format limits when configurable          |
+| Path/query values | Length and allowed character policy             |
+| Connections       | Worker, backlog, keep-alive, and timeout policy |
+| Backend calls     | Timeout and retry budget                        |
+| Spawned tasks     | Concurrency limit and cancellation behavior     |
+| Response          | Maximum buffered or streamed output             |
+
+Do not hold a synchronous mutex guard across `.await`. Prefer an atomic for small
+independent counters, a short critical section for local compound state, or an
+async-aware/resource-specific client pool for I/O.
+
+### 5. Typed HTTP Errors
+
+```rust
+use actix_web::{http::StatusCode, HttpResponse, ResponseError};
+use std::fmt;
+
+#[derive(Debug)]
+enum ApiError {
+    InvalidSource,
+    Overloaded,
+}
+
+impl fmt::Display for ApiError {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::InvalidSource => write!(formatter, "invalid source"),
+            Self::Overloaded => write!(formatter, "service overloaded"),
+        }
+    }
+}
+
+impl ResponseError for ApiError {
+    fn status_code(&self) -> StatusCode {
+        match self {
+            Self::InvalidSource => StatusCode::BAD_REQUEST,
+            Self::Overloaded => StatusCode::SERVICE_UNAVAILABLE,
+        }
+    }
+
+    fn error_response(&self) -> HttpResponse {
+        HttpResponse::build(self.status_code())
+            .body(self.to_string())
+    }
+}
+```
+
+| Error layer     | Suitable information                               |
+| --------------- | -------------------------------------------------- |
+| Internal error  | Source chain, operation, IDs, private diagnostics  |
+| Log/trace event | Correlation ID, sanitized context, latency         |
+| Client response | Stable code, safe message, appropriate HTTP status |
+
+Avoid exposing filesystem paths, database errors, backtraces, secrets, or parser
+internals to an untrusted client.
+
+### 6. Middleware and Handler Responsibilities
+
+| Concern                      | Best location                        |
+| ---------------------------- | ------------------------------------ |
+| Correlation/request ID       | Middleware                           |
+| Access logging and timing    | Middleware                           |
+| Authentication context       | Middleware/extractor                 |
+| Route-specific authorization | Handler or domain service            |
+| Input extraction             | Typed extractor                      |
+| Business rules               | Domain function independent of Actix |
+| HTTP response mapping        | Handler / `ResponseError`            |
+
+Body-consuming extractors need special care in middleware because the body is a stream.
+A middleware that consumes it must deliberately restore or replace what downstream
+handlers receive.
+
+### 7. Test the Service Without Opening a Port
+
+```rust
+use actix_web::{http::StatusCode, test, web, App};
+use std::sync::atomic::AtomicU64;
+
+#[actix_web::test]
+async fn accepts_a_job() {
+    let state = web::Data::new(AppState {
+        next_job: AtomicU64::new(1),
+    });
+
+    let app = test::init_service(
+        App::new()
+            .app_data(state)
+            .app_data(json_config())
+            .configure(configure),
+    )
+    .await;
+
+    let request = test::TestRequest::post()
+        .uri("/jobs")
+        .set_json(&CreateJob {
+            source: "1 + 2".to_owned(),
+        })
+        .to_request();
+
+    let response = test::call_service(&app, request).await;
+    assert_eq!(response.status(), StatusCode::OK);
+}
+```
+
+Test routing and HTTP conversion at the Actix layer, but keep most language parsing,
+type checking, and compilation tests independent of the web framework.
+
+---
+
+### 8. What `wasm-bindgen` Generates
+
+WebAssembly itself has a deliberately small boundary based on numeric values, linear
+memory, functions, tables, imports, and exports. `wasm-bindgen` generates glue that maps
+more ergonomic Rust and JavaScript values across that lower-level interface.
+
+```text
+Rust source + #[wasm_bindgen]
+    ↓ rustc --target wasm32-unknown-unknown
+.wasm module
+    ↓ wasm-bindgen CLI/tooling
+processed Wasm + JavaScript/TypeScript bindings
+```
+
+| Layer                | Responsibility                                 |
+| -------------------- | ---------------------------------------------- |
+| Rust compiler        | Produce the Wasm module                        |
+| `wasm-bindgen` macro | Describe imported/exported boundary items      |
+| Binding generator    | Produce JS glue and metadata                   |
+| JavaScript loader    | Instantiate the module and satisfy imports     |
+| Wasm linear memory   | Store Rust stacks, heaps, strings, and buffers |
+
+### 9. Export Rust Functions and Types
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn read_u32_be(bytes: &[u8]) -> Result<u32, JsValue> {
+    let bytes: [u8; 4] = bytes
+        .get(..4)
+        .ok_or_else(|| JsValue::from_str("expected four bytes"))?
+        .try_into()
+        .map_err(|_| JsValue::from_str("invalid byte slice"))?;
+
+    Ok(u32::from_be_bytes(bytes))
+}
+
+#[wasm_bindgen]
+pub struct Counter {
+    value: u32,
+}
+
+#[wasm_bindgen]
+impl Counter {
+    #[wasm_bindgen(constructor)]
+    pub fn new() -> Self {
+        Self { value: 0 }
+    }
+
+    pub fn increment(&mut self) -> u32 {
+        self.value = self.value.saturating_add(1);
+        self.value
+    }
+}
+```
+
+An exported Rust struct appears to JavaScript through a generated wrapper/handle. Its
+fields remain private unless explicitly exported through methods or accessors.
+
+### 10. Import JavaScript Functions
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+extern "C" {
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(message: &str);
+}
+
+#[wasm_bindgen]
+pub fn announce(message: &str) {
+    log(message);
+}
+```
+
+An imported JavaScript function is an environmental dependency just like an OS system
+call or host function in a custom VM. Keep imports narrow so the module's capabilities
+are easy to audit and replace in tests.
+
+### 11. Value and Ownership Boundaries
+
+| Rust-side value      | Boundary behavior to remember                        |
+| -------------------- | ---------------------------------------------------- |
+| Numbers/booleans     | Converted directly when supported                    |
+| `String` / `&str`    | Encoded/decoded through Wasm memory                  |
+| `Vec<u8>` / `&[u8]`  | Typically copied to/from typed-array-compatible data |
+| `JsValue`            | Dynamic escape hatch; loses Rust type precision      |
+| Exported Rust struct | JavaScript wrapper holds a Rust-side allocation      |
+| Imported JS object   | Rust holds a generated handle to a host object       |
+| `Option<T>`          | Often maps to a nullable/optional host value         |
+
+> ⚠️ **Memory-view hazard:** Wasm memory can grow. JavaScript typed-array views into old
+> memory may become stale after growth, so reacquire views according to the generated
+> API instead of retaining them indefinitely.
+
+### 12. Error Design Across JavaScript
+
+Use `Result<T, JsValue>` when a Rust export can fail for a JavaScript caller:
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen]
+pub fn checked_frame_size(length: u32) -> Result<u32, JsValue> {
+    const MAX_FRAME: u32 = 64 * 1024;
+    if length > MAX_FRAME {
+        return Err(JsValue::from_str("frame exceeds limit"));
+    }
+    Ok(length)
+}
+```
+
+| Boundary choice     | Trade-off                                       |
+| ------------------- | ----------------------------------------------- |
+| `JsValue` error     | Natural JS interop, weak Rust-side structure    |
+| Numeric error code  | Compact ABI, requires an external error table   |
+| Serialized error    | Stable schema, conversion overhead              |
+| Exported error type | Rich API, more bindings and lifetime management |
+
+Do not expose Rust panics as normal validation. Convert expected failure into `Result`
+and install deliberate panic diagnostics only for unexpected bugs.
+
+### 13. Using Wasm as a Language Target
+
+For your own language, WebAssembly can be:
+
+| Role                      | Architecture                                    |
+| ------------------------- | ----------------------------------------------- |
+| Compilation target        | Source → typed IR → Wasm                        |
+| Sandboxable plugin format | Host supplies a small import capability set     |
+| Browser runtime           | Language VM compiled to Wasm, UI supplied by JS |
+| Portable bytecode         | Server/CLI embeds a Wasm engine                 |
+
+| Wasm language-target contract | Decision to define                                |
+| ----------------------------- | ------------------------------------------------- |
+| Imports                       | Module and function names                         |
+| Representation                | Value and memory layouts                          |
+| Allocation                    | Ownership across host/module calls                |
+| Strings/errors                | Encoding and failure representation               |
+| Memory growth                 | Whether growth is permitted and view invalidation |
+| Resource limits               | Fuel, wall time, stack, and memory                |
+| Capabilities                  | Deterministic/nondeterministic host functions     |
+
+This is the same design work as an FFI ABI and a network protocol: **representation,
+ownership, versioning, and trust** must all be explicit.
+
+### 14. The DOM Is a Host-Owned Object Graph
+
+As the
+[`wasm-bindgen` DOM examples](https://wasm-bindgen.github.io/wasm-bindgen/examples/dom.html)
+demonstrate, the browser's Document Object Model is **not stored inside Wasm linear
+memory**. `web-sys` exposes typed Rust handles to JavaScript-managed objects.
+
+```text
+browser Window
+    └── Document
+        └── Node tree
+            ├── Element
+            │   └── HtmlElement / HtmlCanvasElement / ...
+            └── Text
+
+Rust/Wasm holds generated JS handles ──→ objects above
+Rust values, stack, heap, strings ─────→ Wasm linear memory
+```
+
+| Type          | Role                                              |
+| ------------- | ------------------------------------------------- |
+| `Window`      | browser global, timers, location, event target    |
+| `Document`    | element creation and document-wide lookup         |
+| `Node`        | common tree operations such as `append_child`     |
+| `Element`     | attributes, selectors, classes, element content   |
+| `HtmlElement` | HTML-specific style, focus, and common properties |
+| `EventTarget` | add/remove event listener boundary                |
+| `JsValue`     | dynamic JavaScript value and error carrier        |
+
+`web-sys` APIs are feature-gated. Enable only the browser types and methods your crate
+uses; a compile error about a missing method may mean a missing Cargo feature rather
+than a missing browser API.
+
+### 15. Create and Attach DOM Nodes
+
+```rust
+use wasm_bindgen::prelude::*;
+
+#[wasm_bindgen(start)]
+pub fn start() -> Result<(), JsValue> {
+    let window = web_sys::window()
+        .ok_or_else(|| JsValue::from_str("window is unavailable"))?;
+    let document = window
+        .document()
+        .ok_or_else(|| JsValue::from_str("document is unavailable"))?;
+    let body = document
+        .body()
+        .ok_or_else(|| JsValue::from_str("document has no body"))?;
+
+    let status = document.create_element("p")?;
+    status.set_id("compiler-status");
+    status.set_text_content(Some("Compiler ready 🦀"));
+    body.append_child(&status)?;
+    Ok(())
+}
+```
+
+Prefer `set_text_content` when displaying untrusted text. `set_inner_html` parses HTML,
+so using it with untrusted source, diagnostics, names, or network data can create an
+injection vulnerability.
+
+| Lookup/creation API | Result shape                 | Design response                 |
+| ------------------- | ---------------------------- | ------------------------------- |
+| `web_sys::window()` | `Option<Window>`             | host environment may differ     |
+| `window.document()` | `Option<Document>`           | worker has no `Document`        |
+| `get_element_by_id` | `Option<Element>`            | missing markup is expected      |
+| `query_selector`    | `Result<Option<Element>, _>` | selector may be invalid/missing |
+| `create_element`    | `Result<Element, JsValue>`   | browser operation may throw     |
+| `append_child`      | `Result<Node, JsValue>`      | tree mutation may fail          |
+
+### 16. Cast Only at a Checked Boundary
+
+A CSS selector returns a general `Element`. Use `JsCast::dyn_into` when an operation
+requires a more specific browser type.
+
+```rust
+use wasm_bindgen::{JsCast, JsValue};
+use web_sys::HtmlInputElement;
+
+fn source_text(document: &web_sys::Document) -> Result<String, JsValue> {
+    let element = document
+        .get_element_by_id("source")
+        .ok_or_else(|| JsValue::from_str("missing #source"))?;
+    let input = element
+        .dyn_into::<HtmlInputElement>()
+        .map_err(|_| JsValue::from_str("#source is not an input element"))?;
+    Ok(input.value())
+}
+```
+
+| Cast style              | Use                                             |
+| ----------------------- | ----------------------------------------------- |
+| `dyn_ref::<T>()`        | checked borrowed view; keep original handle     |
+| `dyn_into::<T>()`       | checked consuming conversion                    |
+| `unchecked_ref::<T>()`  | glue boundary only when type is already proven  |
+| `unchecked_into::<T>()` | rare; caller assumes the complete type contract |
+
+Unchecked casting is analogous to `unsafe`: keep it local and document what establishes
+the runtime JavaScript type.
+
+### 17. DOM Event Listeners Need Lifetime Design
+
+Browser callbacks are JavaScript functions, while Rust closures live in Wasm-managed
+state. Dropping a `Closure` while JavaScript still holds its callback is invalid.
+Calling `forget()` keeps it alive forever, which is acceptable only for a truly
+page-lifetime listener.
+
+```rust
+use wasm_bindgen::{closure::Closure, JsCast, JsValue};
+use web_sys::{EventTarget, MouseEvent};
+
+struct ClickListener {
+    target: EventTarget,
+    callback: Closure<dyn FnMut(MouseEvent)>,
+}
+
+impl ClickListener {
+    fn install(
+        target: EventTarget,
+        mut on_click: impl FnMut(MouseEvent) + 'static,
+    ) -> Result<Self, JsValue> {
+        let callback = Closure::new(move |event: MouseEvent| on_click(event));
+        target.add_event_listener_with_callback(
+            "click",
+            callback.as_ref().unchecked_ref(),
+        )?;
+        Ok(Self { target, callback })
+    }
+}
+
+impl Drop for ClickListener {
+    fn drop(&mut self) {
+        let _ = self.target.remove_event_listener_with_callback(
+            "click",
+            self.callback.as_ref().unchecked_ref(),
+        );
+    }
+}
+```
+
+The application must retain the `ClickListener` for as long as the UI is active. This
+RAII shape pairs registration with removal and works well inside a Rust application
+struct exported through `wasm-bindgen`.
+
+| Callback strategy        | Lifetime/result                                 |
+| ------------------------ | ----------------------------------------------- |
+| local `Closure`, dropped | listener becomes invalid                        |
+| `closure.forget()`       | page-lifetime leak by design                    |
+| store in app state       | listener lives with component/application       |
+| RAII listener wrapper    | automatically unregisters when owner is dropped |
+
+### 18. UI State Crosses Two Memory Managers
+
+```rust
+use std::{cell::Cell, rc::Rc};
+
+let clicks = Rc::new(Cell::new(0_u32));
+let callback_state = Rc::clone(&clicks);
+
+let listener = ClickListener::install(button.into(), move |_event| {
+    callback_state.set(callback_state.get().saturating_add(1));
+})?;
+```
+
+| Ownership edge                  | What keeps it alive                   |
+| ------------------------------- | ------------------------------------- |
+| Rust state captured by closure  | Wasm closure environment              |
+| `Closure` callback wrapper      | Rust owner or deliberate `forget()`   |
+| DOM node                        | browser DOM tree and JS references    |
+| Rust handle to DOM node         | generated JS reference table/glue     |
+| typed-array view of Wasm memory | JS value, but backing memory may grow |
+
+`Rc<Cell<T>>` is appropriate for small single-threaded browser state. Use
+`Rc<RefCell<T>>` for more complex mutable state, but keep borrows short and never call
+unknown JavaScript while a mutable `RefCell` borrow is held: JavaScript can re-enter
+Rust through another callback.
+
+### 19. DOM Work Is Also Performance Work
+
+| Expensive pattern                         | Better direction                                |
+| ----------------------------------------- | ----------------------------------------------- |
+| alternate layout reads and writes         | group reads, compute, then group writes         |
+| rebuild a large subtree for one text edit | mutate the smallest stable node                 |
+| copy huge buffers for every event         | batch, reuse, or expose bounded views carefully |
+| compile on every keystroke immediately    | debounce/cancel stale work                      |
+| block the main thread with language work  | use a Web Worker or incremental execution       |
+
+For a browser-hosted language:
+
+```text
+DOM input event
+    ↓ capture bounded source text
+debounced compile request
+    ↓ lexer → parser → type checker → Wasm/backend
+structured diagnostics
+    ↓ escape as text, map byte spans to source view
+small batched DOM update
+```
+
+Keep the compiler core independent of `web-sys`. A browser adapter should translate DOM
+events into plain Rust inputs and translate structured compiler results back into UI
+updates. That preserves CLI, test, server, and browser front ends over one language
+implementation.
+
+> ➡️ **Next:** practical reversing reads these boundaries in the opposite direction:
+> begin with externally visible behavior, then infer states, layouts, calls, and data
+> ownership.
+
+---
+
+## 🔍 Practical x64 Windows Reverse Engineering
+
+This section draws from
+[0xZ0F's Reverse Engineering Course](https://github.com/0xZ0F/Z0FCourse_ReverseEngineering),
+which progresses from binary fundamentals through x64 assembly, tools, basic reversing,
+DLLs, and Windows internals. The course is Windows-focused, but the analysis habits
+transfer to other architectures and operating systems.
+
+Use these techniques only on binaries you own, intentionally vulnerable exercises,
+open-source programs, or targets you are explicitly authorized to analyze. Run unknown
+samples only in an isolated environment designed for that purpose.
+
+> 🔍 **Reversing habit:** separate **observation**, **hypothesis**, and **validation**.
+> Decompiler output is evidence, not ground truth.
+
+### 1. Reverse Engineering Is Model Building
+
+The goal is not to translate every instruction into English. The goal is to recover
+enough structure to explain relevant behavior.
+
+```text
+raw bytes
+    ↓ executable-format metadata
+instructions + data
+    ↓ control-flow and calling-convention analysis
+functions + variables + structures
+    ↓ behavior and state analysis
+high-level model
+```
+
+A productive model answers:
+
+| Model dimension | Question                                         |
+| --------------- | ------------------------------------------------ |
+| Inputs          | What enters the program?                         |
+| Transformation  | Which functions change it?                       |
+| State           | What memory, files, or globals are read/written? |
+| Decisions       | Which branches control behavior?                 |
+| Dependencies    | Which OS or library services are called?         |
+| Effects         | What output or side effect is produced?          |
+
+Reverse engineering is iterative. Names and types begin as guesses and become more
+precise as evidence accumulates.
+
+### 2. Start with Binary Triage
+
+Before debugging, collect facts without executing the target:
+
+| Question                        | Evidence to inspect                                 |
+| ------------------------------- | --------------------------------------------------- |
+| What format is it?              | PE headers, magic bytes, architecture               |
+| 32-bit or 64-bit?               | Machine type and optional-header format             |
+| Native or managed?              | Imports, metadata directories, runtime dependencies |
+| What does it import?            | DLL names and imported symbols                      |
+| What does it export?            | Export table and symbol names                       |
+| Are symbols/debug data present? | PDB path, symbol table, debug directory             |
+| Does it contain useful text?    | UTF-8/ASCII and UTF-16 strings                      |
+| Is it signed or versioned?      | Signature and version resources                     |
+| Does layout look ordinary?      | Sections, permissions, sizes, entropy               |
+
+Record a cryptographic hash before analysis so notes always refer to one exact file.
+
+#### PE Mental Model
+
+```text
+DOS header / stub
+    ↓ points to
+PE signature + COFF header
+    ↓
+optional header
+    ├── entry point
+    ├── image base
+    ├── alignment
+    └── data directories
+section table
+    ├── code
+    ├── read-only data
+    ├── writable data
+    ├── imports/exports
+    └── resources/relocations
+```
+
+The term **optional header** is historical; executable images rely on it.
+
+| PE coordinate/size  | Meaning                                      |
+| ------------------- | -------------------------------------------- |
+| **Raw/file offset** | Location in the file on disk                 |
+| **RVA**             | Offset from the loaded image base            |
+| **VA**              | Runtime address, normally `image_base + RVA` |
+| **Raw size**        | Bytes stored in the file for a section       |
+| **Virtual size**    | Bytes occupied by the section after loading  |
+
+Do not paste a runtime address into a file-offset field without converting it through
+the appropriate section mapping.
+
+### 3. x64 Register Roles
+
+Register names partly encode width:
+
+| 64-bit | Low 32 bits | Low 16 bits | Low 8 bits |
+| ------ | ----------- | ----------- | ---------- |
+| `RAX`  | `EAX`       | `AX`        | `AL`       |
+| `RBX`  | `EBX`       | `BX`        | `BL`       |
+| `RCX`  | `ECX`       | `CX`        | `CL`       |
+| `RDX`  | `EDX`       | `DX`        | `DL`       |
+
+| Register(s)              | Common Windows x64 role                  |
+| ------------------------ | ---------------------------------------- |
+| `RIP`                    | Address of the next instruction          |
+| `RSP`                    | Stack pointer                            |
+| `RBP`                    | Optional frame/base pointer              |
+| `RAX`                    | Integer return register and accumulator  |
+| `RCX`, `RDX`, `R8`, `R9` | First integer/pointer argument positions |
+| `XMM0`–`XMM3`            | First floating/vector argument positions |
+| `XMM0`                   | Floating-point return value              |
+
+Writing a 32-bit general register such as `EAX` clears the upper 32 bits of the
+corresponding 64-bit register. Writing only `AX` or `AL` does not.
+
+#### Volatile and Nonvolatile Registers on Windows x64
+
+| Category    | Registers                                      | Meaning at a call                       |
+| ----------- | ---------------------------------------------- | --------------------------------------- |
+| Volatile    | `RAX`, `RCX`, `RDX`, `R8`–`R11`                | Caller must assume they are overwritten |
+| Nonvolatile | `RBX`, `RBP`, `RDI`, `RSI`, `RSP`, `R12`–`R15` | Callee must restore them if used        |
+
+This classification is evidence. A function that stores a value in `RBX` and restores
+`RBX` before returning may be keeping that value alive across several calls.
+
+### 4. Flags, Comparisons, and Branches
+
+`cmp left, right` behaves like a subtraction used only to update flags:
+
+```text
+left - right → flags
+```
+
+| Flag   | Interpretation           |
+| ------ | ------------------------ |
+| **ZF** | Result was zero          |
+| **CF** | Unsigned carry or borrow |
+| **SF** | Result sign bit          |
+| **OF** | Signed overflow          |
+| **PF** | Parity of the low byte   |
+
+Signed and unsigned conditional jumps interpret flags differently:
+
+| Meaning          | Signed jump   | Unsigned jump |
+| ---------------- | ------------- | ------------- |
+| Equal            | `je` / `jz`   | `je` / `jz`   |
+| Not equal        | `jne` / `jnz` | `jne` / `jnz` |
+| Greater than     | `jg`          | `ja`          |
+| Greater or equal | `jge`         | `jae`         |
+| Less than        | `jl`          | `jb`          |
+| Less or equal    | `jle`         | `jbe`         |
+
+Choosing `jg` versus `ja` is a clue about whether the compiler treated a value as signed
+or unsigned.
+
+### 5. Read Instructions by Effect
+
+Group instruction variants by the effect that matters to the current question:
+
+| Family                     | Mental effect                      |
+| -------------------------- | ---------------------------------- |
+| `mov`, `movzx`, `movsx`    | Copy or extend a value             |
+| `lea`                      | Compute an address-like expression |
+| `add`, `sub`, `inc`, `dec` | Arithmetic/state update            |
+| `and`, `or`, `xor`, `test` | Bit manipulation or flag test      |
+| `cmp` + conditional jump   | Decision                           |
+| `push`, `pop`              | Stack update                       |
+| `call`, `ret`              | Function control flow              |
+| `shl`, `shr`, `sar`        | Shift or scale                     |
+| `imul`, `idiv`             | Signed multiply/divide             |
+
+Do not assume `lea` means "load a pointer." Compilers also use it for arithmetic such
+as:
+
+```asm
+lea eax, [rcx + rcx*4] ; eax = rcx * 5
+```
+
+Likewise, `xor eax, eax` is commonly a compact way to set `EAX` to zero.
+
+### 6. Windows x64 Calling Convention
+
+| Calling-convention concern | Windows x64 rule                                     |
+| -------------------------- | ---------------------------------------------------- |
+| Integer args 1–4           | `RCX`, `RDX`, `R8`, `R9`                             |
+| Float/vector args 1–4      | Corresponding `XMM0`–`XMM3` positions                |
+| Later arguments            | Passed on the stack                                  |
+| Shadow/home space          | Caller reserves 32 bytes                             |
+| Stack alignment            | Follows the ABI's 16-byte call-boundary rule         |
+| Integer return             | Commonly `RAX`                                       |
+| Floating return            | Commonly `XMM0`                                      |
+| C++ `this`                 | Usually occupies the first integer argument position |
+
+Conceptual call:
+
+```c
+result = transform(context, 10, buffer, length, flags);
+```
+
+Possible setup:
+
+```asm
+mov  rcx, context       ; argument 1
+mov  edx, 10            ; argument 2
+mov  r8, buffer         ; argument 3
+mov  r9d, length        ; argument 4
+mov  [rsp+20h], flags   ; argument 5, after shadow space
+call transform
+; integer-like result now in RAX
+```
+
+Registers may be prepared in any order. Follow definitions reaching the `call`, not the
+visual order of setup instructions.
+
+#### Inferring a Prototype
+
+At each call site, record:
+
+1. which argument registers are assigned;
+2. which stack slots are written;
+3. whether XMM registers are used;
+4. what values flow into each position;
+5. how the return register is used afterward;
+6. whether the same function is called elsewhere with different evidence.
+
+Then propose the narrowest type that explains all observed calls.
+
+### 7. Function Boundaries, Prologues, and Epilogues
+
+A traditional function may:
+
+```text
+save nonvolatile registers
+allocate stack space
+initialize local state
+perform work and calls
+restore stack/registers
+return
+```
+
+But optimized functions may omit a frame pointer, reuse stack slots, inline calls, split
+into hot/cold regions, or end with a tail call. Do not rely on one prologue byte
+pattern.
+
+| Boundary evidence       | Why it helps                                       |
+| ----------------------- | -------------------------------------------------- |
+| Direct call target      | Names a likely entry point                         |
+| Unwind metadata         | Describes a recoverable function range             |
+| Exported symbol         | Exposes a callable entry                           |
+| Cross-references        | Show other code treating the address as a function |
+| Stack setup/restoration | Suggests a coherent frame                          |
+| Return/tail-call region | Closes a connected control-flow graph              |
+
+### 8. Static and Dynamic Analysis Work Together
+
+| Static analysis                             | Dynamic analysis                           |
+| ------------------------------------------- | ------------------------------------------ |
+| Does not execute the target                 | Observes one concrete execution            |
+| Shows broad possible control flow           | Shows the path actually taken              |
+| Good for strings, imports, cross-references | Good for runtime values and indirect calls |
+| Can inspect unreachable or rare paths       | Can reveal decoded or generated data       |
+| May struggle with packing/indirection       | Can be timing- or environment-dependent    |
+
+A productive cycle:
+
+```text
+static hypothesis
+    ↓ choose breakpoint and input
+dynamic observation
+    ↓ rename/retype/comment
+better static model
+    ↓
+repeat
+```
+
+### 9. Debugger Controls and Their Meaning
+
+| Debugger control               | Effect                                           |
+| ------------------------------ | ------------------------------------------------ |
+| **Breakpoint**                 | Stop before a chosen instruction                 |
+| **Step into**                  | Execute and follow a call target                 |
+| **Step over**                  | Let a call finish and stop after it              |
+| **Step out**                   | Run until the current function returns           |
+| **Run to cursor**              | Continue to a selected location                  |
+| **Data breakpoint/watchpoint** | Stop when a memory range is accessed or modified |
+| **Conditional breakpoint**     | Stop only when a value/count matches a condition |
+
+Before stepping, write down what you expect to change. After stepping, compare the
+registers, flags, stack, and relevant memory to that prediction.
+
+#### High-Signal Breakpoint Locations
+
+| Location                   | Question it can answer                     |
+| -------------------------- | ------------------------------------------ |
+| Known imported function    | Which external service is being used?      |
+| Comparison before a branch | Which value decides the path?              |
+| State-variable write       | Who changes the state and when?            |
+| Function entry             | Which arguments arrive?                    |
+| Function return            | How does the caller use the result?        |
+| Parser/trust boundary      | How do raw bytes become structured values? |
+
+Breakpoints are most useful when tied to a question.
+
+### 10. Recovering Function Calls
+
+Suppose disassembly prepares a format string and values before calling a printing
+function. Work backward from the call:
+
+```text
+call known_print
+    ↑ argument 4 came from R9
+    ↑ argument 3 came from R8
+    ↑ argument 2 came from RDX
+    ↑ argument 1 came from RCX
+```
+
+Then inspect:
+
+| Call-site evidence     | What it reveals                                       |
+| ---------------------- | ----------------------------------------------------- |
+| String at a pointer    | Format, path, command, or semantic landmark           |
+| Register write width   | Likely integer width and zero/sign extension          |
+| Stack arguments        | Parameters beyond the first four                      |
+| XMM arguments          | Floating-point/vector parameters                      |
+| Variadic behavior      | Extra arguments interpreted through a format/contract |
+| Shadow/alignment setup | ABI mechanics rather than source variables            |
+
+This often reconstructs a recognizable call without understanding the whole function.
+
+### 11. Recovering Loops
+
+Source keywords disappear, so identify the control-flow shape:
+
+```text
+initialize
+    ↓
+loop header / condition ←──────────┐
+    ↓ true                         │
+body                              │
+    ↓                             │
+update ───────────────────────────┘
+    ↓ false
+exit
+```
+
+| Loop clue                   | Likely meaning             |
+| --------------------------- | -------------------------- |
+| Backward branch             | Control-flow cycle         |
+| Preheader initialization    | Initial counter or pointer |
+| Increment/decrement         | Induction-variable update  |
+| Comparison with a bound     | Loop termination condition |
+| Fixed-stride pointer move   | Array/record traversal     |
+| Repeated call/memory access | Loop body operation        |
+
+`for`, `while`, and `do-while` loops may compile to nearly identical control-flow
+graphs. Recover behavior first; choose high-level syntax later.
+
+Example:
+
+```asm
+xor  ebx, ebx       ; i = 0
+loop_start:
+mov  edx, ebx       ; use i
+call process_item
+inc  ebx            ; i += 1
+cmp  ebx, 10
+jl   loop_start     ; signed i < 10
+```
+
+Possible reconstruction:
+
+```c
+for (int i = 0; i < 10; i++) {
+    process_item(i);
+}
+```
+
+### 12. Recovering Structures from Offset Patterns
+
+Repeated accesses through one base register often describe fields:
+
+```asm
+mov eax, [rcx+08h]
+add eax, [rcx+0Ch]
+mov [rcx+10h], eax
+```
+
+Working hypothesis:
+
+```c
+struct Unknown {
+    unsigned char unknown_00[8];
+    int field_08;
+    int field_0c;
+    int field_10;
+};
+```
+
+| Structure evidence              | Inference it supports           |
+| ------------------------------- | ------------------------------- |
+| Access width                    | Field size                      |
+| Signed/unsigned branch          | Possible numeric interpretation |
+| Pointer dereference             | Pointer-like field              |
+| Constructor-like initialization | Initial layout and defaults     |
+| Repeated offsets                | Stable field positions          |
+| Type-specific imported API      | Likely semantic type            |
+| Array stride                    | Element size                    |
+
+Rename `field_08` only when evidence supports a semantic name. Until then, a stable
+offset-based name is more honest than a confident guess.
+
+### 13. Arrays and Indexing
+
+An address expression such as:
+
+```asm
+mov eax, [rcx + rdx*4]
+```
+
+suggests:
+
+```text
+base = RCX
+index = RDX
+element size = 4 bytes
+```
+
+Possible source:
+
+```c
+value = array[index];
+```
+
+Scale factors 1, 2, 4, and 8 directly fit x86 addressing modes. Other structure sizes
+may use several instructions or pointer increments.
+
+### 14. DLLs, Imports, and Exports
+
+A Windows DLL is a PE image intended to provide code or data to other modules.
+
+| DLL concept                    | Meaning                                              |
+| ------------------------------ | ---------------------------------------------------- |
+| **Export table**               | Names/ordinals made available to callers             |
+| **Import table**               | External symbols required from other DLLs            |
+| **Import address table (IAT)** | Runtime slots containing resolved function addresses |
+| **Module base**                | Address where the image is mapped                    |
+| **RVA**                        | Offset relative to the module base                   |
+| **Loader lock**                | Synchronization context affecting DLL initialization |
+
+For a normal imported call, code may call indirectly through an IAT slot:
+
+```asm
+call qword ptr [imported_function_slot]
+```
+
+The instruction references a slot in the current module; the loader places the actual
+library function address into that slot.
+
+When reconstructing an undocumented exported function:
+
+1. start from its export entry;
+2. inspect all known call sites;
+3. infer argument positions from the ABI;
+4. observe return-value use;
+5. identify referenced structures and globals;
+6. build a small prototype only after the evidence agrees.
+
+### 15. Tool-Agnostic Analysis Views
+
+Different tools use different names, but the useful views are consistent:
+
+| View               | Question it answers                                    |
+| ------------------ | ------------------------------------------------------ |
+| Hex/bytes          | What is physically encoded here?                       |
+| Disassembly        | Which instructions will execute?                       |
+| Decompiler         | What high-level model does the tool infer?             |
+| Control-flow graph | Where can execution branch or loop?                    |
+| Cross-references   | Who uses this function, string, or address?            |
+| Imports/exports    | Which module boundaries are visible?                   |
+| Memory map         | Which runtime regions exist and with what permissions? |
+| Registers/flags    | What is the current CPU state?                         |
+| Stack              | Who called whom, and what values are nearby?           |
+| Breakpoints/trace  | What happened during this run?                         |
+
+Treat a decompiler as an editable hypothesis generator. Correct its types, function
+boundaries, names, and signatures as evidence improves.
+
+### 16. A Repeatable Authorized Lab
+
+Use a tiny program you compile yourself:
+
+```c
+#include <stdio.h>
+
+static int sum_positive(const int *items, int count) {
+    int total = 0;
+    for (int i = 0; i < count; i++) {
+        if (items[i] > 0) {
+            total += items[i];
+        }
+    }
+    return total;
+}
+
+int main(void) {
+    int values[] = {3, -2, 7, 0};
+    printf("%d\n", sum_positive(values, 4));
+    return 0;
+}
+```
+
+Practice:
+
+1. compile debug and optimized builds;
+2. identify the executable format and architecture;
+3. locate the output string or imported print function;
+4. find the call to `sum_positive`;
+5. map the arguments using the platform ABI;
+6. identify the loop's backward edge;
+7. infer the 4-byte element stride;
+8. identify the signed `> 0` test;
+9. compare debug and optimized control flow;
+10. annotate the binary until another reader can follow it.
+
+### 17. Reverse-Engineering Notebook Template
+
+```text
+Target hash:
+Architecture / ABI:
+Image base:
+Tool versions:
+
+Question:
+Observation:
+Hypothesis:
+Evidence for:
+Evidence against:
+Confidence:
+Next experiment:
+
+Address/RVA:
+Proposed name:
+Proposed prototype/type:
+Callers:
+Callees:
+Important offsets:
+Side effects:
+```
+
+Separating observation from inference prevents early guesses from becoming invisible
+assumptions.
+
+### 18. Common Beginner Traps
+
+| Trap                                | Better habit                                           |
+| ----------------------------------- | ------------------------------------------------------ |
+| Read assembly top-to-bottom         | Follow control flow and data dependencies              |
+| Treat stack adjustments as locals   | Separate ABI mechanics from source values              |
+| Forget the calling convention       | Annotate argument, return, and preserved registers     |
+| Treat every hex value as a pointer  | Classify it from use and valid address ranges          |
+| Mix RVA/file offset/VA              | Write down the coordinate system                       |
+| Trust decompiler names/types        | Verify against instructions and call sites             |
+| Rename unknown fields early         | Keep stable offset-based names until evidence improves |
+| Ignore width/signedness             | Track each access width and branch interpretation      |
+| Step into every library call        | Stay centered on the analysis question                 |
+| Inspect one call site               | Compare multiple callers and inputs                    |
+| Expect source-shaped optimized code | Recover behavior before syntax                         |
+| Save screenshots without context    | Record addresses, inputs, hashes, and conclusions      |
+
+---
+
+## 💻 Operating Systems from the Bottom Up
+
+This section connects the compiler's output to the operating system that actually runs
+it. It is based on [Computer Science from the Bottom Up](https://www.bottomupcs.com/),
+especially its chapters on the operating system, processes, virtual memory, ELF, and
+dynamic linking.
+
+> 🖥️ **OS mental model:** the kernel owns privileged resources and exposes controlled
+> operations to processes through system calls.
+
+### 1. The Kernel as a Privileged Resource Manager
+
+An application cannot safely control the processor, physical memory, disks, and network
+devices directly. The **kernel** owns those shared resources and exposes controlled
+operations to user programs.
+
+```text
+user program
+    ↓ library/API call
+system-call boundary
+    ↓ privilege transition
+kernel validates request
+    ↓
+device, filesystem, scheduler, or memory manager
+```
+
+The boundary changes both **privilege** and **trust**:
+
+| Phase      | Responsibility                                        |
+| ---------- | ----------------------------------------------------- |
+| Request    | User code supplies an operation and arguments         |
+| Transition | The processor enters privileged mode                  |
+| Validation | Kernel checks pointers, lengths, permissions, handles |
+| Execution  | Kernel performs or rejects the operation              |
+| Return     | Result/error is copied back to user mode              |
+
+The exact instruction used to enter the kernel depends on the architecture. Older
+systems often used a general software trap; modern processors usually provide a faster
+system-call instruction. User code normally reaches it through a standard library
+wrapper rather than hand-written assembly.
+
+#### System Calls Versus Library Calls
+
+| Kind             | Where it runs       | What it does                                |
+| ---------------- | ------------------- | ------------------------------------------- |
+| **Library call** | Current process     | Ordinary computation, formatting, buffering |
+| **System call**  | Kernel entry        | Requests a privileged operation             |
+| Library wrapper  | User + kernel paths | May make zero, one, or several system calls |
+
+For example, buffered output may append bytes to a user-space buffer many times and
+perform a `write` system call only when the buffer is full or flushed.
+
+```text
+printf / println / buffered writer
+       ↓ formatting and buffering in user space
+write-like system call
+       ↓ kernel copies or maps data toward a file/device
+```
+
+This distinction explains why source-level operations do not map one-to-one to kernel
+operations.
+
+### 2. What a Process Contains
+
+A **program** is an executable representation stored somewhere. A **process** is a
+running instance plus all state required to stop and resume it.
+
+| Process component     | What it represents                                    |
+| --------------------- | ----------------------------------------------------- |
+| Process ID            | Kernel-visible identity                               |
+| Virtual address space | Code, data, heap, stack, mappings                     |
+| Register state        | Instruction pointer, stack pointer, general registers |
+| File-descriptor table | Open files, pipes, sockets, devices                   |
+| Credentials           | User/group identity and permissions                   |
+| Signal state          | Masks, pending signals, handlers                      |
+| Scheduling state      | Running, runnable, sleeping, stopped                  |
+| Accounting data       | CPU time, memory use, I/O statistics                  |
+
+The kernel does not need to leave every process's register values in the CPU. During a
+context switch it saves the outgoing process's state to memory and restores the incoming
+process's saved state.
+
+#### Common Process States
+
+```text
+             event / wakeup
+        ┌────────────────────┐
+        ↓                    │
+    runnable ──scheduled──→ running
+        ↑                    │
+        │                    ├── waits for I/O ──→ sleeping
+        │                    ├── preempted ──────→ runnable
+        │                    └── exits ──────────→ terminated
+        └──────── I/O completes ────────────────┘
+```
+
+Names vary by operating system, but the distinction is important:
+
+| Process state         | Meaning                                                |
+| --------------------- | ------------------------------------------------------ |
+| **Running**           | Currently executing on a CPU                           |
+| **Runnable**          | Able to execute but waiting for CPU time               |
+| **Sleeping/blocked**  | Waiting for an event, timer, lock, or I/O              |
+| **Stopped**           | Deliberately suspended                                 |
+| **Terminated/zombie** | Finished; exit information may await parent collection |
+
+### 3. File Descriptors: Small Handles to Kernel Objects
+
+On Unix-like systems, a file descriptor is a small process-local integer that indexes a
+kernel-maintained table.
+
+| Conventional descriptor | Meaning         |
+| ----------------------- | --------------- |
+| `0`                     | Standard input  |
+| `1`                     | Standard output |
+| `2`                     | Standard error  |
+
+The descriptor is not the file itself. It is a handle to an open kernel object with
+associated access mode and current state.
+
+```text
+process-local fd 3
+        ↓
+kernel open-file description
+        ↓
+filesystem object, pipe, socket, terminal, or device
+```
+
+This uniform interface is why many different resources support operations resembling
+`read`, `write`, and `close`.
+
+| Descriptor consequence | Practical meaning                                       |
+| ---------------------- | ------------------------------------------------------- |
+| Process-local scope    | Inheritance/transfer requires an explicit OS mechanism  |
+| Reference semantics    | `close` releases one reference, not always the object   |
+| Aliasing               | Multiple descriptors can share one open-file state      |
+| Number reuse           | A closed descriptor value may later name something else |
+| No global identity     | The integer is meaningful only with its process context |
+
+### 4. `fork`, `exec`, and Process Creation
+
+Unix process creation is often explained as two separate operations:
+
+1. **`fork`** creates a child based on the calling process.
+2. **`exec`** replaces the current process image with a new program.
+
+Conceptually:
+
+```text
+shell process
+    ↓ fork
+shell parent + child copy
+                   ↓ redirect descriptors / set environment
+                   ↓ exec
+              requested program
+```
+
+The child does not normally require an eager physical copy of every memory page.
+Operating systems use **copy-on-write (COW)**:
+
+| Event                    | COW behavior                                              |
+| ------------------------ | --------------------------------------------------------- |
+| Immediately after `fork` | Parent and child map the same read-only frames            |
+| Read                     | Both processes continue sharing the frame                 |
+| First write              | A protection fault transfers control to the kernel        |
+| Fault handling           | Kernel copies the page and grants private writable access |
+
+This makes `fork` much cheaper when the child quickly calls `exec`.
+
+`exec` does not create a second process ID. It replaces the current address space,
+register setup, and executable image while preserving selected process state such as the
+process identity and descriptors that are not marked close-on-exec.
+
+### 5. Context Switching and Scheduling
+
+A **context switch** changes which thread or process owns a CPU:
+
+1. enter the kernel because of a timer, interrupt, system call, or blocking event;
+2. save the current execution context;
+3. update the current process's state;
+4. choose a runnable process;
+5. restore its saved context;
+6. return to user mode at its saved instruction pointer.
+
+Context switches are necessary but not free:
+
+| Cost source           | Why it costs time                               |
+| --------------------- | ----------------------------------------------- |
+| Register save/restore | Execution context moves between CPU and memory  |
+| Scheduler work        | Kernel chooses and accounts for the next task   |
+| Cache disruption      | New code/data displaces useful cache lines      |
+| TLB effects           | Address translations may need refilling         |
+| Branch prediction     | Predictor history may no longer match           |
+| Core migration        | Warm state may not exist on the destination CPU |
+
+**Preemptive scheduling** lets the kernel interrupt a running task. **Cooperative
+scheduling** relies on tasks yielding voluntarily. General-purpose operating systems are
+normally preemptive; async runtimes often use cooperative tasks inside a process.
+
+### 6. Signals and Asynchronous Events
+
+A signal is a small asynchronous notification delivered to a process or thread:
+
+| Signal category    | Example meaning                         |
+| ------------------ | --------------------------------------- |
+| Control request    | Terminate, stop, or continue            |
+| Memory fault       | Invalid address or protection violation |
+| Arithmetic fault   | Invalid numeric operation               |
+| Child notification | A child stopped, continued, or exited   |
+| Timer              | Alarm or scheduled notification         |
+| Application event  | User-defined signal                     |
+
+Signal handlers run in an unusual context. Ordinary application invariants may be
+temporarily broken, so only operations documented as safe in a signal handler should be
+performed there.
+
+| Runtime interaction    | Signal-related use                          |
+| ---------------------- | ------------------------------------------- |
+| Stack overflow         | Detect guard-page faults                    |
+| Memory management      | Handle deliberately fault-driven techniques |
+| Profiling              | Trigger periodic sampling                   |
+| Subprocess supervision | Observe child state changes                 |
+| Graceful shutdown      | Request orderly termination                 |
+| Debugging              | Implement traps and breakpoints             |
+
+Do not use a signal handler as if it were a normal callback.
+
+### 7. Virtual Memory Is Address Translation
+
+Virtual memory is often described as disk pretending to be RAM. That describes **swap**,
+which is only one possible consequence. The central idea is that programs use **virtual
+addresses**, and the operating system plus hardware translate them to physical memory.
+
+```text
+virtual address used by instruction
+        ↓ split into page number + page offset
+page table translates virtual page
+        ↓
+physical frame + unchanged offset
+        ↓
+physical memory location
+```
+
+| Virtual-memory term | Meaning                                                   |
+| ------------------- | --------------------------------------------------------- |
+| **Address space**   | Addresses a process can potentially name                  |
+| **Virtual page**    | Fixed-size block in a virtual address space               |
+| **Physical frame**  | Fixed-size block in physical memory                       |
+| **Page table**      | Mapping and permissions from pages to frames              |
+| **Mapping**         | Association with memory, a file, or another kernel object |
+
+Two processes can use the same virtual address while mapping it to different physical
+frames. Conversely, two virtual pages can intentionally map the same physical frame for
+shared memory.
+
+### 8. Page Tables and Page Permissions
+
+If the page size is \(2^n\), the low \(n\) address bits are the offset inside a page and
+the remaining bits identify the virtual page.
+
+For a 4 KiB page:
+
+```text
+4 KiB = 4096 bytes = 2^12
+
+virtual address:
++---------------------------+------------+
+| virtual page number       | 12-bit     |
+|                           | page offset|
++---------------------------+------------+
+```
+
+Translation changes the page number but preserves the offset:
+
+```text
+virtual page 0x1234, offset 0x056
+        ↓ page-table lookup
+physical frame 0x09ab, offset 0x056
+```
+
+A page-table entry commonly includes:
+
+| PTE field category | What it controls                         |
+| ------------------ | ---------------------------------------- |
+| Presence           | Whether a valid mapping currently exists |
+| Permissions        | Read, write, and execute access          |
+| Privilege          | User-accessible or kernel-only           |
+| Accessed bit       | Whether the page has been referenced     |
+| Dirty bit          | Whether the page has been modified       |
+| Cache policy       | How accesses interact with CPU caches    |
+| Architecture bits  | Target-specific translation controls     |
+
+These permissions provide isolation and enable mitigations such as non-executable data
+pages.
+
+### 9. Multi-Level Page Tables
+
+A flat page table for every possible virtual page would waste large amounts of memory,
+especially for sparse address spaces. Multi-level page tables divide the virtual page
+number into indexes:
+
+```text
+virtual address
+    ↓
+level-1 index → level-2 index → ... → page-table entry
+                                           ↓
+                                      physical frame
+```
+
+Intermediate tables only need to exist for populated parts of the address space.
+
+This resembles a radix tree: each group of address bits selects the next table. Exact
+levels and bit divisions are architecture-specific.
+
+### 10. The TLB
+
+Walking page tables for every memory access would be slow. The processor therefore uses
+a **Translation Lookaside Buffer (TLB)**, a small cache of recent virtual-to-physical
+translations.
+
+```text
+virtual address
+    ↓
+TLB hit? ── yes ─→ physical address
+    │
+    no
+    ↓
+page-table walk → cache translation → retry access
+```
+
+A context switch may require translations to be invalidated, tagged by address-space
+identity, or otherwise managed so one process cannot use another process's mappings.
+
+Performance implications:
+
+- poor locality can increase both data-cache and TLB misses;
+- large pages cover more memory per TLB entry but reduce allocation flexibility;
+- changing mappings requires synchronization with CPUs that may cache the old
+  translation;
+- a compiler's object layout and traversal order can affect page and cache locality.
+
+### 11. Page Faults
+
+A **page fault** means an address translation or permission check could not complete
+normally. It is not automatically a bug.
+
+| Fault cause                       | Possible kernel response                  |
+| --------------------------------- | ----------------------------------------- |
+| Valid file-backed page not loaded | Read or map the page, then retry          |
+| Copy-on-write write               | Allocate/copy a private frame, then retry |
+| Stack growth within allowed range | Map another stack page                    |
+| Swapped-out page                  | Restore it from backing storage           |
+| Write to read-only mapping        | Deliver an access violation               |
+| Unmapped address                  | Deliver an access violation               |
+
+This distinction matters when debugging: the hardware mechanism is a page fault in all
+cases, but the operating system may resolve some transparently and report others to the
+process.
+
+### 12. `mmap`, Shared Memory, and the Page Cache
+
+A memory mapping connects virtual addresses to a backing object.
+
+- **Anonymous mapping:** zero-initialized memory not backed by a normal file.
+- **Private file mapping:** file content is visible, but writes become private through
+  copy-on-write.
+- **Shared file mapping:** writes may become visible through the shared mapping and
+  eventually reach the file.
+- **Shared anonymous mapping:** processes intentionally share frames.
+
+The **page cache** lets the kernel cache file contents in memory. Ordinary file I/O and
+memory-mapped I/O may ultimately interact with the same cached pages.
+
+> 🧠 **Page-cache mental model:** file I/O and mapped memory can meet in the kernel's
+> cached view of file contents.
+
+```text
+file on storage
+      ↕
+kernel page cache
+   ↙       ↘
+read/write  mmap views
+```
+
+This helps explain why:
+
+- a recently read file may be fast to read again;
+- writing does not always mean bytes reached durable storage immediately;
+- mapped file accesses can fault pages in lazily;
+- executable code and shared libraries can be backed by cached file pages.
+
+### 13. From `exec` to `main`
+
+`main` is usually not the first instruction executed.
+
+```text
+exec request
+    ↓
+kernel reads executable metadata
+    ↓
+map loadable segments and create initial stack
+    ↓
+load requested program interpreter / dynamic linker
+    ↓
+resolve required libraries and relocations
+    ↓
+transfer control to executable entry point (`_start`)
+    ↓
+language/runtime startup
+    ↓
+call user `main`
+    ↓
+run termination and destructor logic
+```
+
+The initial stack can contain arguments, environment entries, and an **auxiliary
+vector** with information supplied by the kernel. The runtime startup code uses this
+state to initialize the process before calling `main`.
+
+| Runtime startup responsibility | Purpose                                 |
+| ------------------------------ | --------------------------------------- |
+| Heap/GC initialization         | Prepare managed allocation              |
+| Built-in registration          | Install core types and native functions |
+| Thread-local state             | Establish per-thread runtime context    |
+| Arguments/environment          | Convert OS input into language values   |
+| Standard streams               | Connect language I/O to OS handles      |
+| Panic/exception handling       | Define top-level failure behavior       |
+| Module constructors            | Initialize global/module state          |
+| Language entry point           | Call user `main` or equivalent          |
+| Exit conversion                | Map the language result to an OS status |
+
+### 14. Bottom-Up Debugging Questions
+
+When a program behaves unexpectedly, walk downward through the abstractions:
+
+1. What source-level operation failed?
+2. Which library or runtime function implements it?
+3. Did it make a system call?
+4. What arguments crossed the kernel boundary?
+5. Which descriptor, mapping, or process state did the kernel use?
+6. Was the process running, runnable, or blocked?
+7. Did an address translation, permission check, or page fault occur?
+8. Which executable segment, symbol, or relocation produced the address?
+
+Then walk back upward and explain how the low-level event created the source-level
+symptom.
+
+---
+
+## 🔗 Executable Files, Linkers, ABIs & FFI
 
 Compiling instructions is only part of producing a usable program. The result must also
 describe how code and data are arranged, which external names it needs, where it may be
 loaded, and how functions exchange values.
+
+> 🔗 **Toolchain handoff:** the compiler emits code and metadata, the linker resolves
+> relationships, and the loader creates the running image.
 
 ### 1. Source Files, Object Files, and Executables
 
@@ -3248,11 +7756,13 @@ running process
 
 An **object file** usually contains:
 
-- machine code and static data;
-- a symbol table describing known and unresolved names;
-- relocation records describing addresses the linker must repair;
-- debug information that maps instructions back to source;
-- metadata identifying the target architecture and format.
+| Object-file component | Purpose                                       |
+| --------------------- | --------------------------------------------- |
+| Code/static data      | Instructions and compile-time data            |
+| Symbol table          | Defined and unresolved names                  |
+| Relocations           | Places whose addresses need later repair      |
+| Debug information     | Maps instructions and values back to source   |
+| Target metadata       | Identifies architecture, ABI, and file format |
 
 The linker combines object files, resolves symbols, lays out sections, applies
 relocations, and emits the final executable or library.
@@ -3279,11 +7789,13 @@ required size, and the loader supplies zero-initialized memory.
 
 A **symbol** associates a name with a function, object, section, or address.
 
-- A **defined symbol** is provided by the current object or library.
-- An **undefined symbol** is required from another object or library.
-- A **local symbol** is private to one translation unit or object.
-- A **global symbol** can participate in cross-object linking.
-- A **weak symbol** may be replaced by a stronger definition.
+| Symbol kind   | Linker meaning                            |
+| ------------- | ----------------------------------------- |
+| **Defined**   | Provided by the current object/library    |
+| **Undefined** | Required from another object/library      |
+| **Local**     | Private to one object or translation unit |
+| **Global**    | Participates in cross-object resolution   |
+| **Weak**      | May be replaced by a stronger definition  |
 
 Languages that support overloading or namespaces often use **name mangling** to encode
 more information into a linker-visible name:
@@ -3311,11 +7823,11 @@ The linker or loader computes the final value after section placement.
 libraries normally need PIC, and position-independent executables allow the operating
 system to randomize the program's base address.
 
-Useful distinction:
-
-- **File offset:** position inside the executable file.
-- **Virtual address:** address where bytes appear in a process.
-- **Relative virtual address:** offset from an image or module base.
+| Coordinate                   | Meaning                                 |
+| ---------------------------- | --------------------------------------- |
+| **File offset**              | Position inside the executable file     |
+| **Virtual address (VA)**     | Address where bytes appear in a process |
+| **Relative virtual address** | Offset from an image or module base     |
 
 Never mix these three without an explicit conversion.
 
@@ -3340,13 +7852,15 @@ problem.
 
 A calling convention answers:
 
-- Where are integer, pointer, floating-point, and aggregate arguments placed?
-- Where is the return value placed?
-- Which registers must the caller preserve?
-- Which registers must the callee preserve?
-- Who adjusts the stack after the call?
-- What stack alignment is required?
-- How are variadic arguments represented?
+| ABI question       | What must be specified                         |
+| ------------------ | ---------------------------------------------- |
+| Arguments          | Registers/stack locations by type and position |
+| Return value       | Register, memory, or hidden return pointer     |
+| Caller-preserved   | Registers the caller must save if needed       |
+| Callee-preserved   | Registers the callee must restore if used      |
+| Stack cleanup      | Which side removes argument storage            |
+| Stack alignment    | Required alignment at call boundaries          |
+| Variadic arguments | Encoding and retrieval rules                   |
 
 Conceptual call sequence:
 
@@ -3401,23 +7915,705 @@ pub extern "C" fn checked_add(left: i32, right: i32, out: *mut i32) -> bool {
 The `unsafe` operation is small, and its required condition is obvious: the incoming
 pointer must either be null or point to a valid writable `i32`.
 
-FFI checklist:
+| FFI concern       | Required practice                                            |
+| ----------------- | ------------------------------------------------------------ |
+| Struct layout     | Use `#[repr(C)]` for C-shared records                        |
+| Integer widths    | Use fixed-width types where layout matters                   |
+| Allocation        | Define who allocates and who frees                           |
+| Unwinding         | Do not let Rust panics cross a foreign ABI                   |
+| Rust-native types | Do not expose references, `String`, `Vec`, or trait objects  |
+| Pointer contract  | Document nullability, alignment, lifetime, and thread safety |
+| Versioning        | Evolve exported interfaces deliberately                      |
 
-- use `#[repr(C)]` for structs shared with C;
-- use fixed-width integers when width matters;
-- define who allocates and who frees each resource;
-- do not let Rust panics unwind through a foreign ABI boundary;
-- avoid passing Rust references, `String`, `Vec<T>`, or trait objects directly;
-- document nullability, alignment, lifetime, thread-safety, and ownership;
-- version exported interfaces deliberately.
+### 9. ELF Has a Linking View and an Execution View
+
+ELF deliberately describes the same file in two ways:
+
+| View           | Main structure               | Consumer                   | Purpose                                   |
+| -------------- | ---------------------------- | -------------------------- | ----------------------------------------- |
+| Linking view   | Sections and section headers | Compiler, linker, debugger | Organize code, data, symbols, relocations |
+| Execution view | Segments and program headers | Kernel and dynamic loader  | Map byte ranges with runtime permissions  |
+
+One or more sections can contribute to one loadable segment.
+
+```text
+sections:  .text + .rodata ──→ read/execute load segment
+sections:  .data + .bss   ──→ read/write load segment
+```
+
+This is why "section" and "segment" are related but not interchangeable.
+
+| Program-header field | Meaning                                           |
+| -------------------- | ------------------------------------------------- |
+| `p_type`             | Loadable segment, interpreter, dynamic data, etc. |
+| `p_offset`           | Byte offset in the file                           |
+| `p_vaddr`            | Virtual address after loading                     |
+| `p_filesz`           | Bytes present in the file                         |
+| `p_memsz`            | Bytes required in memory                          |
+| `p_flags`            | Read/write/execute permissions                    |
+| `p_align`            | Required file/memory alignment relationship       |
+
+When `p_memsz` is larger than `p_filesz`, the loader supplies zero-filled memory for the
+difference. This is how zero-initialized data can occupy memory without occupying the
+same number of bytes in the file.
+
+### 10. ELF Entry Point and Program Interpreter
+
+An ELF header includes an entry-point virtual address. A program header of type
+`PT_INTERP` can name the program interpreter, normally the dynamic linker for a
+dynamically linked executable.
+
+Conceptually:
+
+```text
+kernel maps executable segments
+    ↓ sees PT_INTERP
+kernel maps dynamic linker
+    ↓ starts dynamic linker
+dynamic linker loads dependencies and resolves relocations
+    ↓ transfers control to executable entry point
+startup code eventually calls main
+```
+
+The executable is still native machine code. Here, "interpreter" means a loader that
+finishes preparing the native image, not a source-language interpreter.
+
+### 11. Dynamic Symbols, Relocations, GOT, and PLT
+
+A shared library can be loaded at different addresses in different processes, so some
+addresses cannot be finalized until runtime.
+
+- `.dynsym` contains symbols needed for dynamic linking.
+- `.dynstr` contains names referenced by dynamic symbol entries.
+- dynamic relocation sections describe runtime fixups.
+- the **Global Offset Table (GOT)** holds runtime-resolved addresses used by
+  position-independent code.
+- on architectures/toolchains that use it, the **Procedure Linkage Table (PLT)**
+  provides call stubs that lead through resolver-managed slots.
+
+Simplified lazy-resolution path:
+
+```text
+first call through PLT stub
+    ↓ unresolved GOT slot
+dynamic resolver finds symbol in loaded libraries
+    ↓ writes resolved address into slot
+later calls jump through the resolved slot
+```
+
+Systems may instead resolve symbols eagerly at startup. Details vary by architecture,
+ABI, linker, and hardening settings.
+
+#### Safe Inspection Commands
+
+For a trusted local ELF file:
+
+```sh
+file ./program
+readelf -h ./program       # ELF header
+readelf -l ./program       # program headers / segments
+readelf -S ./program       # section headers
+readelf -s ./program       # symbols
+readelf -r ./program       # relocations
+readelf -d ./program       # dynamic entries and dependencies
+objdump -d ./program       # disassembly
+```
+
+Prefer parsers such as `readelf` and `objdump` for initial inspection of untrusted
+files. Do not execute an unknown binary merely to discover its dependencies.
 
 ---
 
-## Concurrency, Atomics & Memory Models
+## 🔩 Bare-Metal, Unsafe Rust & Chromium-Scale Integration
+
+[Comprehensive Rust](https://google.github.io/comprehensive-rust/index.html) includes
+specialized material on bare-metal development, unsafe Rust, and using Rust inside
+Chromium. Together they show three versions of the same lesson: make environmental and
+safety assumptions explicit at boundaries.
+
+> 🔩 **Low-level rule:** when the operating system or type system cannot enforce an
+> assumption, **write the assumption down as a contract**.
+
+### 1. Hosted Versus Bare-Metal Programs
+
+A hosted program starts inside an operating-system process. The OS and standard library
+provide files, sockets, threads, clocks, allocation, arguments, and process exit.
+
+A bare-metal program may start directly at a reset vector with no OS, loader, filesystem,
+allocator, or console.
+
+```text
+reset
+  ↓
+startup code establishes stack and memory
+  ↓
+initialize hardware and interrupt table
+  ↓
+enter firmware main loop or scheduler
+```
+
+Rust library layers:
+
+| Layer   | Provides                                                               |
+| ------- | ---------------------------------------------------------------------- |
+| `core`  | Language fundamentals, slices, iterators, `Option`, `Result`, atomics  |
+| `alloc` | `Box`, `Vec`, `String`, `Arc`, and other allocation-backed collections |
+| `std`   | OS-backed files, networking, threads, clocks, process APIs, and more   |
+
+`#![no_std]` removes the dependency on `std`; it does not remove `core`. The `alloc`
+crate is optional and requires a global allocator supplied by the platform.
+
+### 2. Minimal `no_std` Shape
+
+The exact entry point and linker setup are target-specific, but the source commonly has
+this shape:
+
+```rust
+#![no_std]
+#![no_main]
+
+use core::hint::spin_loop;
+use core::panic::PanicInfo;
+
+#[panic_handler]
+fn panic(_info: &PanicInfo<'_>) -> ! {
+    loop {
+        spin_loop();
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn firmware_entry() -> ! {
+    loop {
+        spin_loop();
+    }
+}
+```
+
+This is not a complete bootable image:
+
+| Target requirement      | Responsibility                                      |
+| ----------------------- | --------------------------------------------------- |
+| Linker layout           | Place code, data, stack, and device regions         |
+| Entry contract          | Use the correct reset symbol and calling convention |
+| Stack                   | Establish a valid initial stack                     |
+| Static memory           | Copy initialized data and zero `.bss`               |
+| Panic strategy          | Define terminal failure behavior                    |
+| Build/runner config     | Select target, image format, and launch mechanism   |
+| Hardware initialization | Configure clocks, memory, pins, and peripherals     |
+
+Those responsibilities resemble a language runtime's startup sequence. Building
+firmware makes the usually hidden path from executable entry point to language-level
+`main` visible.
+
+### 3. Hardware-Abstraction Layers
+
+A useful embedded stack:
+
+```text
+application
+    ↓
+board support package (specific board and pins)
+    ↓
+hardware abstraction layer (typed peripheral operations)
+    ↓
+peripheral access crate (register-level device description)
+    ↓
+memory-mapped registers
+```
+
+Keep application logic testable on the host by depending on small traits:
+
+```rust
+trait OutputPin {
+    type Error;
+
+    fn set_high(&mut self) -> Result<(), Self::Error>;
+    fn set_low(&mut self) -> Result<(), Self::Error>;
+}
+
+fn blink_once<P: OutputPin>(pin: &mut P) -> Result<(), P::Error> {
+    pin.set_high()?;
+    pin.set_low()
+}
+```
+
+For real code, return a named error type or the trait's associated error. The important
+design idea is that the application owns behavior while the board layer owns volatile
+register details.
+
+### 4. Memory-Mapped I/O
+
+Peripherals often expose control and status registers at fixed addresses. Ordinary
+loads and stores are insufficient because the compiler may remove or combine them.
+Volatile access says the access itself is observable.
+
+```rust
+use core::ptr::NonNull;
+
+#[derive(Clone, Copy)]
+struct Register32 {
+    address: NonNull<u32>,
+}
+
+impl Register32 {
+    /// # Safety
+    ///
+    /// `address` must be aligned, valid for 32-bit volatile accesses for the
+    /// lifetime of this value, and refer to a register whose access rules permit
+    /// reads and writes performed through this wrapper.
+    unsafe fn new(address: usize) -> Option<Self> {
+        if address % core::mem::align_of::<u32>() != 0 {
+            return None;
+        }
+
+        NonNull::new(address as *mut u32).map(|address| Self { address })
+    }
+
+    fn read(&self) -> u32 {
+        // SAFETY: Construction requires a valid readable MMIO register.
+        unsafe { self.address.as_ptr().read_volatile() }
+    }
+
+    fn write(&mut self, value: u32) {
+        // SAFETY: Construction requires a valid writable MMIO register.
+        unsafe { self.address.as_ptr().write_volatile(value) }
+    }
+}
+```
+
+The wrapper is only honest if its constructor's contract matches the hardware manual.
+
+| Volatile does **not** guarantee | Separate requirement                            |
+| ------------------------------- | ----------------------------------------------- |
+| Data-race safety                | Atomics, critical sections, or exclusive access |
+| Multi-register atomicity        | Device-specific transaction protocol            |
+| CPU/device ordering             | Correct memory barriers/fences                  |
+| Side-effect-free reads          | Register semantics from the hardware manual     |
+| Peripheral ownership            | A higher-level ownership policy                 |
+
+Avoid implementing `Send` or `Sync` automatically for MMIO wrappers. Decide those
+properties from the hardware sharing rules.
+
+### 5. Interrupts and Shared State
+
+An interrupt can occur between ordinary instructions, so code shared with an interrupt
+handler is concurrent code.
+
+| Interrupt concern   | Preferred approach                              |
+| ------------------- | ----------------------------------------------- |
+| Small shared values | Atomics with a justified ordering               |
+| Compound state      | Target-provided critical section                |
+| Data handoff        | Interrupt-safe SPSC queue                       |
+| Handler duration    | Record minimal work and return quickly          |
+| Forbidden work      | Avoid blocking, allocation, and unbounded loops |
+
+```rust
+use core::sync::atomic::{AtomicBool, Ordering};
+
+static SAMPLE_READY: AtomicBool = AtomicBool::new(false);
+
+fn interrupt_handler() {
+    SAMPLE_READY.store(true, Ordering::Release);
+}
+
+fn main_loop_step() {
+    if SAMPLE_READY.swap(false, Ordering::Acquire) {
+        process_sample();
+    }
+}
+
+fn process_sample() {
+    // Ordinary application work.
+}
+```
+
+Acquire/release here publishes work associated with the flag, but the exact design must
+match how the sample data itself is stored. `volatile` is not a substitute for atomics.
+
+### 6. What `unsafe` Actually Permits
+
+Unsafe Rust enables a small set of operations that the compiler cannot prove safe:
+
+| Unsafe capability       | Proof obligation moved to the programmer           |
+| ----------------------- | -------------------------------------------------- |
+| Dereference raw pointer | Validity, alignment, initialization, and aliasing  |
+| Mutable static state    | Synchronization and exclusive access               |
+| Access union field      | Active representation is valid for the field       |
+| Call unsafe function    | Every documented precondition is satisfied         |
+| Implement unsafe trait  | The implementation upholds the trait-wide contract |
+
+`unsafe` does not disable the borrow checker or turn Rust into C. It transfers proof
+obligations from the compiler to the programmer.
+
+A good unsafe abstraction has:
+
+1. a documented safety contract;
+2. validation performed in safe code where possible;
+3. the smallest practical unsafe block;
+4. a safe interface that cannot violate the invariant;
+5. tests, fuzzing, and dynamic checking appropriate to its risk.
+
+```rust
+/// Views `len` bytes beginning at `pointer`.
+///
+/// # Safety
+///
+/// `pointer` must be non-null and aligned for `u8`, reference `len`
+/// initialized bytes in one allocation, and remain valid for `'a`.
+unsafe fn bytes_from_raw<'a>(pointer: *const u8, len: usize) -> &'a [u8] {
+    // SAFETY: The caller promises every requirement of `from_raw_parts`.
+    unsafe { core::slice::from_raw_parts(pointer, len) }
+}
+```
+
+Use an explicit unsafe block even inside an `unsafe fn`; the function declares what the
+caller must prove, while the block marks where the implementation relies on that proof.
+The `unsafe_op_in_unsafe_fn` lint helps enforce this distinction.
+
+### 7. Unsafe Review Questions
+
+| Review area      | Question                                                 |
+| ---------------- | -------------------------------------------------------- |
+| Invariant        | What exact fact makes the operation memory safe?         |
+| Ownership        | Who owns the allocation or device?                       |
+| Lifetime         | How long does it remain valid?                           |
+| Pointer validity | Is it aligned and within one allocation?                 |
+| Initialization   | Are bytes valid before the typed read?                   |
+| Aliasing         | Can mutable access overlap?                              |
+| Concurrency      | Can a thread, signal, interrupt, or FFI call mutate it?  |
+| Layout           | Is representation guaranteed by `repr` or a wire format? |
+| Arithmetic       | Can an offset/length wrap before validation?             |
+| Unwinding        | Can panic leave foreign code or hardware invalid?        |
+| Safe API         | Can any safe caller reach undefined behavior?            |
+
+Comments should explain the proof, not restate the operation:
+
+```rust
+// Weak:
+// SAFETY: dereference pointer.
+
+// Useful:
+// SAFETY: `cursor < end` was checked above; both pointers are derived
+// from the same allocation, and the parser holds the only mutable borrow.
+```
+
+### 8. Chromium as a Large Mixed-Language Case Study
+
+Chromium is a large C++ codebase with its own build, dependency, test, and security
+policies. Rust must integrate into that environment instead of assuming a Cargo-only
+project.
+
+**🔑 Key ideas from the Comprehensive Rust Chromium material:**
+
+- Chromium uses GN and Ninja; a whole Rust crate is a compilation unit.
+- A `rust_static_library` rule declares its crate root and complete source list.
+- The Chromium rule supplies support for features, tests, and C++ interoperability.
+- Unsafe Rust is forbidden for a Rust static library by default and requires an
+  explicit `allow_unsafe = true` decision.
+- C++/Rust boundaries should use generated, type-aware bridges where possible.
+- Third-party crates are reviewed as source dependencies, not treated as opaque
+  packages.
+
+Conceptual GN target:
+
+```gn
+import("//build/rust/rust_static_library.gni")
+
+rust_static_library("parser_core") {
+  crate_root = "lib.rs"
+  sources = [
+    "lib.rs",
+    "decoder.rs",
+  ]
+}
+```
+
+Large-repository implications:
+
+- List inputs so incremental builds know exactly what invalidates a target.
+- Avoid crates whose build scripts secretly compile C++, run bindgen, or perform
+  arbitrary actions that the repository build graph cannot represent.
+- Audit transitive dependencies, procedural macros, build scripts, maintenance state,
+  filesystem/network access, and unsafe code.
+- Keep ownership clear at C++/Rust boundaries.
+- Do not pass language-native containers or exceptions across an unstable ABI.
+- Translate errors deliberately; do not unwind a Rust panic through C++.
+- Test the bridge from both sides and include malformed inputs.
+
+### 9. Lessons for Your Own Language
+
+Bare metal, unsafe code, and Chromium integration all expose runtime assumptions:
+
+| Concern             | Your language must define                                       |
+| ------------------- | --------------------------------------------------------------- |
+| Startup             | Entry point, stack, globals, constructors, termination          |
+| Memory              | Allocation, alignment, initialization, aliasing, lifetime       |
+| Hardware I/O        | Volatile operations, barriers, register ownership               |
+| Interrupts/threads  | Synchronization and memory model                                |
+| Foreign code        | ABI, layout, ownership, errors, unwinding                       |
+| Build integration   | Compilation unit, inputs, generated files, dependency policy    |
+| Unsafe escape hatch | Which invariants become the programmer's responsibility         |
+| Packages            | Trust, auditing, reproducibility, version and feature selection |
+
+A small language can begin with a hosted interpreter, but writing these contracts early
+makes later native compilation, FFI, embedded targets, and reverse engineering much
+easier to reason about.
+
+### 10. Embedded Rust Book Versus the Embedonomicon
+
+The [Embedded Rust Book](https://docs.rust-embedded.org/book/) focuses on practical
+embedded development and safe abstractions. The
+[Embedonomicon](https://docs.rust-embedded.org/embedonomicon/) goes underneath runtime
+crates and constructs a `#![no_std]` Cortex-M application from the linker and ABI upward.
+
+| Resource            | Best used for                                        |
+| ------------------- | ---------------------------------------------------- |
+| Embedded Rust Book  | Setup, HALs, portability, concurrency, static safety |
+| Embedonomicon       | Reset, linker scripts, symbols, vector tables, ABI   |
+| Device/PAC docs     | Exact register addresses and bit meanings            |
+| Architecture manual | Exceptions, instruction behavior, memory ordering    |
+| Board schematic     | Pin routing, clocks, power, and attached components  |
+
+> 🧠 **Layering rule:** an embedded abstraction is trustworthy only when its type-level
+> contract agrees with the linker layout, architecture manual, and device register
+> behavior underneath it.
+
+### 11. Linker Scripts Are Part of the Program
+
+On a microcontroller, the executable must place bytes where the hardware expects them.
+A linker script normally defines memory regions and output sections:
+
+```ld
+MEMORY
+{
+  FLASH : ORIGIN = 0x00000000, LENGTH = 256K
+  RAM   : ORIGIN = 0x20000000, LENGTH = 64K
+}
+
+ENTRY(Reset);
+
+SECTIONS
+{
+  .vector_table ORIGIN(FLASH) :
+  {
+    LONG(ORIGIN(RAM) + LENGTH(RAM));
+    KEEP(*(.vector_table.reset_vector));
+  } > FLASH
+
+  .text :
+  {
+    *(.text .text.*);
+  } > FLASH
+}
+```
+
+| Linker-script element | Purpose                                                 |
+| --------------------- | ------------------------------------------------------- |
+| `MEMORY`              | Names address ranges and their sizes                    |
+| `ENTRY(symbol)`       | Selects the executable entry point                      |
+| `SECTIONS`            | Maps input sections into output sections                |
+| `> FLASH` / `> RAM`   | Selects the destination memory region                   |
+| `KEEP(...)`           | Prevents garbage collection of hardware-referenced data |
+| `EXTERN(symbol)`      | Forces the linker to search for a required symbol       |
+| `/DISCARD/`           | Removes sections the runtime deliberately does not use  |
+
+Hardware can reference a vector-table entry without a normal machine-code call. That
+means the linker may see no ordinary reference; `KEEP` or an equivalent mechanism
+prevents the required entry from being discarded.
+
+### 12. Reset and Vector-Table Contracts
+
+For Cortex-M, the first vector-table entries include the initial stack pointer and reset
+handler. The reset handler has no caller to return to, so its return type is `!`.
+
+```rust
+#![no_std]
+
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn Reset() -> ! {
+    // Copy initialized data, zero .bss, initialize runtime state,
+    // then call the application entry point.
+    loop {
+        core::hint::spin_loop();
+    }
+}
+
+#[unsafe(link_section = ".vector_table.reset_vector")]
+#[unsafe(no_mangle)]
+pub static RESET_VECTOR: unsafe extern "C" fn() -> ! = Reset;
+```
+
+| Attribute                         | Required proof                                     |
+| --------------------------------- | -------------------------------------------------- |
+| `#[unsafe(no_mangle)]`            | The global symbol name cannot collide              |
+| `#[unsafe(export_name = "...")]`  | The chosen exported name is globally unique        |
+| `#[unsafe(link_section = "...")]` | The item is valid in the destination memory region |
+| `extern "C"`                      | The hardware/foreign caller follows that ABI       |
+| `-> !`                            | Control never returns to a nonexistent caller      |
+
+The Rust ABI is not a stable hardware boundary. Use the architecture/runtime's required
+ABI and inspect the final ELF, not merely the source.
+
+### 13. Exception and Interrupt Vector Tables
+
+When an exception occurs, the processor suspends the current flow, saves architectural
+state according to its rules, and selects a handler through a vector table.
+
+```text
+external/internal event
+    ↓ hardware exception entry
+save required state
+    ↓ vector-table lookup
+run handler
+    ↓ exception return
+restore interrupted state
+```
+
+| Vector-table invariant | Requirement                                               |
+| ---------------------- | --------------------------------------------------------- |
+| Placement              | Table begins at the architecture's expected address       |
+| Entry order            | Each slot corresponds to the documented exception         |
+| Validity               | Every usable slot holds a correctly typed handler address |
+| Defaults               | Unimplemented handlers enter a safe diagnostic halt       |
+| Override               | Application handlers replace defaults at link time        |
+| Retention              | Link-time garbage collection cannot remove the table      |
+
+Compile-time defaults can be supplied in the linker script and overridden by an
+application-defined symbol. This gives static customization without a runtime lookup.
+
+### 14. Typestate for Peripheral State Machines
+
+The Embedded Rust Book models peripherals as state machines. Consuming a value during a
+transition ensures the old state cannot still be used.
+
+```rust
+use core::marker::PhantomData;
+
+struct Disabled;
+struct Input;
+struct Output;
+
+struct Pin<State> {
+    number: u8,
+    _state: PhantomData<State>,
+}
+
+impl Pin<Disabled> {
+    fn into_input(self) -> Pin<Input> {
+        configure_as_input(self.number);
+        Pin {
+            number: self.number,
+            _state: PhantomData,
+        }
+    }
+
+    fn into_output(self) -> Pin<Output> {
+        configure_as_output(self.number);
+        Pin {
+            number: self.number,
+            _state: PhantomData,
+        }
+    }
+}
+
+impl Pin<Output> {
+    fn set_high(&mut self) {
+        write_output_high(self.number);
+    }
+}
+
+fn configure_as_input(_pin: u8) {}
+fn configure_as_output(_pin: u8) {}
+fn write_output_high(_pin: u8) {}
+```
+
+`Pin<Input>` has no `set_high` method, so that invalid operation fails at compile time.
+The marker types are zero-sized and normally disappear after optimization.
+
+| Typestate benefit        | Cost/trade-off                                       |
+| ------------------------ | ---------------------------------------------------- |
+| Illegal calls disappear  | More generic types and `impl` blocks                 |
+| Transitions are explicit | State changes may consume and return values          |
+| No runtime tag needed    | Dynamic state may require an enum instead            |
+| Ownership is visible     | Shared peripherals need an intentional sharing model |
+
+Use typestate when the state graph is small and correctness-critical. Use a runtime enum
+when states genuinely arrive dynamically or must live in one heterogeneous collection.
+
+### 15. HAL Portability
+
+`embedded-hal`-style traits separate applications and device drivers from a specific
+microcontroller implementation:
+
+```text
+application
+    ↓ generic driver
+embedded HAL traits
+    ↓ chip-family HAL
+peripheral access crate
+    ↓ volatile registers
+hardware
+```
+
+| Layer                   | Owns                                           |
+| ----------------------- | ---------------------------------------------- |
+| Application             | Product behavior                               |
+| Driver                  | Device protocol, such as a sensor over SPI     |
+| HAL trait               | Portable capability contract                   |
+| Chip HAL                | Pins, clocks, buses, DMA, and peripheral setup |
+| Peripheral access crate | Register-level representation                  |
+| Board support package   | Board-specific pin/component wiring            |
+
+Generic drivers should depend on the smallest capability trait they need. Avoid leaking
+one board's concrete pin or peripheral types into reusable application logic.
+
+### 16. Embedded Concurrency Choices
+
+Interrupt handlers are concurrent with the main loop. A `static mut` increment is not
+automatically atomic: it may compile into load → modify → store and lose an interrupt's
+update.
+
+| Environment            | Appropriate synchronization                             |
+| ---------------------- | ------------------------------------------------------- |
+| No interrupts/one loop | Ordinary exclusive ownership                            |
+| Main + interrupts      | Atomics, interrupt-safe queue, or critical section      |
+| DMA + CPU              | Ownership transfer plus required memory barriers        |
+| Multiple cores         | SMP-safe atomics/locks; interrupt masking is not enough |
+| Real-time tasks        | Priority-aware framework and bounded operations         |
+
+`Send` means a value can safely move between execution contexts; `Sync` means a shared
+reference can be used safely from multiple contexts. Treat an interrupt handler as a
+separate execution context when reasoning about shared state.
+
+Critical sections that merely disable interrupts on one core do not protect against
+another core. The proof must match the hardware topology.
+
+### 17. Inspect the Artifact, Not Only the Source
+
+| Question                        | Useful inspection                                 |
+| ------------------------------- | ------------------------------------------------- |
+| Is the entry point correct?     | ELF header and symbol table                       |
+| Is the vector table retained?   | Section dump and raw bytes                        |
+| Are code/data in valid regions? | Program/section headers plus linker map           |
+| How large is each section?      | `size`/`cargo size`-style report                  |
+| What does reset execute?        | Disassembly from the reset symbol                 |
+| Did typestate disappear?        | Compare optimized assembly/code size              |
+| Does it boot without hardware?  | QEMU or another architecture-appropriate emulator |
+
+Keep the linker map, target specification, disassembly, and exact firmware hash with a
+release. They are part of the evidence needed to reproduce a low-level bug.
+
+---
+
+## 🧵 Concurrency, Atomics & Memory Models
 
 Concurrency adds a second ordering problem. A compiler already reasons about the order
 of expressions; concurrent code must also reason about what other threads are allowed to
 observe.
+
+> 🧵 **Concurrency rule:** shared state is only understandable when **ownership,
+> synchronization, and ordering** are all explicit.
 
 ### 1. Processes, Threads, Tasks, and Events
 
@@ -3453,13 +8649,15 @@ when unsynchronized conflicting accesses violate the language's memory model.
 
 ### 3. Synchronization Tools
 
-- **Mutex:** grants one thread exclusive access to protected state.
-- **Read/write lock:** permits many readers or one writer.
-- **Condition variable:** lets a thread sleep until shared state changes.
-- **Semaphore:** limits access to a finite set of permits.
-- **Channel:** transfers values or events between tasks.
-- **Atomic:** performs specific indivisible operations on supported primitive values.
-- **Barrier:** waits until all participants reach the same phase.
+| Tool                   | Best mental model                                    |
+| ---------------------- | ---------------------------------------------------- |
+| **Mutex**              | One owner of protected state at a time               |
+| **Read/write lock**    | Many readers or one writer                           |
+| **Condition variable** | Sleep until protected state may have changed         |
+| **Semaphore**          | Finite pool of permits                               |
+| **Channel**            | Transfer values/events between participants          |
+| **Atomic**             | Indivisible primitive operation with chosen ordering |
+| **Barrier**            | Wait for every participant to reach one phase        |
 
 Choose the tool based on the invariant, not on familiarity.
 
@@ -3521,35 +8719,400 @@ structures also need careful lifetime, progress, and reclamation design.
 
 A language implementation must define:
 
-- which operations are atomic;
-- what constitutes a data race;
-- whether a data race is an error, undefined behavior, or a defined result;
-- what synchronization creates a happens-before relationship;
-- whether values can move between threads;
-- whether shared references permit mutation;
-- how thread-local storage and destructors behave.
+| Memory-model topic     | Required language rule                           |
+| ---------------------- | ------------------------------------------------ |
+| Atomic operations      | Which reads, writes, and updates are indivisible |
+| Data race              | Which conflicting accesses constitute one        |
+| Race semantics         | Error, undefined behavior, or defined outcome    |
+| Happens-before         | Which synchronization creates ordering           |
+| Transfer               | Which values may move between threads            |
+| Shared mutation        | Whether shared references permit mutation        |
+| Thread-local lifecycle | Initialization and destructor behavior           |
 
 Optimizers rely on these rules. If the language declares data races invalid, the
 optimizer may assume they never occur and transform code accordingly.
 
 ### 6. Concurrency Failure Modes
 
-- **Deadlock:** participants wait forever in a dependency cycle.
-- **Livelock:** participants keep reacting but make no useful progress.
-- **Starvation:** one participant repeatedly loses access to a resource.
-- **Priority inversion:** high-priority work waits on lower-priority work.
-- **Lost wakeup:** a notification occurs before the waiter correctly observes it.
-- **ABA problem:** a value changes from A to B and back to A, fooling a compare-and-swap
-  check.
-- **False sharing:** independent variables occupy one cache line and cause needless
-  coherence traffic.
+| Failure mode           | Symptom                                               |
+| ---------------------- | ----------------------------------------------------- |
+| **Deadlock**           | Participants wait forever in a dependency cycle       |
+| **Livelock**           | Work continues but no useful progress occurs          |
+| **Starvation**         | One participant repeatedly loses resource access      |
+| **Priority inversion** | High-priority work waits on lower-priority work       |
+| **Lost wakeup**        | Notification occurs before the waiter observes it     |
+| **ABA problem**        | A→B→A fools a compare-and-swap equality check         |
+| **False sharing**      | Independent data causes needless cache-line coherence |
 
 Debug concurrent systems with event traces, stable IDs, timeouts, and explicit state
 transitions. Adding print statements can change timing and hide the bug.
 
 ---
 
-## Practical Low-Level Workflow
+## 🔨 Developer Tooling: The Missing Semester
+
+[The Missing Semester of Your CS Education](https://missing.csail.mit.edu/) treats tool
+proficiency as a core computing skill: shells, development environments, debugging,
+profiling, version control, packaging, automation, and code quality.
+
+> ⌨️ **Tooling principle:** if a workflow is repeated, error-prone, or difficult to
+> explain, make its inputs, command, output, and failure status reproducible.
+
+### 1. Terminal, Shell, and Program
+
+| Term     | Meaning                                                      |
+| -------- | ------------------------------------------------------------ |
+| Terminal | User interface that displays text and sends input            |
+| Shell    | Language/runtime that parses commands and launches programs  |
+| Program  | Executable selected by a path or `$PATH` lookup              |
+| Process  | Running program with memory, descriptors, environment, state |
+| Job      | Shell-managed pipeline/process group                         |
+
+The shell is itself a small programming language. It has parsing, quoting, expansion,
+variables, control flow, exit status, and composition—many of the same concerns as a
+language you build yourself.
+
+### 2. Paths and Command Resolution
+
+| Path form    | Interpretation                                 |
+| ------------ | ---------------------------------------------- |
+| `/a/b`       | Absolute path from filesystem root             |
+| `a/b`        | Relative to the current working directory      |
+| `.`          | Current directory                              |
+| `..`         | Parent directory                               |
+| `~`          | Shell expansion for a user's home directory    |
+| command name | Searched in the ordered directories of `$PATH` |
+| `./tool`     | Exact path; bypasses `$PATH` lookup            |
+
+Useful inspection:
+
+```sh
+pwd
+command -v rustc
+type cargo
+printf '%s\n' "$PATH"
+```
+
+Quote variable expansions unless intentional splitting/globbing is required:
+
+```sh
+input_file="My Program.tl"
+cargo run -- "$input_file"
+```
+
+The `--` convention tells many programs that later values are operands rather than
+options. This matters when an untrusted filename begins with `-`.
+
+### 3. Standard Streams and Composition
+
+| Descriptor | Stream | Conventional role           |
+| ---------- | ------ | --------------------------- |
+| `0`        | stdin  | Program input               |
+| `1`        | stdout | Primary machine/user output |
+| `2`        | stderr | Diagnostics and errors      |
+
+```text
+producer stdout ──pipe──→ consumer stdin
+producer stderr ─────────→ terminal/log
+```
+
+```sh
+compiler program.tl 2>diagnostics.log \
+  | disassembler \
+  | sort \
+  | uniq -c
+```
+
+| Operator   | Effect                               |
+| ---------- | ------------------------------------ |
+| `a \| b`   | Connect `a` stdout to `b` stdin      |
+| `> file`   | Replace file with stdout             |
+| `>> file`  | Append stdout                        |
+| `2> file`  | Redirect stderr                      |
+| `< file`   | Read stdin from file                 |
+| `tee file` | Copy stdin to both stdout and a file |
+
+Design CLI tools so normal output is composable on stdout and diagnostics go to stderr.
+A quiet machine-readable mode makes automation more reliable than scraping decorative
+terminal output.
+
+### 4. Exit Status Is Part of the Interface
+
+By convention, exit status `0` means success and a nonzero status means some form of
+failure.
+
+```sh
+if cargo test; then
+  echo "tests passed"
+else
+  echo "tests failed" >&2
+  exit 1
+fi
+```
+
+| CLI outcome                | Suggested behavior                               |
+| -------------------------- | ------------------------------------------------ |
+| Successful result          | Print result; exit `0`                           |
+| User/input error           | Explain on stderr; exit nonzero                  |
+| Internal invariant failure | Preserve diagnostics; exit nonzero               |
+| Partial results            | Define explicitly; do not silently claim success |
+| Broken pipe                | Handle according to CLI convention               |
+
+### 5. Safer Shell Scripts
+
+```bash
+#!/usr/bin/env bash
+set -euo pipefail
+
+work_dir="$(mktemp -d)"
+cleanup() {
+  rm -rf -- "$work_dir"
+}
+trap cleanup EXIT
+
+input="${1:?usage: check-program INPUT}"
+output="$work_dir/program.out"
+
+cargo run -- "$input" >"$output"
+wc -c -- "$output"
+```
+
+| Strictness feature | Effect                                                 |
+| ------------------ | ------------------------------------------------------ |
+| `set -e`           | Exit after many unhandled command failures             |
+| `set -u`           | Treat undefined variables as errors                    |
+| `set -o pipefail`  | Fail a pipeline when any component fails               |
+| `trap ... EXIT`    | Run cleanup on shell exit                              |
+| `"$variable"`      | Preserve one argument and suppress accidental globbing |
+| `--`               | End option parsing when supported                      |
+
+These flags reduce mistakes but do not make Bash a safe general-purpose language.
+Complex data structures, rich error recovery, or large scripts are signs that a Rust,
+Python, or other purpose-built program may be clearer.
+
+### 6. Search and Data Wrangling
+
+| Task                    | Tool shape                                  |
+| ----------------------- | ------------------------------------------- |
+| Search text recursively | `rg PATTERN PATH`                           |
+| List candidate files    | `rg --files` or `find`                      |
+| Select columns/records  | `awk`                                       |
+| Transform text          | `sed`                                       |
+| Sort and count          | `sort`, `uniq -c`                           |
+| Inspect beginning/end   | `head`, `tail`                              |
+| Parse structured data   | Format-aware tool rather than fragile regex |
+
+Example: count opcode names in a textual bytecode dump:
+
+```sh
+bytecode-dump program.bc \
+  | awk '{print $2}' \
+  | sort \
+  | uniq -c \
+  | sort -nr
+```
+
+Each pipeline stage should have one understandable contract. Save intermediate output
+when a pipeline becomes hard to debug.
+
+### 7. Environment and Reproducibility
+
+A process inherits an environment from its parent. Environment variables are strings,
+not typed configuration.
+
+| Configuration source | Strength                           | Risk                              |
+| -------------------- | ---------------------------------- | --------------------------------- |
+| CLI argument         | Explicit and visible in invocation | May appear in process listings    |
+| Environment variable | Convenient for deployment          | Untyped; easy to inherit silently |
+| Config file          | Structured, reviewable, persistent | Needs discovery/version rules     |
+| Secret store         | Access-controlled sensitive values | External dependency               |
+| Compiled default     | Simple fallback                    | Requires rebuild to change        |
+
+Precedence should be documented:
+
+```text
+explicit CLI > environment > project config > user config > built-in default
+```
+
+Never print all environment variables into shared logs; they often contain credentials
+and tokens.
+
+### 8. Debugging as Hypothesis Testing
+
+```text
+reproduce
+    ↓ minimize
+observe one boundary
+    ↓ form hypothesis
+predict a new result
+    ↓ test
+fix cause
+    ↓ add regression test
+```
+
+| Evidence source        | Question answered                                      |
+| ---------------------- | ------------------------------------------------------ |
+| Logs/traces            | Which events and state transitions occurred?           |
+| Debugger               | What are registers, variables, frames, and memory now? |
+| System-call trace      | Which kernel services were requested?                  |
+| Network capture        | Which bytes crossed the network boundary?              |
+| Compiler intermediate  | Which pipeline stage first became wrong?               |
+| Core dump/crash report | What state existed at failure?                         |
+
+Do not add random logging everywhere. Put observations at representation boundaries:
+tokens, AST, typed IR, bytecode, FFI, file format, network frame, or system call.
+
+### 9. Profiling: Measure the Correct Resource
+
+| Profile target     | Useful measurement                          |
+| ------------------ | ------------------------------------------- |
+| CPU time           | Samples, call stacks, instruction hotspots  |
+| Wall-clock latency | End-to-end timing and blocking waits        |
+| Allocation         | Count, size, lifetime, and call site        |
+| I/O                | Bytes, operations, queueing, and wait time  |
+| Cache behavior     | Misses, branch behavior, locality           |
+| Concurrency        | Lock contention, task wait, scheduler delay |
+
+Benchmark optimized builds and realistic inputs. Debug builds can distort compiler,
+parser, and allocator performance dramatically.
+
+```rust
+use std::time::Instant;
+
+let start = Instant::now();
+let result = compile_program(source)?;
+let elapsed = start.elapsed();
+eprintln!(
+    "compiled {} bytes into {} bytes in {elapsed:?}",
+    source.len(),
+    result.len()
+);
+```
+
+One timing is a clue, not a benchmark. Warmup, input distribution, system load, and
+variance all matter.
+
+### 10. Git as a Content Graph
+
+Git is easier to reason about as immutable objects and references:
+
+```text
+working tree
+    ↓ git add
+index / staging area
+    ↓ git commit
+commit object → tree → blobs
+    ↑
+branch reference
+```
+
+| Git concept   | Mental model                                 |
+| ------------- | -------------------------------------------- |
+| Commit        | Snapshot plus parent(s) and metadata         |
+| Branch        | Movable name pointing to a commit            |
+| Tag           | Usually a stable name for a commit           |
+| Index         | Proposed next snapshot                       |
+| Merge         | Commit with multiple parents                 |
+| Rebase        | Recreate changes on a different parent chain |
+| Detached HEAD | `HEAD` points directly to a commit           |
+
+Use small, coherent commits. A good commit explains one change, includes its tests, and
+can be reviewed or reverted without pulling in unrelated work.
+
+### 11. High-Signal Git Tools
+
+| Goal                           | Tool/approach                               |
+| ------------------------------ | ------------------------------------------- |
+| Inspect exact change           | `git diff`, `git diff --staged`             |
+| Understand history             | `git log --graph --decorate --oneline`      |
+| Find introduction of a line    | `git blame`, then inspect the commit        |
+| Find first bad commit          | `git bisect` with a repeatable test command |
+| Temporarily save local changes | `git stash` with care                       |
+| Work on another branch nearby  | `git worktree`                              |
+| Recover a lost reference       | `git reflog`                                |
+
+Do not rewrite shared history casually. Branch names are references; commits remain
+reachable only while some reference or reflog keeps them alive.
+
+### 12. Build Systems and Metaprogramming
+
+A build system is a dependency graph plus commands:
+
+```text
+source + grammar + dependencies
+    ↓ compiler/build rule
+generated parser + object files
+    ↓ linker/package rule
+artifact
+```
+
+| Build-system property | Requirement                                        |
+| --------------------- | -------------------------------------------------- |
+| Inputs                | Complete and explicit                              |
+| Outputs               | Predictable paths and formats                      |
+| Dependencies          | Correct edges between generated and consumed files |
+| Incrementality        | Rebuild only invalidated nodes                     |
+| Reproducibility       | Same declared inputs produce equivalent outputs    |
+| Failure               | Stop and preserve the command/error that failed    |
+
+Generated code should have one source of truth, deterministic formatting, and a clear
+regeneration command. Check it into version control only when repository policy and
+tool availability justify it.
+
+### 13. Packaging and Shipping
+
+| Artifact question | Decision to record                              |
+| ----------------- | ----------------------------------------------- |
+| Version           | Semantic/compatibility policy                   |
+| Target            | OS, architecture, ABI, feature set              |
+| Dependencies      | Resolved versions, licenses, provenance         |
+| Configuration     | Build-time versus runtime values                |
+| Integrity         | Hash/signature and verification path            |
+| Debuggability     | Symbols, source maps, build IDs, crash metadata |
+| Upgrade           | Migration and rollback behavior                 |
+
+For a language implementation, version the source language, bytecode, package manifest,
+runtime ABI, and wire protocols separately when they can evolve independently.
+
+### 14. CI Is an Executable Contract
+
+```text
+format → lint → unit tests → integration tests → artifact checks
+       → security/license checks → package
+```
+
+| CI property          | Good practice                                        |
+| -------------------- | ---------------------------------------------------- |
+| Reproducible locally | Every CI step has an equivalent local command        |
+| Fast feedback        | Cheap deterministic checks run first                 |
+| Clear failure        | Log the command, relevant versions, and failing test |
+| Controlled secrets   | Expose only to trusted jobs and avoid printing them  |
+| Artifact provenance  | Record source revision and toolchain                 |
+| Caching              | Cache performance data, not correctness assumptions  |
+
+### 15. Tooling for Your Own Language
+
+| Tool               | Minimum useful capability                          |
+| ------------------ | -------------------------------------------------- |
+| Formatter          | Deterministic source output                        |
+| Parser/AST dumper  | Inspect syntax without executing                   |
+| Type checker mode  | Validate without code generation                   |
+| IR/bytecode dumper | Stable machine-readable and human-readable forms   |
+| Disassembler       | Decode every instruction with offsets              |
+| Test runner        | Filters, stable exit status, structured results    |
+| Package inspector  | Manifest, dependencies, hashes, compatibility      |
+| Debugger           | Break, step, inspect state, explain source mapping |
+| Profiler hooks     | Stable function/pass IDs and event timing          |
+
+The tooling interface is part of the language. Stable exit codes, diagnostics, source
+locations, and machine-readable output make editors, CI systems, and external tools
+possible.
+
+---
+
+## 🧰 Practical Low-Level Workflow
+
+> 🧰 **Repeatable loop:** define → isolate → observe → test → explain → automate.
 
 ### When Building
 
@@ -3575,22 +9138,27 @@ transitions. Adding print statements can change timing and hide the bug.
 
 ### Questions That Transfer Across Every Layer
 
-- What representation am I looking at?
-- Who owns this value or resource?
-- How long is it valid?
-- Which invariants have already been checked?
-- What is the byte order, width, alignment, and signedness?
-- Is this an address, offset, index, ID, or count?
-- Where does trust change?
-- Can this operation partially succeed?
-- What state must come before and after it?
-- What evidence would prove my current model wrong?
+| Dimension       | Transferable question                                  |
+| --------------- | ------------------------------------------------------ |
+| Representation  | What representation am I looking at?                   |
+| Ownership       | Who owns this value or resource?                       |
+| Lifetime        | How long is it valid?                                  |
+| Validation      | Which invariants have already been checked?            |
+| Encoding        | What are byte order, width, alignment, and signedness? |
+| Numeric domain  | Address, offset, index, ID, or count?                  |
+| Trust           | Where does trust change?                               |
+| Partial effects | Can the operation partially succeed?                   |
+| State machine   | What state must come before and after it?              |
+| Falsifiability  | What evidence would disprove the current model?        |
 
 ---
 
-## X. Language Progression
+## 🛤️ X. Language Progression
 
 The four stages of building a language from scratch:
+
+> 🛤️ **Progression principle:** grow the language in vertical slices so every stage
+> remains runnable, testable, and explainable.
 
 | Feature      | Calculator             | Firstlang   | Secondlang | Thirdlang        |
 | ------------ | ---------------------- | ----------- | ---------- | ---------------- |
