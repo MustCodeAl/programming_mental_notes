@@ -6,6 +6,8 @@
 
 ![Markdown](https://img.shields.io/badge/format-Markdown-blue?style=flat-square) ![Rust](https://img.shields.io/badge/primary%20language-Rust-orange?style=flat-square) ![Scope](https://img.shields.io/badge/scope-compilers%20%7C%20systems%20%7C%20networking-informational?style=flat-square) ![Status](https://img.shields.io/badge/status-living%20document-brightgreen?style=flat-square)
 
+<a id="how-to-use-these-notes"></a>
+
 ## 🗺️ How to Use These Notes
 
 These notes are organized as a **first-pass curriculum** and a **long-term reference**.
@@ -55,20 +57,25 @@ first pass; use the goal index afterward as a reference.
 | 🏷️ Add static types         | [Types & Type Inference](#-v-types--type-inference)                                   | [LLVM IR](#-vii-llvm-ir--advanced-code-generation)                                    |
 | 🏭 Test LLVM codegen        | [Inkwell Test Patterns](#-testing-llvm-codegen-with-inkwell)                          | [Compiler Debugging](#compiler-pipeline-debugging)                                    |
 | 🧠 Understand memory        | [Memory Layout](#memory-layout)                                                       | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) |
+| 🧬 Design a memory manager  | [Allocation Mechanics](#12-allocator-mechanics)                                       | [Garbage Collection](#15-garbage-collection-is-a-graph-algorithm)                     |
+| 🧯 Debug memory problems    | [Memory Accounting](#16-memory-accounting-uses-several-different-numbers)             | [Memory Debugging](#17-memory-debugging-needs-the-right-observer)                     |
 | 🖥️ Understand the OS        | [Processes & the Kernel](#-operating-systems-from-the-bottom-up)                      | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         |
 | 🔍 Reverse x64 Windows      | [x64 Windows Reversing](#-practical-x64-windows-reverse-engineering)                  | [Calling Conventions](#6-calling-conventions)                                         |
 | 🧩 Reverse a binary or VM   | [Reverse Engineering](#reverse-engineering--debugging-compiled-binaries)              | [Reversing a Binary](#7-reversing-a-binary-bytecode-vm-or-language)                   |
 | 🦀 Write safer Rust tools   | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          | [Networking](#-networking-protocols--wire-formats)                                    |
 | 🐍 Translate Python to Rust | [Rust/Python Idioms](#9-rust-and-python-similar-task-different-contract)              | [Functional Rust](#λ-functional-programming-in-rust)                                  |
 | λ Learn functional Rust     | [Functional Rust](#λ-functional-programming-in-rust)                                  | [Algorithms](#-algorithms-in-idiomatic-rust)                                          |
-| 🧮 Practice algorithms      | [Algorithms in Rust](#-algorithms-in-idiomatic-rust)                                  | [Compiler Applications](#13-where-algorithms-appear-in-language-tools)                |
+| 🧮 Practice algorithms      | [Two Pointers](#5-two-pointers-move-boundaries-by-a-proven-rule)                      | [Compiler Applications](#17-where-algorithms-appear-in-language-tools)                |
+| 🔗 Learn linked lists       | [Linked-List Ownership](#7-linked-lists-as-an-ownership-laboratory)                   | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) |
+| 🧩 Solve repeated states    | [Backtracking & Memoization](#10-backtracking-and-dfs-with-memoization)               | [Dynamic Programming](#12-dynamic-programming)                                        |
 | 🤖 Understand ML            | [Machine Learning](#-machine-learning-foundations)                                    | [System Design](#-system-design-patterns-in-rust)                                     |
+| 🎭 Design an actor system   | [Actors](#7-actors-owned-state-behind-a-typed-mailbox)                                | [System Design](#-system-design-patterns-in-rust)                                     |
 | 🏗️ Design a service         | [System Design in Rust](#-system-design-patterns-in-rust)                             | [Networking](#-networking-protocols--wire-formats)                                    |
 | 🔩 Write low-level Rust     | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)           |
 | 🧱 Design Rust APIs         | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          | [Rust Patterns & Recipes](#-practical-rust-patterns--cookbook-recipes)                |
 | 📡 Embed a TCP/IP stack     | [smoltcp](#-embedded-networking-with-smoltcp)                                         | [QUIC with Quinn](#-quic-networking-with-quinn)                                       |
 | ⚡ Learn QUIC               | [QUIC with Quinn](#-quic-networking-with-quinn)                                       | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       |
-| 🕸 Build Rust web code       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
+| 🕸 Build Rust web code      | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
 | 🌳 Control the browser DOM  | [DOM from Rust](#14-the-dom-is-a-host-owned-object-graph)                             | [Wasm Ownership](#17-dom-event-listeners-need-lifetime-design)                        |
 | 🌐 Understand a browser     | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  |
 | 🎮 Build a native loop      | [SDL3](#-native-event-loops--multimedia-with-sdl3)                                    | [Bevy](#1-bevy-data-oriented-application-structure)                                   |
@@ -88,6 +95,10 @@ first pass; use the goal index afterward as a reference.
 - ⚠️ **Failure mode** names what can go wrong and why.
 - 🦀 **Rust examples** favor clarity and explicit checks over cleverness.
 
+> 📚 **Source rule:** these notes distill the linked material into transferable mental
+> models. For version-sensitive APIs, command flags, ABIs, and hardware details, verify
+> the current primary source before depending on an example.
+
 ---
 
 ## 📚 Table of Contents
@@ -95,7 +106,7 @@ first pass; use the goal index afterward as a reference.
 <details>
 <summary>Click to expand all 41 sections</summary>
 
-1. [🗺️ How to Use These Notes](#-how-to-use-these-notes)
+1. [🗺️ How to Use These Notes](#how-to-use-these-notes)
 2. [🧩 Grammar](#-grammar)
 3. [🔧 I. Hardware Fundamentals](#-i-hardware-fundamentals)
 4. [🪜 II. The Language Hierarchy & Translation](#-ii-the-language-hierarchy--translation)
@@ -135,7 +146,7 @@ first pass; use the goal index afterward as a reference.
 38. [🔨 Developer Tooling: The Missing Semester](#-developer-tooling-the-missing-semester)
 39. [🐍 Practical Python Automation](#-practical-python-automation)
 40. [🧰 Practical Low-Level Workflow](#-practical-low-level-workflow)
-41. [🛤️ X. Language Progression](#-x-language-progression)
+41. [🛤️ X. Language Progression](#language-progression)
 
 </details>
 
@@ -613,21 +624,21 @@ WHITESPACE = _{ " " | "\t" }
 
 #### Cheat sheet
 
-| Syntax           | Meaning                         | Syntax              | Meaning            |
+|      Syntax      |             Meaning             |       Syntax        |      Meaning       |
 | :--------------: | :-----------------------------: | :-----------------: | :----------------: |
-| `foo = { ... }`  | regular rule                    | `baz = @{ ... }`    | atomic             |
-| `bar = _{ ... }` | silent                          | `qux = ${ ... }`    | compound-atomic    |
-| `#tag = ...`     | tags                            | `plugh = !{ ... }`  | non-atomic         |
-| `"abc"`          | exact string                    | `^"abc"`            | case insensitive   |
-| `'a'..'z'`       | character range                 | `ANY`               | any character      |
-| `foo ~ bar`      | sequence                        | `baz \| qux`        | ordered choice     |
-| `foo*`           | zero or more                    | `bar+`              | one or more        |
-| `baz?`           | optional                        | `qux{n}`            | exactly _n_        |
-| `qux{m, n}`      | between _m_ and _n_ (inclusive) |                     |                    |
-| `&foo`           | positive predicate              | `!bar`              | negative predicate |
-| `PUSH(baz)`      | match and push                  | `PUSH_LITERAL("a")` | push without match |
-| `POP`            | match and pop                   | `PEEK`              | match without pop  |
-| `DROP`           | pop without matching            | `PEEK_ALL`          | match entire stack |
+| `foo = { ... }`  |          regular rule           |  `baz = @{ ... }`   |       atomic       |
+| `bar = _{ ... }` |             silent              |  `qux = ${ ... }`   |  compound-atomic   |
+|   `#tag = ...`   |              tags               | `plugh = !{ ... }`  |     non-atomic     |
+|     `"abc"`      |          exact string           |      `^"abc"`       |  case insensitive  |
+|    `'a'..'z'`    |         character range         |        `ANY`        |   any character    |
+|   `foo ~ bar`    |            sequence             |    `baz \| qux`     |   ordered choice   |
+|      `foo*`      |          zero or more           |       `bar+`        |    one or more     |
+|      `baz?`      |            optional             |      `qux{n}`       |    exactly _n_     |
+|   `qux{m, n}`    | between _m_ and _n_ (inclusive) |                     |                    |
+|      `&foo`      |       positive predicate        |       `!bar`        | negative predicate |
+|   `PUSH(baz)`    |         match and push          | `PUSH_LITERAL("a")` | push without match |
+|      `POP`       |          match and pop          |       `PEEK`        | match without pop  |
+|      `DROP`      |      pop without matching       |     `PEEK_ALL`      | match entire stack |
 
 ### 2. Defining the Abstract Syntax Tree (AST)
 
@@ -709,7 +720,7 @@ pub fn parse(source: &str) -> std::result::Result<Vec<Node>, pest::error::Error<
 }
 ```
 
-### 4. Parsing Expressions & Associativity (the composits)
+### 4. Parsing Expressions & Associativity (Composite Nodes)
 
 This is the core logic that converts generic `pest` tokens into your custom AST nodes by
 looking at the rule:
@@ -729,22 +740,26 @@ looking at the rule:
 ```rust
 fn parse_unary_expr(pair: pest::iterators::Pair<Rule>, child: Node) -> Node {
     Node::UnaryExpr {
+        // Grammar validation guarantees that only supported unary operators arrive.
         op: match pair.as_str() {
             "+" => Operator::Plus,
             "-" => Operator::Minus,
             _ => unreachable!(),
         },
+        // Box the recursive child so `Node` has a finite compile-time size.
         child: Box::new(child),
     }
 }
 
 fn parse_binary_expr(pair: pest::iterators::Pair<Rule>, lhs: Node, rhs: Node) -> Node {
     Node::BinaryExpr {
+        // Keep this mapping exhaustive as the grammar gains new operators.
         op: match pair.as_str() {
             "+" => Operator::Plus,
             "-" => Operator::Minus,
             _ => unreachable!(),
         },
+        // The AST owns both operand subtrees.
         lhs: Box::new(lhs),
         rhs: Box::new(rhs),
     }
@@ -752,55 +767,46 @@ fn parse_binary_expr(pair: pest::iterators::Pair<Rule>, lhs: Node, rhs: Node) ->
 ```
 
 ```rust
-fn build_ast_from_expr(pair: pest::iterators::Pair<Rule> ) -> Node {
-match pair.as_rule() {
-     Rule::Expr => build_ast_from_expr(pair.into_inner().next().unwrap()),
-     Rule::UnaryExpr => {
-       let mut pair = pair.into_inner();
-       let op = pair.next().unwrap();
-       let child = pair.next().unwrap();
-       let child = build_ast_from_term(child);
-       parse_unary_expr(op, child)
-   }
-     Rule::BinaryExpr => {
-         let mut pair = pair.into_inner();
+fn build_ast_from_expr(pair: pest::iterators::Pair<Rule>) -> Node {
+    match pair.as_rule() {
+        // `Expr` is a grouping rule; its single child carries the useful shape.
+        Rule::Expr => {
+            let child = pair.into_inner().next().expect("Expr has one child");
+            build_ast_from_expr(child)
+        }
+        Rule::UnaryExpr => {
+            let mut parts = pair.into_inner();
+            let op = parts.next().expect("unary expression has an operator");
+            let child = parts.next().expect("unary expression has an operand");
+            parse_unary_expr(op, build_ast_from_term(child))
+        }
+        Rule::BinaryExpr => {
+            let mut parts = pair.into_inner();
+            let first = parts.next().expect("binary expression has a left operand");
 
-         let lhspair = pair.next().unwrap();
-         let mut lhs_built_term = match lhspair.as_rule() {
-                     Rule::UnaryExpr => {
-                         let mut inner = lhspair.into_inner();
-                         let op = inner.next().unwrap();
-                         let child = inner.next().unwrap();
-                         let child = build_ast_from_term(child);
-                         parse_unary_expr(op, child)
-                     }
-                     _ => build_ast_from_term(lhspair),
-                 };
+            // The first operand may itself be unary.
+            let mut lhs = if first.as_rule() == Rule::UnaryExpr {
+                build_ast_from_expr(first)
+            } else {
+                build_ast_from_term(first)
+            };
 
-         let op = pair.next().unwrap();
-         let rhspair = pair.next().unwrap();
-         let mut rhs_built_term = build_ast_from_term(rhspair);
+            // Fold from the left: `a - b - c` becomes `(a - b) - c`.
+            while let Some(op) = parts.next() {
+                let rhs_pair = parts.next().expect("operator has a right operand");
+                let rhs = build_ast_from_term(rhs_pair);
+                lhs = parse_binary_expr(op, lhs, rhs);
+            }
 
-         let mut binary_expr_retval = parse_binary_expr(op, lhs_built_term, rhs_built_term);
-
-         loop {
-             let pair_buf = pair.next();
-             if let Some(op) = pair_buf {
-                 lhs_binary_expr = binary_expr_retval;
-                 adjacent_rhs_binary_expr = build_ast_from_term(pair.next().unwrap());
-                 retval = parse_binary_expr(op, lhs_binary_expr, adjacent_rhs_binary_expr);
-             } else {
-                 return retval;
-             }
-         }
-     }
-     Rule::Term => build_ast_from_term(pair),
-     unknown => panic!("Unknown expr: {:?}", unknown),
-  }
+            lhs
+        }
+        Rule::Term => build_ast_from_term(pair),
+        unknown => panic!("unexpected expression rule: {unknown:?}"),
+    }
 }
 ```
 
-### 5. Parsing Terms (The Leaves)
+### 5. Parsing Terms (Leaf Nodes)
 
 When the parser drills down to a basic term (`Rule::Term`), it hits the bottom of the
 tree. It expects one of two things:
@@ -811,14 +817,17 @@ tree. It expects one of two things:
 
 ```rust
 fn build_ast_from_term(pair: pest::iterators::Pair<Rule>) -> Node {
-    let pair = pair.into_inner().next().unwrap();
+    // `Term` is a wrapper rule; unwrap its one meaningful child.
+    let pair = pair.into_inner().next().expect("Term has one child");
     match pair.as_rule() {
         Rule::Int => {
-            let int: i32 = pair.as_str().parse().unwrap();
+            // The grammar already restricted this text to an integer token.
+            let int: i32 = pair.as_str().parse().expect("validated integer");
             Node::Int(int)
         }
+        // Parentheses return us to expression precedence parsing.
         Rule::Expr => build_ast_from_expr(pair),
-        unknown => panic!("Unknown term: {:?}", unknown),
+        unknown => panic!("unexpected term rule: {unknown:?}"),
     }
 }
 ```
@@ -1028,6 +1037,106 @@ fn program_rejects_trailing_garbage() {
 
 Snapshotting a debug string is useful early, but mature compilers should compare typed
 AST values so formatting changes do not break semantic tests.
+
+### 8. Rule Modifiers Control Both Whitespace and Tree Shape
+
+Pest rule modifiers are not cosmetic. They change whether implicit whitespace is
+allowed and which nodes appear in the concrete parse tree.
+
+| Rule form         | Meaning                                                       | Typical use                      |
+| ----------------- | ------------------------------------------------------------- | -------------------------------- |
+| `name = { ... }`  | normal rule; produces a pair                                  | meaningful syntax construct      |
+| `name = _{ ... }` | silent rule; matches but produces no pair                     | whitespace or grouping helper    |
+| `name = @{ ... }` | atomic; disables implicit whitespace and silences inner rules | identifiers and simple literals  |
+| `name = ${ ... }` | compound atomic; disables whitespace but keeps inner pairs    | structured string/token forms    |
+| `name = !{ ... }` | non-atomic even inside an atomic caller                       | interpolation with normal syntax |
+
+```pest
+WHITESPACE = _{ " " | "\t" | NEWLINE }
+COMMENT    = _{ "//" ~ (!NEWLINE ~ ANY)* }
+
+identifier = @{ ASCII_ALPHA ~ (ASCII_ALPHANUMERIC | "_")* }
+
+string = ${ "\"" ~ string_part* ~ "\"" }
+string_part = {
+    escape
+  | interpolation
+  | (!("\"" | "\\") ~ ANY)
+}
+interpolation = !{ "${" ~ expression ~ "}" }
+```
+
+The identifier is atomic because `hello world` must not become one identifier merely
+because the grammar defines implicit whitespace. The interpolation rule becomes
+non-atomic so an expression such as `${left + right}` can use ordinary spacing.
+
+> ⚠️ **Tree-shape trap:** changing `{ ... }` to `_{ ... }` can make correct matching
+> code fail later because the corresponding `Pair` disappears. Treat the concrete parse
+> tree as an interface and cover it with tests.
+
+### 9. Predicates Inspect Without Consuming
+
+Positive (`&`) and negative (`!`) predicates are PEG lookahead operations. They test the
+next input but leave the parser at the same byte position.
+
+```pest
+keyword_if = { "if" ~ !ASCII_ALPHANUMERIC }
+
+triple_string = {
+    "'''"
+    ~ (!"'''" ~ ANY)*
+    ~ "'''"
+}
+```
+
+| Predicate           | Reads input? | Consumes input? | Use                       |
+| ------------------- | ------------ | --------------- | ------------------------- |
+| `&rule`             | yes          | no              | require a following shape |
+| `!rule`             | yes          | no              | reject a following shape  |
+| `!terminator ~ ANY` | yes          | one character   | consume until a delimiter |
+
+Every successful repetition must make progress. A repeated expression that can succeed
+without consuming input is a design smell because the parser cannot advance:
+
+```pest
+// Risky idea: `item?` may match zero bytes.
+// list = { (item?)* }
+
+list = { item* }
+```
+
+### 10. The Grammar Stack Handles Matched Delimiters
+
+Pest's grammar stack stores **matched text**, not arbitrary semantic values. `PUSH`
+records text; `PEEK` checks it without removing it; `POP` checks and removes it; `DROP`
+removes it without matching.
+
+One useful case is a raw string whose closing delimiter must contain the same number of
+`#` characters as its opening delimiter:
+
+```pest
+raw_string = {
+    "r" ~ PUSH("#"*) ~ "\""
+    ~ (!("\"" ~ PEEK) ~ ANY)*
+    ~ "\"" ~ POP
+}
+```
+
+```text
+r###"the " character is allowed here"###
+ ^^^                                ^^^
+ pushed delimiter                   must match exactly
+```
+
+| Good grammar-stack use         | Better handled elsewhere            |
+| ------------------------------ | ----------------------------------- |
+| matching a repeated delimiter  | symbol tables and name resolution   |
+| indentation prefix tracking    | type checking                       |
+| opener-dependent closing token | arbitrary runtime state             |
+| exact textual equality later   | semantic equality of decoded values |
+
+Keep the stack localized to one grammar feature. If many distant rules depend on it,
+the grammar becomes difficult to reason about and error recovery becomes fragile.
 
 > ➡️ **Next:** the execution-pipeline section treats the AST as the trusted input to an
 > interpreter or backend. Pest-specific details stop here; the language model continues.
@@ -1919,6 +2028,79 @@ frame refer to a window. That avoids one `Vec` allocation per call.
 | Stable identity  | Prefer handles when raw addresses may move                           |
 | Allocation audit | Treat every allocation point as a possible collection point          |
 
+### 13. Keep VM State Explicit and Split by Responsibility
+
+The hosted-languages guide models one execution thread with distinct structures for
+call frames, register values, open upvalues, globals, and the current instruction
+stream. Keeping these roles separate prevents one overloaded “stack” from hiding
+different invariants.
+
+```rust
+struct VmThread {
+    frames: Vec<CallFrame>,
+    registers: Vec<Value>,
+    stack_base: usize,
+    open_upvalues: Vec<UpvalueHandle>,
+    globals: GlobalTable,
+    current_code: FunctionId,
+    instruction_pointer: usize,
+}
+```
+
+| State                | Primary invariant                                      |
+| -------------------- | ------------------------------------------------------ |
+| `frames`             | top frame owns the active return context               |
+| `registers`          | active window fits within the allocated register stack |
+| `stack_base`         | points to the first register of the active call        |
+| `open_upvalues`      | each captured stack slot has shared intermediary state |
+| `globals`            | keys obey the language's name/environment policy       |
+| instruction location | belongs to the active function's bytecode              |
+
+A register VM can reserve a fixed-width window for each call:
+
+```text
+one contiguous value stack
+
+┌──────── caller registers ────────┐
+│ r0 r1 r2 ...                     │
+└──────────────────────────────────┘
+                    ┌──── callee window ────┐
+stack_base ────────→│ r0 r1 r2 ...          │
+                    └────────────────────────┘
+```
+
+This is still a stack of activation storage, even though bytecodes name registers
+instead of pushing and popping every operand.
+
+#### Call and Return Are Coordinated State Transitions
+
+```text
+call:
+  validate callee and arity
+  save caller function, return IP, base, and destination
+  establish callee register window
+  copy/place arguments
+  switch current bytecode and IP
+
+return:
+  collect declared return values
+  close upvalues owned by the departing window
+  discard or invalidate callee registers
+  restore caller frame, base, bytecode, and IP
+  write results into caller destination(s)
+```
+
+| Failure mode                       | Required defense                            |
+| ---------------------------------- | ------------------------------------------- |
+| bytecode names register 250 of 8   | verify register operands before execution   |
+| malformed return underflows frames | verifier plus runtime boundary check        |
+| captured local dies with frame     | open/closed upvalue intermediary            |
+| collection misses a live register  | trace active windows and saved frame values |
+| native call re-enters the VM       | document re-entrancy and rooting discipline |
+
+Bytecode verification can move many checks out of the dispatch loop, but only if
+unverified bytecode can never reach the fast path.
+
 ---
 
 ## 🌙 Building a Minimal Lua Interpreter in Rust
@@ -2240,6 +2422,114 @@ When a test fails, ask which boundary first differs:
 ```text
 source → tokens → chunk → VM state → output
 ```
+
+### 11. Lua Tables Combine Array and Hash Representations
+
+Lua presents one table abstraction, but an implementation can split storage:
+
+```rust
+use std::collections::HashMap;
+
+struct LuaTable {
+    array: Vec<Value>,
+    map: HashMap<ValueKey, Value>,
+}
+```
+
+| Key shape                       | Likely representation         |
+| ------------------------------- | ----------------------------- |
+| dense positive integer sequence | array part                    |
+| sparse integer                  | hash part                     |
+| string or other permitted key   | hash part                     |
+| `nil` or invalid numeric key    | reject according to semantics |
+
+The split is an optimization hidden behind one semantic interface. Reads and writes
+must behave consistently even when a key migrates between representations.
+
+```lua
+local key = "language"
+local t = {
+    10, 20, 30,          -- list-style fields
+    name = "tiny-lua",   -- record-style field
+    [key] = "rust",      -- general expression key
+}
+```
+
+| Source form | Semantic operation                            |
+| ----------- | --------------------------------------------- |
+| `t.name`    | `t["name"]`                                   |
+| `t[i]`      | evaluate `t`, evaluate `i`, then index        |
+| `t.x.y`     | chained reads with intermediate values        |
+| `t.x = v`   | l-value/indexed store, not a local assignment |
+
+Table objects have reference identity. Assigning a table value normally copies a
+reference, not all entries. That affects equality, hashing, mutation visibility, and
+garbage-collector edges.
+
+> 🧭 **Implementation rule:** specify table semantics first; only then optimize dense
+> integer keys, constant fields, inline caches, or hash layouts.
+
+### 12. Control Flow Turns Labels into Patched Offsets
+
+The compiler often emits a jump before it knows the destination:
+
+```rust
+fn patch_relative_jump(
+    code: &mut [Instruction],
+    jump_at: usize,
+    target: usize,
+) -> Result<(), CompileError> {
+    // Relative branches are measured from the instruction *after* the jump.
+    // Checked addition keeps a corrupt/oversized program from wrapping to zero.
+    let next = jump_at
+        .checked_add(1)
+        .ok_or(CompileError::ProgramTooLarge)?;
+
+    // Convert both indices before subtraction so a backward edge becomes negative.
+    // A failed conversion means this program cannot fit the VM's offset model.
+    let distance = isize::try_from(target)
+        .ok()
+        .and_then(|target| isize::try_from(next).ok().map(|next| target - next))
+        .ok_or(CompileError::ProgramTooLarge)?;
+
+    // The instruction encoder performs its own final width/range validation.
+    code[jump_at].set_relative_offset(distance)?;
+    Ok(())
+}
+```
+
+```text
+if condition then body end
+
+evaluate condition
+JumpIfFalse ???  ─────────────┐
+body instructions             │
+target: ◀─────────────────────┘
+patch ??? = target - next_instruction
+```
+
+| Construct        | Patch information to retain                       |
+| ---------------- | ------------------------------------------------- |
+| `if`             | false branch and optional end branch              |
+| `while`          | exit branch plus backward loop edge               |
+| `break`          | list of exits for the nearest loop                |
+| `goto`           | label, scope depth, and unresolved jump           |
+| short-circuit op | true/false target and whether a value is required |
+
+Forward-only offsets stop being sufficient once loops add backward edges. Store signed,
+range-checked displacements and define whether they are relative to the current
+instruction or the following instruction.
+
+Logical expressions have two compilation modes:
+
+```text
+condition mode: branch directly to true/false targets
+value mode:     produce a boolean or operand value in a destination register
+```
+
+Compiling `a and b` directly as branches can avoid materializing a temporary boolean,
+but the result must still preserve Lua's value semantics when the expression is used as
+a value.
 
 ---
 
@@ -2759,17 +3049,23 @@ use inkwell::context::Context;
 use inkwell::module::Module;
 
 fn build_add<'ctx>(context: &'ctx Context) -> Module<'ctx> {
+    // Context owns LLVM's uniqued types; the module owns generated IR.
     let module = context.create_module("arithmetic");
     let builder = context.create_builder();
     let i64_type = context.i64_type();
+
+    // Declare: i64 add_i64(i64, i64).
     let function_type = i64_type.fn_type(
         &[i64_type.into(), i64_type.into()],
         false,
     );
     let function = module.add_function("add_i64", function_type, None);
+
+    // Every instruction must be inserted into a basic block.
     let entry = context.append_basic_block(function, "entry");
     builder.position_at_end(entry);
 
+    // Parameters are generic LLVM values until converted to integer values.
     let lhs = function
         .get_nth_param(0)
         .expect("parameter 0 exists")
@@ -2781,10 +3077,13 @@ fn build_add<'ctx>(context: &'ctx Context) -> Module<'ctx> {
     let sum = builder
         .build_int_add(lhs, rhs, "sum")
         .expect("builder is positioned in a block");
+
+    // `ret` terminates the entry block and must match the declared return type.
     builder
         .build_return(Some(&sum))
         .expect("return type matches function type");
 
+    // Builder calls can succeed while the combined module is still invalid.
     module.verify().expect("generated module must be valid");
     module
 }
@@ -3823,7 +4122,7 @@ formats, and network frames.
 
 ### 5. Memory Inspection as a Scientific Method
 
-most general-purpose lesson is not a particular tool; it is the repeated workflow:
+The most general-purpose lesson is not a particular tool; it is the repeated workflow:
 
 1. **Identify** a value or behavior you can control.
 2. **Change one variable** while keeping other conditions stable.
@@ -3836,18 +4135,28 @@ For a safe toy example, pretend a process snapshot is just a byte vector:
 
 ```rust
 fn find_u32_le(haystack: &[u8], wanted: u32) -> Vec<usize> {
+    // Make the assumed byte order part of the search contract.
     let needle = wanted.to_le_bytes();
+
     haystack
+        // Windows yields only complete four-byte candidates.
         .windows(needle.len())
         .enumerate()
+        // Offsets are hypotheses to refine, not proof of a field's meaning.
         .filter_map(|(offset, window)| (window == needle).then_some(offset))
         .collect()
 }
 
 fn retain_changed(old: &[u8], new: &[u8], candidates: &mut Vec<usize>) {
-    candidates.retain(|&i| {
-        old.get(i..i + 4)
-            .zip(new.get(i..i + 4))
+    candidates.retain(|&offset| {
+        // Checked addition keeps a malformed candidate from wrapping the end index.
+        let Some(end) = offset.checked_add(4) else {
+            return false;
+        };
+
+        // `get` rejects ranges outside either snapshot without panicking.
+        old.get(offset..end)
+            .zip(new.get(offset..end))
             .is_some_and(|(a, b)| a != b)
     });
 }
@@ -3881,7 +4190,8 @@ unrelated.
 
 ### 6. Defensive Memory Safety and Hardening
 
-most useful when it helps you recognize what your compiler or runtime must prevent.
+Defensive memory-safety material is most useful when it helps you recognize what your
+compiler or runtime must prevent.
 
 | Failure          | Root cause                           | Language/runtime defense           |
 | ---------------- | ------------------------------------ | ---------------------------------- |
@@ -4000,10 +4310,14 @@ enum Instr {
 
 fn disassemble(mut bytes: &[u8]) -> Result<Vec<Instr>, &'static str> {
     let mut out = Vec::new();
+
     while let Some((&opcode, rest)) = bytes.split_first() {
+        // Consume the opcode before decoding any instruction-specific operands.
         bytes = rest;
+
         match opcode {
             0x01 => {
+                // `split_first` turns truncation into an ordinary parse error.
                 let (&value, rest) = bytes.split_first().ok_or("missing operand")?;
                 bytes = rest;
                 out.push(Instr::Push(value));
@@ -4012,14 +4326,20 @@ fn disassemble(mut bytes: &[u8]) -> Result<Vec<Instr>, &'static str> {
             0x03 => out.push(Instr::Print),
             0xff => {
                 out.push(Instr::Halt);
+
+                // This format defines HALT as the final byte, so trailing data is
+                // rejected instead of being silently interpreted as another section.
                 if !bytes.is_empty() {
                     return Err("bytes after halt");
                 }
                 return Ok(out);
             }
+            // Unknown opcodes fail closed; guessing their width would desynchronize.
             _ => return Err("unknown opcode"),
         }
     }
+
+    // Falling off the byte slice is invalid because every program must terminate.
     Err("missing halt")
 }
 ```
@@ -4035,6 +4355,716 @@ fn disassemble(mut bytes: &[u8]) -> Result<Vec<Instr>, &'static str> {
 | Separate verifier               | Safe validation without execution               |
 | Fail-closed versioning          | Unknown formats cannot be misinterpreted        |
 | Deterministic output            | Reproducible builds and meaningful binary diffs |
+
+### 8. Separate Values, Objects, Storage, and Allocations
+
+Memory discussions become confusing when several different concepts are all called “the
+value.” Keep the layers separate:
+
+| Term               | Precise mental model                                          |
+| ------------------ | ------------------------------------------------------------- |
+| **value**          | an abstract member of a type, such as integer `42`            |
+| **representation** | the bits/bytes used to encode a value                         |
+| **place**          | a location expression that can hold a value                   |
+| **object**         | a typed region of storage with a lifetime                     |
+| **allocation**     | a reserved storage region managed as one unit                 |
+| **address**        | a numeric location in an address space                        |
+| **pointer**        | a value used to locate or refer into storage                  |
+| **reference**      | a pointer-like value with stronger validity/aliasing promises |
+| **handle**         | an indirect stable identifier resolved through a table        |
+| **lifetime**       | the interval during which an object may be used               |
+| **reachability**   | whether a root can reach an object through runtime references |
+
+One allocation may contain several objects, and one object may be viewed through several
+references:
+
+```text
+allocation
+┌─────────────────────────────────────────┐
+│ header │ object A │ padding │ object B  │
+└─────────────────────────────────────────┘
+           ↑    ↑                    ↑
+        shared mutable?          interior pointer
+        references
+```
+
+Conversely, a logical value can span several allocations:
+
+```text
+Vec<String>
+  ├─ vector header: pointer + length + capacity
+  ├─ allocation containing String headers
+  └─ one or more allocations containing string bytes
+```
+
+#### Lifetime, Scope, and Storage Duration Are Different
+
+| Concept             | Question                                                   |
+| ------------------- | ---------------------------------------------------------- |
+| lexical scope       | Where can a source-level name be written?                  |
+| borrow lifetime     | For how long may this reference be used?                   |
+| object lifetime     | When is this typed object initialized and later destroyed? |
+| allocation lifetime | When is the backing storage reserved and released?         |
+| storage duration    | Is storage automatic, static, dynamic, mapped, or managed? |
+
+A borrow may end before its variable leaves lexical scope because the compiler sees its
+last use. A heap allocation can outlive the function that created it. An arena
+allocation can stay reserved after individual objects are logically dead.
+
+> 🧭 **Debugging rule:** before saying “this pointer is valid,” name the allocation,
+> object, offset, type, initialization state, ownership path, and time interval that make
+> the claim true.
+
+### 9. Choose Ownership by the Shape of the Relationship
+
+Rust ownership containers communicate who keeps an allocation alive:
+
+| Type         | Ownership model                       | Thread use             | Common fit                        |
+| ------------ | ------------------------------------- | ---------------------- | --------------------------------- |
+| `T`          | inline, uniquely owned value          | depends on `T`         | ordinary local/field              |
+| `&T`         | temporary shared borrow               | depends on `T: Sync`   | read-only view                    |
+| `&mut T`     | temporary exclusive borrow            | depends on `T: Send`   | in-place mutation                 |
+| `Box<T>`     | unique ownership of an allocation     | depends on `T`         | recursive/large/trait object      |
+| `Rc<T>`      | non-atomic shared ownership           | single-threaded        | AST/UI/runtime graph              |
+| `Weak<T>`    | non-owning observer of `Rc`/`Arc`     | matches strong pointer | parent/cache/back-reference       |
+| `Arc<T>`     | atomic shared ownership               | cross-thread capable   | immutable/shared service state    |
+| `Cow<'a, T>` | borrow until mutation requires a copy | depends on owned type  | normalization and parsing         |
+| `Pin<P>`     | restricts moves through pointer `P`   | depends on `P`/target  | self-referential async/FFI states |
+
+`Rc::clone` and `Arc::clone` clone a pointer and increment a strong count; they do not
+deep-copy the inner value. `Arc<T>` makes ownership counting atomic, but it does not make
+arbitrary mutation of `T` safe.
+
+```text
+Arc<Config>              shared immutable data
+Arc<Mutex<State>>        shared mutation protected by a lock
+Arc<AtomicU64>           one atomic integer, no lock
+```
+
+#### Break Ownership Cycles with Weak Edges
+
+```rust
+use std::cell::RefCell;
+use std::rc::{Rc, Weak};
+
+#[derive(Default)]
+struct Node {
+    parent: RefCell<Weak<Node>>,
+    children: RefCell<Vec<Rc<Node>>>,
+}
+
+fn attach(parent: &Rc<Node>, child: &Rc<Node>) {
+    *child.parent.borrow_mut() = Rc::downgrade(parent);
+    parent.children.borrow_mut().push(Rc::clone(child));
+}
+```
+
+```text
+parent ──strong──→ child
+parent ←──weak──── child
+```
+
+| Edge meaning                       | Usually strong or weak? |
+| ---------------------------------- | ----------------------- |
+| child cannot exist without parent  | parent owns child       |
+| child merely knows its parent      | weak back-reference     |
+| cache should not keep item alive   | weak cache entry        |
+| task must finish using shared data | strong task reference   |
+
+`Weak::upgrade` returns `Option` because the strong owners may already be gone.
+Reference counting reclaims objects deterministically when the strong count becomes
+zero, but strong cycles never reach zero.
+
+#### Pinning Is Not “Permanent Memory”
+
+Pinning restricts moving a value through a particular pointer. It does not:
+
+- prevent the value from eventually being dropped;
+- make dangling raw pointers valid;
+- synchronize concurrent access;
+- promise a stable address for every inner field after arbitrary projection; or
+- make ordinary self-references safe without a sound construction API.
+
+Most types implement `Unpin` and do not care about address stability. Reach for `Pin`
+only when a documented invariant genuinely connects object identity to its address.
+
+### 10. Pointers Carry More Than a Numeric Address
+
+A useful modern model treats pointer validity as including **provenance**: which
+allocation and access path authorized the pointer, in addition to its numeric address.
+
+```text
+pointer use is valid only if:
+  allocation is live
+  + address is in-bounds (or permitted one-past)
+  + alignment fits the access
+  + bytes contain a valid initialized value
+  + aliasing permissions allow this access
+  + access kind matches page/object permissions
+```
+
+Two pointers with the same printed integer are not automatically interchangeable. An
+address recovered from stale storage or guessed from an integer does not by itself prove
+that dereferencing it is valid.
+
+#### References Promise More Than Raw Pointers
+
+For the period it is live, a normal Rust reference promises properties such as:
+
+| Reference             | Key promise                                                |
+| --------------------- | ---------------------------------------------------------- |
+| `&T`                  | aligned, non-null, initialized, valid shared access to `T` |
+| `&mut T`              | aligned, non-null, initialized, exclusive access to `T`    |
+| `*const T` / `*mut T` | raw address-like value; dereference still needs proof      |
+
+Creating an invalid reference can already violate Rust's rules even if code never reads
+through it. Keep questionable states as raw pointers or `MaybeUninit<T>` until every
+reference invariant is established.
+
+#### Interior Mutability Has an Explicit Boundary
+
+`UnsafeCell<T>` is the primitive that permits mutation through a shared reference. Safe
+types build different policies on top:
+
+| Wrapper      | Enforcement mechanism                          | Typical scope        |
+| ------------ | ---------------------------------------------- | -------------------- |
+| `Cell<T>`    | copy/replace values; no references to interior | single thread        |
+| `RefCell<T>` | runtime shared/exclusive borrow counter        | single thread        |
+| `Mutex<T>`   | blocking mutual exclusion                      | multiple threads     |
+| `RwLock<T>`  | multiple readers or one writer                 | multiple threads     |
+| atomic type  | hardware/compiler atomic operations            | simple shared values |
+
+```rust
+use std::cell::Cell;
+
+struct VisitCounter {
+    count: Cell<u64>,
+}
+
+impl VisitCounter {
+    fn record(&self) {
+        self.count.set(self.count.get().saturating_add(1));
+    }
+}
+```
+
+`UnsafeCell` relaxes the immutability assumption of `&T`; it does not permit data races
+or multiple live `&mut T` references. The wrapper must enforce the remaining rules.
+
+#### Raw-Pointer Review Card
+
+Before every dereference in `unsafe` code, answer:
+
+1. Which live allocation contains the full access range?
+2. How was this pointer derived?
+3. Is the address correctly aligned for `T`?
+4. Has a valid `T` been fully initialized there?
+5. Which references or raw accesses may alias it now?
+6. Can a callback, signal, interrupt, GC, or another thread invalidate the proof?
+7. Who eventually drops the value and deallocates the storage?
+
+### 11. Initialization Is a Type Invariant
+
+“The bytes exist” does not mean “a value of type `T` exists.” Types restrict valid bit
+patterns:
+
+| Type/category       | Example invalid state                             |
+| ------------------- | ------------------------------------------------- |
+| reference           | null, misaligned, dangling, or invalid provenance |
+| `bool`              | byte pattern other than a valid boolean value     |
+| enum                | invalid discriminant                              |
+| `NonZeroUsize`      | zero                                              |
+| `String` / `Vec<T>` | nonsensical pointer/length/capacity relationship  |
+| custom type         | broken documented semantic invariant              |
+
+`MaybeUninit<T>` represents storage that may not yet contain a valid `T`:
+
+```rust
+use std::mem::MaybeUninit;
+
+let mut slot = MaybeUninit::<String>::uninit();
+slot.write(String::from("initialized"));
+
+// SAFETY: the preceding `write` stored one valid String in `slot`.
+let value = unsafe { slot.assume_init() };
+assert_eq!(value, "initialized");
+```
+
+| Operation              | Responsibility                                 |
+| ---------------------- | ---------------------------------------------- |
+| `MaybeUninit::uninit`  | creates storage without claiming a valid `T`   |
+| `write(value)`         | initializes without trying to drop old garbage |
+| `assume_init`          | caller proves a valid `T` is fully present     |
+| dropping `MaybeUninit` | does not drop a possibly initialized inner `T` |
+
+Zero bytes are valid for some types and invalid for others. Never use “zeroed” as a
+generic constructor.
+
+#### Partial Initialization Needs Cleanup State
+
+When initializing an array or object field-by-field, a failure can leave a prefix
+initialized:
+
+```text
+[ initialized ][ initialized ][ initialized ][ uninit ][ uninit ]
+       0              1              2             3        4
+initialized_len = 3
+```
+
+A sound implementation tracks how many elements are live and drops exactly that prefix
+on failure. This is the low-level version of RAII: cleanup state must evolve together
+with initialization state.
+
+> ⚠️ **Padding rule:** padding may contain unspecified or uninitialized bytes. Do not
+> compare structs byte-for-byte, hash raw struct storage, or write the storage directly
+> to disk/network as a serialization format.
+
+### 12. Allocator Mechanics
+
+An allocator receives a request described by a **size and alignment**. Rust expresses
+this with `Layout`.
+
+```rust
+use std::alloc::Layout;
+
+fn value_array_layout(count: usize) -> Result<Layout, &'static str> {
+    Layout::array::<u64>(count).map_err(|_| "allocation layout overflow")
+}
+```
+
+The allocator must return a suitably aligned block or report failure. If raw allocation
+APIs are used, deallocation must use the corresponding allocator and compatible layout.
+
+#### What a General-Purpose Allocator Tracks
+
+| Mechanism             | Purpose                                  |
+| --------------------- | ---------------------------------------- |
+| size classes          | group similarly sized requests           |
+| free lists/bins       | find reusable blocks                     |
+| per-thread cache      | reduce global synchronization            |
+| allocation metadata   | record size/state needed for reuse       |
+| page/span management  | request larger regions from the OS       |
+| coalescing            | combine adjacent free blocks             |
+| quarantine/debug mode | delay reuse to expose stale-pointer bugs |
+
+```text
+program asks for 24 bytes
+    ↓ round to allocator size class, perhaps 32 bytes
+reuse cached block or obtain a span/page
+    ↓
+return aligned user region
+```
+
+The requested size, usable size, reserved size, and resident physical memory may all
+differ.
+
+#### Fragmentation Has Two Forms
+
+| Kind                   | Meaning                                                |
+| ---------------------- | ------------------------------------------------------ |
+| internal fragmentation | unused bytes inside an allocated size class/block      |
+| external fragmentation | free space exists but not in a suitable contiguous run |
+
+A process can free every logical object and still retain pages in allocator caches or
+fragmented spans. That is not necessarily a leak, although it can still be a memory
+budget problem.
+
+#### Allocation Strategies Encode Lifetime Assumptions
+
+| Strategy        | Fast path                          | Best fit                   | Main limitation                    |
+| --------------- | ---------------------------------- | -------------------------- | ---------------------------------- |
+| bump arena      | advance pointer                    | phase-scoped AST/IR nodes  | individual free usually impossible |
+| pool/slab       | pop fixed-size slot                | many same-shaped objects   | poor fit for varied sizes          |
+| free-list heap  | find/split reusable block          | general dynamic allocation | fragmentation/metadata             |
+| reference count | increment/decrement counters       | shared acyclic ownership   | cycles and counter traffic         |
+| tracing GC heap | cheap allocation, periodic tracing | managed object graphs      | pauses/barriers/runtime complexity |
+| stack/region    | adjust stack/region pointer        | nested lifetimes           | must obey region lifetime          |
+
+For compiler phases, arenas often reduce per-node overhead and improve locality. Use
+typed IDs or arena-borrowed references so nodes cannot silently outlive the arena.
+
+#### Collections Reserve More Than Their Length
+
+```rust
+let mut bytes = Vec::with_capacity(1024);
+bytes.extend_from_slice(b"hello");
+
+assert_eq!(bytes.len(), 5);
+assert!(bytes.capacity() >= 1024);
+```
+
+| Quantity        | Meaning                                      |
+| --------------- | -------------------------------------------- |
+| length          | initialized elements logically in collection |
+| capacity        | elements that fit before reallocation        |
+| allocation size | backing storage reserved from allocator      |
+
+`clear()` drops/removes elements but normally preserves capacity. `shrink_to_fit()` is a
+request and may reallocate; it is not a real-time guarantee. Reuse capacity when it
+improves performance, and bound it when retained memory matters more.
+
+### 13. Thin Pointers, Fat Pointers, and Dynamically Sized Types
+
+Some references need metadata in addition to a data address:
+
+```text
+&T
+┌──────────────┐
+│ data pointer │
+└──────────────┘
+
+&[T] / &str
+┌──────────────┬──────────┐
+│ data pointer │ length   │
+└──────────────┴──────────┘
+
+&dyn Trait
+┌──────────────┬───────────────┐
+│ data pointer │ vtable pointer │
+└──────────────┴───────────────┘
+```
+
+The pointee may be dynamically sized even though the pointer itself has a known size.
+Common examples are slices, `str`, and trait objects.
+
+| Type         | Metadata                   | Boundary question                        |
+| ------------ | -------------------------- | ---------------------------------------- |
+| `&[T]`       | element count              | Is the whole range live and initialized? |
+| `&str`       | byte length                | Are bytes valid UTF-8?                   |
+| `&dyn Trait` | vtable for concrete type   | Does data match that vtable/type?        |
+| `Box<[T]>`   | length stored with pointer | Who owns and drops every element?        |
+
+Never assume a trait object is “just a function pointer.” Its exact ABI/layout is not a
+stable cross-language interface unless a specific ABI defines it.
+
+#### Niche Optimization
+
+Some types have invalid bit patterns the compiler can reuse to encode an enum variant.
+A common example is an optional non-null reference:
+
+```rust
+use std::mem::size_of;
+
+assert_eq!(size_of::<Option<&u8>>(), size_of::<&u8>());
+```
+
+The null representation can encode `None` because a Rust reference cannot be null.
+Niche optimizations are useful, but only rely on guarantees documented for the exact
+types involved. `repr(Rust)` remains free to change many layout details.
+
+#### Unaligned Data Must Stay Raw Until Read Correctly
+
+Packed or serialized data may place a multi-byte field at an unaligned address. Creating
+`&field` would first create an invalid reference. Use raw-address formation and an
+unaligned read when the format requires it:
+
+```rust
+#[repr(C, packed)]
+struct Packed {
+    tag: u8,
+    value: u32,
+}
+
+fn value_of(packed: &Packed) -> u32 {
+    let pointer = &raw const packed.value;
+    // SAFETY: `pointer` addresses four initialized bytes inside `packed`;
+    // unaligned access is intentional.
+    unsafe { pointer.read_unaligned() }
+}
+```
+
+For file and network formats, explicit byte decoding is usually clearer and more
+portable than mapping bytes onto packed structs.
+
+### 14. Memory Performance Is Mostly About Movement and Locality
+
+CPU execution is much faster than fetching arbitrary data from main memory. Hardware
+uses a hierarchy:
+
+```text
+registers → L1 cache → L2 cache → shared/larger cache → RAM → storage
+ fastest/smallest                                  slowest/largest
+```
+
+| Locality type        | Meaning                                       |
+| -------------------- | --------------------------------------------- |
+| temporal locality    | recently used data is likely to be used again |
+| spatial locality     | nearby data is likely to be used soon         |
+| instruction locality | nearby/repeated code paths stay hot           |
+
+Contiguous iteration usually makes better use of cache lines and prefetching than
+pointer chasing through scattered objects.
+
+#### Array of Structures Versus Structure of Arrays
+
+```text
+AoS:
+[x y color][x y color][x y color]
+
+SoA:
+[x x x ...][y y y ...][color color color ...]
+```
+
+| Workload                          | Often favorable shape                |
+| --------------------------------- | ------------------------------------ |
+| process every field of one object | array of structures                  |
+| update only `x` for many objects  | structure of arrays                  |
+| polymorphic sparse graph          | handles/indirection may be necessary |
+
+Do not choose from slogans. Measure the actual traversal, object count, cache behavior,
+mutation pattern, and code complexity.
+
+#### Working Set and Page Locality
+
+The **working set** is the memory actively needed during an interval. A program can have
+a large virtual address space but a small working set, or a moderate heap with a working
+set too large for caches/RAM.
+
+```text
+algorithm touches 1 field in 10 million scattered objects
+    ↓
+many cache/TLB misses despite little useful data per object
+```
+
+Arena placement, compacting collectors, object splitting, and dense IDs can improve
+locality by placing related hot data together.
+
+#### False Sharing
+
+Two threads can modify different variables that happen to occupy the same cache line:
+
+```text
+one cache line
+┌──────── thread A counter ──────── thread B counter ───────┐
+```
+
+The cache-coherence protocol then moves ownership of the line between cores even though
+the source variables do not logically overlap. Symptoms include poor scaling and high
+coherence traffic. Padding or per-thread aggregation can help, but increases memory use;
+measure before changing layout.
+
+### 15. Garbage Collection Is a Graph Algorithm
+
+A tracing collector treats managed memory as a directed graph:
+
+```text
+roots: registers, VM stack, globals, native handles
+    ↓
+trace outgoing object references
+    ↓
+reachable objects survive
+unreachable objects may be reclaimed
+```
+
+The core invariant is:
+
+> Every live managed reference must be discoverable or otherwise protected whenever the
+> collector may run.
+
+#### Collector Families
+
+| Strategy               | Strength                                    | Cost/constraint                      |
+| ---------------------- | ------------------------------------------- | ------------------------------------ |
+| reference counting     | prompt reclamation, simple local reasoning  | cycles, count traffic                |
+| mark-sweep             | handles cycles; objects need not move       | tracing pause and fragmentation      |
+| mark-compact           | improves locality and removes fragmentation | updates references; movement cost    |
+| copying/semispace      | fast allocation and compaction              | extra space; moves live objects      |
+| generational           | focuses work on usually short-lived objects | remembered sets and write barriers   |
+| incremental/concurrent | spreads/reduces pause work                  | complex barriers and synchronization |
+
+“Garbage collected” does not imply objects never move, destructors run immediately, or
+memory usage stays below a fixed bound.
+
+#### Open, Closed, and Rooted References
+
+For a VM with closures:
+
+```text
+active local:
+closure → open upvalue → VM register slot
+
+after frame exits:
+closure → closed upvalue → heap-managed cell
+```
+
+The collector must trace the intermediary in both states. Native code that temporarily
+holds a managed value also needs a rooting/handle discipline if allocation can trigger
+collection.
+
+#### Generational Collection Needs a Write Barrier
+
+If an old object starts pointing to a young object, scanning only young roots would miss
+the edge:
+
+```text
+old object ──new reference──→ young object
+```
+
+A write barrier records the old object/card/slot in a remembered set. The next minor
+collection scans those recorded old-to-young edges.
+
+| Barrier failure                   | Result                                     |
+| --------------------------------- | ------------------------------------------ |
+| missed edge                       | live young object reclaimed                |
+| record everything globally        | correct but minor collections lose benefit |
+| barrier runs after unsafe publish | collector may observe inconsistent state   |
+
+#### Safepoints and Stack Maps
+
+A precise moving collector must know where references exist in registers and stack
+slots. Compilers can emit **stack maps** for selected **safepoints**:
+
+| Safepoint candidate  | Why it is useful                                |
+| -------------------- | ----------------------------------------------- |
+| allocation slow path | collection is already possible                  |
+| function call        | register/stack state follows a known convention |
+| loop back edge       | long-running computation eventually cooperates  |
+| explicit poll        | runtime can request suspension                  |
+
+At a safepoint, each live reference location must match the compiler's map. Optimizer
+and GC metadata must be generated from the same final liveness facts.
+
+#### Finalizers Are Not Ordinary RAII
+
+Finalization timing may be delayed, reordered, skipped at process exit, or affected by
+cycles and resurrection rules. Use explicit resource management for files, locks,
+sockets, transactions, and other scarce external resources. Let GC manage memory
+reachability, not critical protocol completion.
+
+### 16. Memory Accounting Uses Several Different Numbers
+
+“The process uses 2 GB” is incomplete without naming the measurement:
+
+| Metric                   | Rough meaning                                      |
+| ------------------------ | -------------------------------------------------- |
+| virtual size             | total mapped address ranges                        |
+| resident set (RSS)       | pages currently resident for the process           |
+| proportional set (PSS)   | shared pages divided among sharers                 |
+| heap live bytes          | allocations still logically live                   |
+| allocator active bytes   | blocks/spans currently serving allocations         |
+| allocator reserved bytes | memory retained for future reuse                   |
+| stack reservation        | address space reserved for thread stacks           |
+| mapped-file pages        | file/library mappings, possibly shared/page-cached |
+| peak usage               | high-water mark, not current usage                 |
+
+The exact availability and definition of these metrics is OS/tool-specific.
+
+#### Leak, Retention, Fragmentation, and Cache Are Different
+
+| Pattern             | What keeps memory unavailable                       |
+| ------------------- | --------------------------------------------------- |
+| true leak           | ownership/reference is lost without reclamation     |
+| logical retention   | reachable collection/cache keeps unneeded objects   |
+| reference cycle     | ownership counts never reach zero                   |
+| fragmentation       | free pieces cannot satisfy/release useful spans     |
+| allocator retention | freed blocks remain cached for later allocation     |
+| page cache/mapping  | OS keeps file-backed pages or address ranges mapped |
+
+A heap profile dominated by reachable cache entries is a policy problem, not a missing
+`free`. A stable live heap with rising RSS may indicate allocator retention or
+fragmentation rather than continued object growth.
+
+#### Ask Four Questions
+
+```text
+1. Which object/allocation categories are growing?
+2. Are they live, unreachable, freed-but-retained, or file-backed?
+3. Which ownership/root path keeps live objects reachable?
+4. Does growth stabilize under a fixed workload?
+```
+
+Take comparable measurements after warm-up and after completing the same unit of work.
+One snapshot shows composition; two or more snapshots show direction.
+
+### 17. Memory Debugging Needs the Right Observer
+
+| Symptom                   | Useful observer/tool class                       |
+| ------------------------- | ------------------------------------------------ |
+| invalid native read/write | AddressSanitizer or memory checker               |
+| use of uninitialized data | MemorySanitizer/Valgrind-style checking          |
+| leak at process exit      | LeakSanitizer or allocation tracing              |
+| Rust unsafe-code UB       | Miri for supported tests                         |
+| unexpected heap growth    | allocation/heap profiler plus retained paths     |
+| stack overflow            | stack trace, recursion/depth accounting          |
+| page-permission fault     | debugger plus memory-map/page information        |
+| race on shared memory     | thread/race sanitizer and synchronization review |
+| cache/TLB bottleneck      | hardware performance counters/profiler           |
+| wrong VM/GC root          | runtime heap verifier and root/handle dump       |
+
+No one tool proves memory correctness. Dynamic tools observe executed paths; type
+systems and reviews cover classes of paths; fuzzing/coverage help explore more cases.
+
+#### Reproducible Memory Investigation
+
+```text
+1. record build, allocator, target, optimization, and workload
+2. minimize to one repeatable input
+3. classify: safety violation, leak, retention, fragmentation, or performance
+4. capture a baseline and comparable later snapshot
+5. locate the first invalid transition or retaining ownership path
+6. fix the source invariant
+7. add a regression test and rerun under the relevant observer
+```
+
+| Evidence to preserve         | Why                                          |
+| ---------------------------- | -------------------------------------------- |
+| exact binary and symbols     | optimized layouts differ                     |
+| sanitizer/tool configuration | detection depends on instrumentation/options |
+| allocator and environment    | retention/size classes vary                  |
+| input and operation count    | growth must be normalized by work            |
+| stack and allocation trace   | connects bytes back to ownership decisions   |
+
+#### Runtime Heap Verification
+
+A custom language can check its own heap in debug builds:
+
+```text
+for every object:
+  header tag is valid
+  size is aligned and within heap bounds
+  every pointer field targets a valid object/handle
+  forwarding/mark state is legal for current GC phase
+
+for every free block:
+  range is ordered, non-overlapping, and inside its span
+
+for every root:
+  type/location agrees with compiler or VM metadata
+```
+
+Run verification after collection, after heap growth, and around complicated FFI
+transitions. A verifier turns silent corruption into an earlier, localized invariant
+failure.
+
+### 18. Memory Design Checklist for Your Own Language
+
+| Area                 | Decision to make explicitly                                |
+| -------------------- | ---------------------------------------------------------- |
+| value representation | boxed, tagged union, NaN-boxed, handles, or mixed          |
+| object header        | type/shape, size, mark state, generation, flags            |
+| alignment            | minimum object/stack/ABI alignment                         |
+| ownership            | unique, reference-counted, tracing, arena, or hybrid       |
+| roots                | VM stack, registers, globals, native handles, JIT frames   |
+| movement             | whether objects can move and how references are updated    |
+| allocation failure   | exception, result, abort, reserve, or GC retry             |
+| stack policy         | maximum depth, growth, guard pages, overflow behavior      |
+| finalization         | explicit close versus nondeterministic cleanup             |
+| FFI                  | pin/copy/handle rules and who owns foreign buffers         |
+| concurrency          | stop-the-world, per-thread heaps, locks, atomics, barriers |
+| observability        | heap dump, object IDs, allocation sites, verifier          |
+| limits               | heap, object, string, collection, recursion, mapped bytes  |
+
+```text
+source-level guarantee
+    ↓ compiler representation
+runtime allocation/rooting rule
+    ↓ OS mapping/page permission
+hardware load/store and cache behavior
+```
+
+Every layer participates in the language's memory model. A safe source language can
+still have an unsafe runtime if bytecode verification, root tracking, layout, FFI, or
+concurrent mutation breaks the contract.
 
 ---
 
@@ -5005,12 +6035,16 @@ Rust slice sorting:
 
 ```rust
 fn quick_sort<T: Ord>(items: &mut [T]) {
+    // Empty and one-element slices are already sorted.
     if items.len() < 2 {
         return;
     }
 
+    // Partition places the pivot in its final sorted position.
     let pivot = partition(items);
     let (left, right_with_pivot) = items.split_at_mut(pivot);
+
+    // Exclude the pivot so neither recursive call sees it again.
     let (_, right) = right_with_pivot.split_first_mut().expect("pivot exists");
 
     quick_sort(left);
@@ -5019,8 +6053,11 @@ fn quick_sort<T: Ord>(items: &mut [T]) {
 
 fn partition<T: Ord>(items: &mut [T]) -> usize {
     let last = items.len() - 1;
+
+    // Move the chosen pivot out of the scan range.
     items.swap(items.len() / 2, last);
 
+    // `0..store` contains values known to be smaller than the pivot.
     let mut store = 0;
     for current in 0..last {
         if items[current] < items[last] {
@@ -5029,6 +6066,7 @@ fn partition<T: Ord>(items: &mut [T]) -> usize {
         }
     }
 
+    // Place the pivot between the smaller and greater-or-equal partitions.
     items.swap(store, last);
     store
 }
@@ -5076,14 +6114,18 @@ search when the first valid insertion point matters:
 
 ```rust
 fn lower_bound<T: Ord>(items: &[T], target: &T) -> usize {
+    // Search the half-open interval [low, high).
     let mut low = 0;
     let mut high = items.len();
 
     while low < high {
+        // This form avoids overflowing `low + high`.
         let mid = low + (high - low) / 2;
         if &items[mid] < target {
+            // `mid` cannot be the first valid insertion position.
             low = mid + 1;
         } else {
+            // Keep `mid`: it may be the first value not less than target.
             high = mid;
         }
     }
@@ -5101,7 +6143,285 @@ assert_eq!(lower_bound(&[1, 2, 2, 2, 5], &4), 4);
 - indexes at or above `high` are not part of the remaining uncertainty;
 - the answer remains in `low..=high`.
 
-### 5. Breadth-First Search
+### 5. Two Pointers: Move Boundaries by a Proven Rule
+
+The two-pointer pattern maintains two positions whose movement discards part of the
+search space. It is useful when the input order makes that movement **monotonic**.
+
+| Shape                      | Pointer movement                                       |
+| -------------------------- | ------------------------------------------------------ |
+| sorted pair search         | move left for a small sum, right for a large sum       |
+| in-place partition         | scan with one pointer, store boundary with the other   |
+| palindrome check           | compare ends, then move inward                         |
+| merge two sorted sequences | advance the side containing the next output            |
+| remove duplicates in place | read pointer scans; write pointer marks compact output |
+| linked-list fast/slow scan | advance by one and two nodes                           |
+
+```rust
+fn two_sum_sorted(values: &[i64], target: i64) -> Option<(usize, usize)> {
+    // The contract requires sorted input. With fewer than two values there is no pair.
+    if values.len() < 2 {
+        return None;
+    }
+
+    let mut left = 0;
+    let mut right = values.len() - 1;
+
+    while left < right {
+        // Widen before addition so two i64 inputs cannot overflow the comparison.
+        let sum = i128::from(values[left]) + i128::from(values[right]);
+        let target = i128::from(target);
+
+        match sum.cmp(&target) {
+            std::cmp::Ordering::Equal => return Some((left, right)),
+            // The slice is sorted, so every pair using this left value is too small.
+            std::cmp::Ordering::Less => left += 1,
+            // Likewise, every pair using this right value is too large.
+            std::cmp::Ordering::Greater => right -= 1,
+        }
+    }
+
+    None
+}
+```
+
+> 🧭 **Invariant:** no discarded index can participate in a valid answer. If you
+> cannot justify that sentence for each pointer movement, the pattern is not correct.
+
+Two pointers do not automatically improve a nested loop. The improvement comes from
+an ordering property—sorted values, a partition boundary, or a linked-list speed
+relationship—that prevents revisiting discarded candidates.
+
+### 6. Sliding Windows: Maintain an Aggregate Over a Contiguous Range
+
+A sliding window is a pair of boundaries plus state describing the half-open range
+`left..right`. Instead of recomputing every range, update the state when one item
+enters or leaves.
+
+| Window kind | Boundary rule                                    | Common state             |
+| ----------- | ------------------------------------------------ | ------------------------ |
+| fixed-size  | add right item; remove item now outside size `k` | sum, count, rolling hash |
+| variable    | expand until invalid; shrink until valid/minimal | sum, frequencies, set    |
+| monotonic   | remove dominated candidates from a deque         | min/max candidates       |
+
+This example finds the shortest contiguous range whose sum reaches a target:
+
+```rust
+fn shortest_sum_window(values: &[u64], target: u64) -> Option<usize> {
+    // The empty window already reaches a zero target.
+    if target == 0 {
+        return Some(0);
+    }
+
+    let mut left = 0;
+    let mut sum = 0_u64;
+    let mut best: Option<usize> = None;
+
+    for right in 0..values.len() {
+        // Reject arithmetic overflow rather than silently corrupting the invariant.
+        sum = sum.checked_add(values[right])?;
+
+        // Non-negative values make shrinking monotonic: removing an item cannot
+        // increase the sum.
+        while sum >= target {
+            let width = right - left + 1;
+            best = Some(best.map_or(width, |old| old.min(width)));
+
+            // Try to make this valid window smaller before advancing `right`.
+            sum -= values[left];
+            left += 1;
+        }
+    }
+
+    best
+}
+```
+
+> ⚠️ **Contract matters:** this variable-window rule depends on non-negative values.
+> Negative inputs destroy the monotonic relationship; use prefix sums with a different
+> data structure or reformulate the problem.
+
+A window is normally contiguous. If the chosen items may be scattered, the problem is
+more likely a subsequence, subset, graph, or dynamic-programming problem.
+
+### 7. Linked Lists as an Ownership Laboratory
+
+[Learning Rust With Entirely Too Many Linked Lists](https://rust-unofficial.github.io/too-many-lists/index.html)
+uses several list designs to expose how pointer choice determines ownership, mutation,
+iteration, destruction, aliasing, and unsafe obligations.
+
+| Representation                  | Ownership shape                      | Main lesson                                       |
+| ------------------------------- | ------------------------------------ | ------------------------------------------------- |
+| `Option<Box<Node<T>>>`          | one owner per node                   | moves make safe mutation and reversal natural     |
+| `Rc<Node<T>>`                   | shared, single-threaded              | persistent tails can share structure              |
+| `Arc<Node<T>>`                  | shared, thread-safe reference counts | atomic ownership is not automatic data mutation   |
+| `Rc<RefCell<Node<T>>>`          | shared with runtime-checked mutation | cycles and borrow panics require deliberate care  |
+| raw pointers/`NonNull<Node<T>>` | invariants enforced by the container | unsafe code must prove aliasing and lifetime laws |
+| `Vec<T>` / `VecDeque<T>`        | contiguous or ring-buffer allocation | usually faster and simpler for ordinary workloads |
+
+The simplest owning link uses `Option` as the empty state instead of a sentinel node:
+
+```rust
+type Link<T> = Option<Box<Node<T>>>;
+
+#[derive(Debug)]
+struct Node<T> {
+    element: T,
+    next: Link<T>,
+}
+
+#[derive(Debug, Default)]
+struct List<T> {
+    head: Link<T>,
+}
+```
+
+#### Reverse a Singly Linked List
+
+Reversal is a repeated ownership transfer. At every iteration, three regions are
+well-defined: the reversed prefix, the current node, and the untouched suffix.
+
+```rust
+fn reverse<T>(mut head: Link<T>) -> Link<T> {
+    // `previous` owns the already-reversed prefix.
+    let mut previous: Link<T> = None;
+
+    while let Some(mut current) = head {
+        // Detach the untouched suffix before redirecting `current.next`.
+        head = current.next.take();
+
+        // Move ownership of the reversed prefix behind the current node.
+        current.next = previous;
+
+        // The current node becomes the new head of the reversed prefix.
+        previous = Some(current);
+    }
+
+    previous
+}
+```
+
+| Before one iteration        | After one iteration                    |
+| --------------------------- | -------------------------------------- |
+| `previous ← current → rest` | `previous ← current` and `head → rest` |
+
+The algorithm runs in \(O(n)\) time and uses \(O(1)\) auxiliary space. `take()` replaces
+an `Option` with `None` while returning its old value, which makes the ownership change
+explicit without cloning or unsafe pointers.
+
+#### Find the Middle Node with Slow and Fast References
+
+Advance one reference by one edge and the other by two. When the fast reference reaches
+the end, the slow reference is at the middle:
+
+```rust
+fn middle<T>(head: &Link<T>) -> Option<&T> {
+    // `as_deref` turns `Option<Box<Node<T>>>` into `Option<&Node<T>>`.
+    let mut slow = head.as_deref();
+    let mut fast = head.as_deref();
+
+    loop {
+        let Some(first_step) = fast else {
+            break;
+        };
+        let Some(second_step) = first_step.next.as_deref() else {
+            break;
+        };
+
+        // Fast completed two steps, so slow may safely complete one.
+        fast = second_step.next.as_deref();
+        slow = slow.and_then(|node| node.next.as_deref());
+    }
+
+    // For an even-length list, this convention returns the second middle node.
+    slow.map(|node| &node.element)
+}
+```
+
+This is \(O(n)\) time and \(O(1)\) space. State the even-length convention because
+“middle” is ambiguous for lists of length two, four, and so on.
+
+#### Detect a Cycle with Floyd's Tortoise and Hare
+
+An exclusively owned `Box` list cannot safely point back to an ancestor, so use an
+index-based arena to demonstrate cyclic topology without inventing unsafe aliases.
+Each table entry stores the index of its next node:
+
+```rust
+fn step(next: &[Option<usize>], node: Option<usize>) -> Option<Option<usize>> {
+    match node {
+        // Reaching the end is a valid list state.
+        None => Some(None),
+        // An out-of-range edge makes the representation malformed.
+        Some(index) => next.get(index).copied(),
+    }
+}
+
+fn has_cycle(next: &[Option<usize>], head: Option<usize>) -> Option<bool> {
+    let mut slow = head;
+    let mut fast = head;
+
+    loop {
+        // The tortoise advances once; the hare advances twice.
+        slow = step(next, slow)?;
+        fast = step(next, step(next, fast)?)?;
+
+        match (slow, fast) {
+            // Equal live positions prove that both pointers are inside a cycle.
+            (Some(left), Some(right)) if left == right => return Some(true),
+            // Either pointer reaching the end proves the chain is acyclic.
+            (None, _) | (_, None) => return Some(false),
+            _ => {}
+        }
+    }
+}
+
+assert_eq!(has_cycle(&[Some(1), Some(2), Some(1)], Some(0)), Some(true));
+assert_eq!(has_cycle(&[Some(1), None], Some(0)), Some(false));
+```
+
+The return type separates **malformed edge** (`None`) from **valid acyclic list**
+(`Some(false)`). After a fast/slow collision, finding the cycle entry takes a second
+phase: reset one pointer to the head and advance both one step until they meet.
+
+#### What the Linked-List Designs Teach
+
+| Lesson from the list designs | General low-level consequence                         |
+| ---------------------------- | ----------------------------------------------------- |
+| recursive structure          | recursive destruction may overflow on extreme depth   |
+| shared `Rc` tails            | cheap persistence trades mutation for shared identity |
+| `Rc` cycles                  | reference counts need `Weak` non-owning edges         |
+| doubly linked mutation       | two-way aliases make safe ownership much harder       |
+| iterator families            | consuming, shared, and mutable iteration differ       |
+| raw-pointer queue/deque      | safety belongs to a small abstraction boundary        |
+| Miri/alias models            | passing tests is not proof that unsafe code is valid  |
+| variance and `Send`/`Sync`   | pointer representation affects type-system promises   |
+| panic safety                 | every intermediate mutation must remain droppable     |
+| cursor APIs                  | mutation location and iterator validity are contracts |
+
+An iterative destructor avoids recursively dropping one node per stack frame:
+
+```rust
+impl<T> Drop for List<T> {
+    fn drop(&mut self) {
+        // Detach the head so `self` no longer owns the chain.
+        let mut current = self.head.take();
+
+        while let Some(mut boxed_node) = current {
+            // Detach `next` before `boxed_node` is dropped. This makes destruction
+            // a loop instead of a recursive cascade through `Node::next`.
+            current = boxed_node.next.take();
+        }
+    }
+}
+```
+
+> 🧠 **Practical default:** linked lists are excellent for studying ownership and
+> specialized intrusive/persistent structures. For everyday stacks, queues, and
+> indexed data, start with `Vec` or `VecDeque` and change only after measurement or a
+> structural requirement justifies it.
+
+### 8. Breadth-First Search
 
 BFS explores by increasing edge distance. Use `VecDeque`, not `Vec::remove(0)`.
 
@@ -5109,20 +6429,25 @@ BFS explores by increasing edge distance. Use `VecDeque`, not `Vec::remove(0)`.
 use std::collections::VecDeque;
 
 fn bfs_distances(graph: &[Vec<usize>], start: usize) -> Vec<Option<usize>> {
+    // `None` means the node has not been discovered.
     let mut distance = vec![None; graph.len()];
     let mut queue = VecDeque::new();
 
+    // Treat an invalid root as an empty traversal instead of indexing.
     if start >= graph.len() {
         return distance;
     }
 
+    // Mark when enqueuing so each node enters the queue at most once.
     distance[start] = Some(0);
     queue.push_back(start);
 
     while let Some(node) = queue.pop_front() {
+        // FIFO order guarantees this is the shortest unweighted distance.
         let next_distance = distance[node].expect("queued nodes have a distance") + 1;
 
         for &neighbor in &graph[node] {
+            // Ignore malformed edges and skip already discovered nodes.
             if neighbor < graph.len() && distance[neighbor].is_none() {
                 distance[neighbor] = Some(next_distance);
                 queue.push_back(neighbor);
@@ -5143,9 +6468,11 @@ fn bfs_distances(graph: &[Vec<usize>], start: usize) -> Vec<Option<usize>> {
 | Minimum transformations  | Finds the smallest number of uniform-cost steps |
 
 Mark a node visited when enqueuing it, not when dequeuing, to avoid duplicate queue
-entries.
+entries. To reconstruct a shortest path, store `parent[neighbor] = Some(node)` at the
+same moment that the neighbor is first discovered, then walk parents backward from the
+goal.
 
-### 6. Depth-First Search
+### 9. Depth-First Search
 
 DFS explores one path before backtracking. An explicit stack avoids overflowing the Rust
 call stack on a deep graph:
@@ -5184,7 +6511,135 @@ fn dfs_order(graph: &[Vec<usize>], start: usize) -> Vec<usize> {
 Choose recursive DFS when the input depth is strictly bounded and recursion clarifies
 the algorithm. Otherwise prefer an explicit stack.
 
-### 7. Topological Sorting
+### 10. Backtracking and DFS with Memoization
+
+DFS describes a traversal order. Two important refinements change what happens when a
+state is revisited:
+
+| Technique    | Revisited state                                      | Best fit                              |
+| ------------ | ---------------------------------------------------- | ------------------------------------- |
+| plain DFS    | skip if globally visited                             | reachability and component traversal  |
+| backtracking | undo the current choice and try another              | enumerate constrained candidates      |
+| memoized DFS | return the cached answer for the same subproblem     | optimization/counting with overlap    |
+| BFS          | keep the first discovery at minimum unweighted depth | shortest number of uniform-cost steps |
+
+#### Backtracking Is Choose → Explore → Unchoose
+
+Backtracking searches a decision tree and abandons branches that cannot produce a valid
+answer. This example generates size-`k` combinations from `0..n`:
+
+```rust
+fn combinations(n: usize, k: usize) -> Vec<Vec<usize>> {
+    fn search(
+        next: usize,
+        n: usize,
+        k: usize,
+        chosen: &mut Vec<usize>,
+        output: &mut Vec<Vec<usize>>,
+    ) {
+        if chosen.len() == k {
+            // Clone only at a complete answer; partial states reuse one buffer.
+            output.push(chosen.clone());
+            return;
+        }
+
+        let needed = k - chosen.len();
+        let available = n.saturating_sub(next);
+        if available < needed {
+            // Even choosing every remaining value cannot fill the combination.
+            return;
+        }
+
+        for candidate in next..n {
+            // Choose.
+            chosen.push(candidate);
+
+            // Explore. `candidate + 1` prevents reuse and duplicate orderings.
+            search(candidate + 1, n, k, chosen, output);
+
+            // Unchoose, restoring exactly the state this loop iteration received.
+            chosen.pop();
+        }
+    }
+
+    let mut output = Vec::new();
+    let mut chosen = Vec::with_capacity(k);
+    search(0, n, k, &mut chosen, &mut output);
+    output
+}
+```
+
+> 🧭 **Backtracking invariant:** after the recursive call returns, all mutable search
+> state must be exactly as it was before the choice.
+
+Prune from constraints before branching. Useful compiler/reversing examples include
+grammar alternatives, instruction-pattern selection, register assignments, symbolic
+input constraints, and competing type or calling-convention hypotheses.
+
+#### Memoized DFS Turns a Repeated Search Tree into Dynamic Programming
+
+Memoization caches a result by the complete state that determines future work. This
+top-down coin-change example uses an outer `Option` for **not computed yet** and an
+inner `Option` for **computed but impossible**:
+
+```rust
+fn min_coins(coins: &[usize], amount: usize) -> Option<usize> {
+    fn solve(
+        coins: &[usize],
+        amount: usize,
+        memo: &mut [Option<Option<usize>>],
+    ) -> Option<usize> {
+        if amount == 0 {
+            return Some(0);
+        }
+
+        // Reuse both successful and impossible results.
+        if let Some(cached) = memo[amount] {
+            return cached;
+        }
+
+        let best = coins
+            .iter()
+            .copied()
+            // Positive coins make every recursive edge decrease the state.
+            .filter(|&coin| coin > 0 && coin <= amount)
+            .filter_map(|coin| {
+                solve(coins, amount - coin, memo)
+                    .and_then(|count| count.checked_add(1))
+            })
+            .min();
+
+        // Cache before returning so every amount is solved at most once.
+        memo[amount] = Some(best);
+        best
+    }
+
+    let mut memo = vec![None; amount.checked_add(1)?];
+    solve(coins, amount, &mut memo)
+}
+
+assert_eq!(min_coins(&[1, 3, 4], 6), Some(2));
+assert_eq!(min_coins(&[2, 4], 7), None);
+```
+
+Without the memo table, many amounts are recomputed along different DFS paths. With
+memoization, there are at most `amount + 1` states and each tries every coin, giving
+\(O(\text{amount} \times \text{coins})\) time and \(O(\text{amount})\) table space.
+
+| Memoization design question | Requirement                                               |
+| --------------------------- | --------------------------------------------------------- |
+| state key                   | include everything that changes future answers            |
+| base case                   | terminate without consulting an invalid index             |
+| progress                    | recursive edges must approach a base case                 |
+| impossible result           | cache it too, or failed states will be recomputed         |
+| cycles                      | use an “in progress” state if the subproblem graph cycles |
+| depth                       | prefer tabulation for adversarial or very deep state DAGs |
+
+This is dynamic programming because the recursive call graph is a DAG of overlapping
+subproblems. **Top-down memoization** evaluates only reachable states; **bottom-up
+tabulation** avoids call-stack depth and makes dependency order explicit.
+
+### 11. Topological Sorting
 
 A directed acyclic graph can be ordered so every dependency appears before its users.
 Kahn's algorithm repeatedly removes nodes with zero incoming edges:
@@ -5193,10 +6648,12 @@ Kahn's algorithm repeatedly removes nodes with zero incoming edges:
 use std::collections::VecDeque;
 
 fn topological_sort(graph: &[Vec<usize>]) -> Option<Vec<usize>> {
+    // Count prerequisites for every node.
     let mut incoming = vec![0usize; graph.len()];
 
     for neighbors in graph {
         for &neighbor in neighbors {
+            // Reject edges outside the declared node domain.
             if neighbor >= graph.len() {
                 return None;
             }
@@ -5204,6 +6661,7 @@ fn topological_sort(graph: &[Vec<usize>]) -> Option<Vec<usize>> {
         }
     }
 
+    // Nodes with no remaining prerequisites are ready to emit.
     let mut ready: VecDeque<_> = incoming
         .iter()
         .enumerate()
@@ -5215,6 +6673,7 @@ fn topological_sort(graph: &[Vec<usize>]) -> Option<Vec<usize>> {
     while let Some(node) = ready.pop_front() {
         order.push(node);
         for &neighbor in &graph[node] {
+            // Removing `node` satisfies one prerequisite of each neighbor.
             incoming[neighbor] -= 1;
             if incoming[neighbor] == 0 {
                 ready.push_back(neighbor);
@@ -5222,6 +6681,7 @@ fn topological_sort(graph: &[Vec<usize>]) -> Option<Vec<usize>> {
         }
     }
 
+    // A cycle leaves at least one node with a nonzero incoming count.
     (order.len() == graph.len()).then_some(order)
 }
 ```
@@ -5236,7 +6696,7 @@ If not every node is emitted, the graph contains a cycle.
 | Pass/migration ordering | Prerequisite step must run first             |
 | Cycle diagnosis         | Unemitted nodes reveal a dependency cycle    |
 
-### 8. Dynamic Programming
+### 12. Dynamic Programming
 
 Dynamic programming applies when:
 
@@ -5253,18 +6713,22 @@ Example: longest common subsequence length with rolling rows:
 
 ```rust
 fn lcs_length<T: Eq>(left: &[T], right: &[T]) -> usize {
+    // Only the previous DP row is needed to construct the current row.
     let mut previous = vec![0usize; right.len() + 1];
     let mut current = vec![0usize; right.len() + 1];
 
     for left_item in left {
         for (column, right_item) in right.iter().enumerate() {
             current[column + 1] = if left_item == right_item {
+                // Matching items extend the best smaller-prefix solution.
                 previous[column] + 1
             } else {
+                // Otherwise discard one side and keep the better prefix.
                 current[column].max(previous[column + 1])
             };
         }
 
+        // Reuse allocations instead of constructing a fresh row each iteration.
         std::mem::swap(&mut previous, &mut current);
         current.fill(0);
     }
@@ -5287,7 +6751,7 @@ This reduces extra space to \(O(n)\).
 | Diagnostic edit distance | Minimum edits between names                 |
 | Layout/line breaking     | Best formatting up to each position         |
 
-### 9. Weighted Graphs and Dijkstra's Algorithm
+### 13. Weighted Graphs and Dijkstra's Algorithm
 
 Use Dijkstra's algorithm when edge weights are non-negative and the goal is the
 shortest distance from one source. The key operation is **relaxation**:
@@ -5386,7 +6850,7 @@ Compiler and reversing uses include weighted instruction selection, cheapest con
 paths, control-flow navigation, and finding a minimum-cost sequence of state
 transitions.
 
-### 10. Disjoint Sets (Union-Find)
+### 14. Disjoint Sets (Union-Find)
 
 A disjoint-set structure maintains equivalence classes. It supports:
 
@@ -5451,7 +6915,7 @@ impl DisjointSet {
 
 The invariant is that every parent chain ends at a root whose parent is itself.
 
-### 11. More Dynamic Programming: 0/1 Knapsack
+### 15. More Dynamic Programming: 0/1 Knapsack
 
 The 0/1 knapsack problem chooses each item at most once while maximizing value under a
 capacity limit. A one-dimensional table is enough if capacities are visited in reverse:
@@ -5495,7 +6959,7 @@ The table uses \(O(\text{capacity})\) memory and the algorithm uses
 \(O(\text{items} \times \text{capacity})\) time. This is pseudo-polynomial: a numerically
 large capacity can still make it impractical.
 
-### 12. Cryptographic Algorithms: Learn the Shape, Use a Library
+### 16. Cryptographic Algorithms: Learn the Shape, Use a Library
 
 Cryptography combines algorithms with strict protocol rules. A mathematically correct
 primitive can still be insecure because of nonce reuse, weak randomness, timing leaks,
@@ -5532,19 +6996,28 @@ arithmetic pattern:
 
 ```rust
 fn mod_pow(mut base: u128, mut exponent: u128, modulus: u128) -> Option<u128> {
+    // Modulo zero is undefined, so reject it instead of panicking.
     if modulus == 0 {
         return None;
     }
 
+    // Keep intermediate values in the smallest equivalent residue class.
     base %= modulus;
+    // One is the multiplicative identity; `% modulus` also handles modulus == 1.
     let mut result = 1 % modulus;
 
     while exponent != 0 {
+        // A set low bit means the current power contributes to the answer.
         if exponent & 1 == 1 {
+            // This detects u128 overflow; production big-integer code needs a
+            // multiplication method that can reduce without overflowing first.
             result = result.checked_mul(base)? % modulus;
         }
+
+        // Consume the bit just processed.
         exponent >>= 1;
         if exponent != 0 {
+            // Move from base^(2^k) to base^(2^(k+1)).
             base = base.checked_mul(base)? % modulus;
         }
     }
@@ -5579,7 +7052,7 @@ This is directly relevant to designing a language runtime: signed packages, byte
 modules, plugin manifests, update files, and network messages are all binary formats
 with trust boundaries.
 
-### 13. Where Algorithms Appear in Language Tools
+### 17. Where Algorithms Appear in Language Tools
 
 | Language-tool problem           | Useful algorithm/data structure |
 | ------------------------------- | ------------------------------- |
@@ -5597,7 +7070,7 @@ with trust boundaries.
 | Diagnostic suggestions          | Edit distance                   |
 | Instruction scheduling          | Dependency DAG                  |
 
-### 14. Worklist Fixed-Point Pattern
+### 18. Worklist Fixed-Point Pattern
 
 Many compiler analyses repeatedly propagate facts until nothing changes:
 
@@ -5621,7 +7094,7 @@ while worklist is not empty:
 | Dependencies          | Precise successors to re-enqueue              |
 | Tests                 | Deterministic expected final facts            |
 
-### 15. Algorithm Engineering Checklist
+### 19. Algorithm Engineering Checklist
 
 | Area            | Preferred practice                                                       |
 | --------------- | ------------------------------------------------------------------------ |
@@ -5891,6 +7364,40 @@ write-like system call
 
 This distinction explains why source-level operations do not map one-to-one to kernel
 operations.
+
+#### A System Call Is Also an ABI Contract
+
+At the lowest boundary, the operation number, argument registers, pointer widths, return
+convention, and error encoding are architecture/OS-specific.
+
+```text
+language call
+  ↓ runtime/libc wrapper
+marshal syscall number + scalar arguments + user pointers
+  ↓ privileged entry
+kernel copies/validates referenced user memory
+  ↓ operation
+return value or encoded error
+  ↓ wrapper converts to language-level Result/exception/status
+```
+
+| Argument kind    | Kernel-side question                                    |
+| ---------------- | ------------------------------------------------------- |
+| integer/flags    | Are unused bits clear and combinations valid?           |
+| file descriptor  | Does it name a live object with required permissions?   |
+| user pointer     | Is the full range mapped with the required access?      |
+| pointer + length | Does arithmetic overflow or cross an invalid mapping?   |
+| structure        | Which ABI version and exact layout does the caller use? |
+| output buffer    | How many bytes may be written back safely?              |
+
+The kernel cannot trust a pointer merely because it is numerically inside user space.
+Another thread may race with mutable memory, mappings can change, and a range may cross
+page boundaries. Kernel interfaces therefore copy, pin, validate, or otherwise control
+how user memory is accessed.
+
+> 🔍 **Reversing connection:** a syscall instruction is only the bottom edge. Recover
+> the wrapper's ABI, argument construction, error translation, and higher-level resource
+> lifetime before assigning source-level meaning.
 
 ### 2. What a Process Contains
 
@@ -7001,6 +8508,51 @@ pub static RESET_VECTOR: unsafe extern "C" fn() -> ! = Reset;
 The Rust ABI is not a stable hardware boundary. Use the architecture/runtime's required
 ABI and inspect the final ELF, not merely the source.
 
+#### Reset Must Create the Language's Memory Invariants
+
+Before ordinary Rust code can assume initialized statics, startup code commonly has to
+transform the linked image into the runtime image:
+
+```text
+hardware loads initial SP and Reset address from vector table
+    ↓
+copy initialized `.data` bytes: load address in FLASH → run address in RAM
+    ↓
+zero `.bss`
+    ↓
+initialize clocks/memory/runtime facilities required by the platform
+    ↓
+call the non-returning application entry point
+```
+
+| Linker symbol concept | Meaning during reset                                |
+| --------------------- | --------------------------------------------------- |
+| data load start       | initialized bytes stored in nonvolatile memory      |
+| data run start/end    | RAM range that must receive those bytes             |
+| BSS start/end         | RAM range that must become all zero                 |
+| stack boundary        | initial stack location and permitted extent         |
+| heap boundary         | optional allocator range that must not overlap data |
+
+The linker defines these addresses; reset code consumes them as raw pointers. The
+`unsafe` proof must cover:
+
+1. source and destination ranges are valid for the required access;
+2. byte counts come from ordered, non-overflowing linker symbols;
+3. copy regions obey the required overlap rule;
+4. startup performs initialization exactly once before safe code reads the statics; and
+5. no interrupt or second execution context observes partially initialized state.
+
+Linker assertions can turn layout assumptions into build failures:
+
+```ld
+ASSERT(__data_end <= ORIGIN(RAM) + LENGTH(RAM), "initialized data exceeds RAM");
+ASSERT(__heap_start <= __stack_limit, "heap and stack regions overlap");
+```
+
+> 🧭 **Compiler connection:** a source-level `static X: u32 = 7` becomes bytes, section
+> placement, load/run addresses, and startup work. The language guarantee exists only
+> if every handoff preserves it.
+
 ### 13. Exception and Interrupt Vector Tables
 
 When an exception occurs, the processor suspends the current flow, saves architectural
@@ -7042,11 +8594,13 @@ struct Output;
 
 struct Pin<State> {
     number: u8,
+    // The zero-sized marker makes the compile-time state part of the type.
     _state: PhantomData<State>,
 }
 
 impl Pin<Disabled> {
     fn into_input(self) -> Pin<Input> {
+        // Configure hardware before publishing the new typestate.
         configure_as_input(self.number);
         Pin {
             number: self.number,
@@ -7055,6 +8609,7 @@ impl Pin<Disabled> {
     }
 
     fn into_output(self) -> Pin<Output> {
+        // Consuming `self` prevents use of the old Disabled handle.
         configure_as_output(self.number);
         Pin {
             number: self.number,
@@ -7065,6 +8620,7 @@ impl Pin<Disabled> {
 
 impl Pin<Output> {
     fn set_high(&mut self) {
+        // This method does not exist for Disabled or Input pins.
         write_output_high(self.number);
     }
 }
@@ -7293,6 +8849,223 @@ optimizer may assume they never occur and transform code accordingly.
 Debug concurrent systems with event traces, stable IDs, timeouts, and explicit state
 transitions. Adding print statements can change timing and hide the bug.
 
+### 7. Actors: Owned State Behind a Typed Mailbox
+
+The [Actix actor documentation](https://actix.rs/docs/actix/) presents a concurrent
+application as independently executing actors that cooperate through typed messages.
+An actor combines four ideas:
+
+```text
+private state + mailbox + message handlers + lifecycle
+```
+
+Other components hold an **address**, not a direct reference to the actor. Sending a
+message transfers data and asks the actor's context to run the matching handler.
+
+| Actix concept  | Mental model                                                |
+| -------------- | ----------------------------------------------------------- |
+| `Actor`        | state and behavior owned by one logical participant         |
+| `Message`      | typed protocol request with a declared result type          |
+| `Handler<M>`   | transition function for one message type                    |
+| `Addr<A>`      | capability to send supported messages to actor type `A`     |
+| `Recipient<M>` | narrower capability that exposes only message type `M`      |
+| `Context<A>`   | mailbox, lifecycle, timers, streams, and spawned work       |
+| `Arbiter`      | single-threaded event-loop environment hosting async work   |
+| `SyncArbiter`  | fixed OS-thread pool containing instances of one actor type |
+| `Supervisor`   | restarts a supervised actor context after failure           |
+
+> 🧠 **Actor rule:** actors remove direct shared mutation; they do not remove
+> concurrency. Ordering, overload, cancellation, duplicate work, and failure are now
+> protocol questions.
+
+#### A Typed Symbol-Table Actor
+
+This small actor serializes symbol interning. Each handler receives `&mut self`, so the
+state transition does not need a mutex inside the actor:
+
+```rust
+use actix::prelude::*;
+use std::collections::HashMap;
+
+#[derive(Default)]
+struct SymbolTable {
+    slots: HashMap<String, u32>,
+    next_slot: u32,
+}
+
+impl Actor for SymbolTable {
+    type Context = Context<Self>;
+
+    fn started(&mut self, context: &mut Self::Context) {
+        // Choose capacity from an explicit traffic and memory budget.
+        context.set_mailbox_capacity(64);
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Result<u32, String>")]
+struct Intern(pub String);
+
+impl Handler<Intern> for SymbolTable {
+    type Result = Result<u32, String>;
+
+    fn handle(&mut self, message: Intern, _context: &mut Self::Context) -> Self::Result {
+        // Interning is idempotent: repeated names receive the original slot.
+        if let Some(&slot) = self.slots.get(&message.0) {
+            return Ok(slot);
+        }
+
+        // Reserve the next value before mutation so overflow leaves state unchanged.
+        let following = self
+            .next_slot
+            .checked_add(1)
+            .ok_or_else(|| "symbol table exhausted u32 slots".to_owned())?;
+        let slot = self.next_slot;
+
+        // The actor owns both the string and the map; no caller can mutate them.
+        self.slots.insert(message.0, slot);
+        self.next_slot = following;
+        Ok(slot)
+    }
+}
+
+#[derive(Message)]
+#[rtype(result = "Option<u32>")]
+struct Lookup(pub String);
+
+impl Handler<Lookup> for SymbolTable {
+    type Result = Option<u32>;
+
+    fn handle(&mut self, message: Lookup, _context: &mut Self::Context) -> Self::Result {
+        self.slots.get(&message.0).copied()
+    }
+}
+
+#[actix::main]
+async fn main() {
+    // `start` returns an address; callers never receive `&mut SymbolTable`.
+    let symbols = SymbolTable::default().start();
+
+    // `send` waits for the typed handler result and can also report mailbox failure.
+    match symbols.send(Intern("main".to_owned())).await {
+        Ok(Ok(slot)) => println!("main uses slot {slot}"),
+        Ok(Err(domain_error)) => eprintln!("interning failed: {domain_error}"),
+        Err(mailbox_error) => eprintln!("actor unavailable: {mailbox_error}"),
+    }
+}
+```
+
+Keep handlers short. A real parse, optimize, or code-generation pass may be CPU-bound;
+running it directly on an async actor's arbiter blocks other work on that event loop.
+Send the job to a bounded worker pool or a deliberately sized `SyncArbiter`, then send
+the result back.
+
+#### Addresses Are Capabilities
+
+An address answers two questions at once:
+
+1. **Where may this message be sent?**
+2. **Which protocol is the receiver known to implement?**
+
+| Send API        | Completion/backpressure behavior                                  |
+| --------------- | ----------------------------------------------------------------- |
+| `send(message)` | returns a future for the handler result or mailbox failure        |
+| `try_send(...)` | attempts immediately; reports a full or closed mailbox            |
+| `do_send(...)`  | fire-and-forget; bypasses the mailbox limit and hides send errors |
+
+`Recipient<M>` erases the concrete actor type while retaining permission to send only
+`M`. It is useful for subscribers, event sinks, and interfaces that should not gain the
+actor's full command surface.
+
+> ⚠️ **Backpressure warning:** a configured mailbox capacity is not a universal memory
+> limit. `do_send`, context notifications, and work spawned outside the mailbox can
+> bypass or outlive that queue. Bound message size, producer rate, in-flight requests,
+> retries, and downstream work as separate resources.
+
+#### Lifecycle Is a State Machine
+
+```text
+Started ──→ Running ──→ Stopping ──→ Stopped
+                ▲           │
+                └───────────┘  actor may continue under specific context conditions
+```
+
+| State    | Design question                                                 |
+| -------- | --------------------------------------------------------------- |
+| Started  | Which timers, streams, child actors, or resources are attached? |
+| Running  | Which messages are legal, and how is overload handled?          |
+| Stopping | Are queued messages dropped, drained, rejected, or persisted?   |
+| Stopped  | Who observes termination and cleans external resources?         |
+
+An actor can begin stopping when it calls `Context::stop`, when all addresses are
+dropped, or when no context event sources remain. If stopping completes, the actor is
+dropped. Shutdown therefore needs a protocol: stop accepting new work, finish or
+cancel in-flight work, persist required state, then acknowledge termination.
+
+#### Arbiter Is Placement; Context Is Actor State
+
+Do not merge these concepts:
+
+| Layer         | Responsibility                                               |
+| ------------- | ------------------------------------------------------------ |
+| `System`      | top-level Actix runtime lifecycle                            |
+| `Arbiter`     | one event loop on one thread                                 |
+| `Context<A>`  | one actor's mailbox, lifecycle, futures, streams, and timers |
+| actor handler | one typed state transition                                   |
+
+Actors started on one arbiter are tied to it, but their addresses can communicate
+across arbiters. Ordinary async arbiters suit short, non-blocking handlers.
+`SyncArbiter` creates multiple instances of one actor type across a fixed thread pool
+for synchronous work; its shared address routes messages to available instances, so
+instance-local state is not automatically global state.
+
+#### Supervision Restarts Execution, Not History
+
+A supervisor can create a new actor context and call the actor's restart hook, but it
+cannot guarantee that the message being processed at failure was completed or replayed.
+
+| Restart concern | Required application decision                                 |
+| --------------- | ------------------------------------------------------------- |
+| actor state     | reconstruct, reload, reset, or reject restart                 |
+| failed message  | retry only if duplicate execution is safe                     |
+| side effects    | use idempotency keys or transactional boundaries              |
+| restart loop    | apply limits, backoff, and escalation                         |
+| observability   | retain cause, actor identity, message kind, and restart count |
+
+Supervision is not a substitute for durable queues or transactions. If work must
+survive process loss, persist it outside the in-memory actor system before acknowledging
+acceptance.
+
+#### When Actors Fit—and When They Do Not
+
+| Good actor boundary               | Why it fits                                  |
+| --------------------------------- | -------------------------------------------- |
+| one compiler/REPL session         | stateful commands need per-session ordering  |
+| module registry or symbol service | one owner coordinates shared logical state   |
+| protocol connection               | messages map to an explicit connection state |
+| build/job coordinator             | schedules bounded work and records outcomes  |
+| debugger session                  | commands mutate one observed-process model   |
+| cache writer                      | one serialization point protects invariants  |
+
+| Poor actor boundary                         | Better starting point                           |
+| ------------------------------------------- | ----------------------------------------------- |
+| pure stateless calculation                  | ordinary function or parallel iterator          |
+| every tiny AST node                         | tree plus traversal; mailbox overhead dominates |
+| hot GC pointer update                       | runtime memory structure and write barrier      |
+| bulk numeric loop                           | contiguous data and data-parallel worker pool   |
+| state requiring multi-actor atomic mutation | database transaction or redesigned ownership    |
+
+For your own language, define actor semantics independently of Actix:
+
+```text
+spawn → address/capability → enqueue → handle one transition
+      → reply/fail → supervise/stop
+```
+
+Specify mailbox ordering, capacity, cancellation, failure propagation, restart,
+location transparency, serialization, and whether messages are processed at-most-once
+or may be retried. Those choices become part of the language and runtime contract.
+
 ---
 
 ## 🏢 System Design Patterns in Rust
@@ -7352,7 +9125,9 @@ A small interface keeps policy separate from storage:
 trait KeyValue<K, V> {
     type Error;
 
+    // `None` is a normal miss; `Err` means the storage operation itself failed.
     fn get(&self, key: &K) -> Result<Option<V>, Self::Error>;
+    // Taking owned values lets an implementation retain them after this call.
     fn put(&mut self, key: K, value: V) -> Result<(), Self::Error>;
 }
 
@@ -7365,14 +9140,18 @@ where
     K: Clone,
     V: Clone,
 {
+    // A hit never consults the slower source of truth.
     if let Some(value) = cache.get(key)? {
         return Ok(Some(value));
     }
 
+    // Preserve the distinction between "missing" and "storage failed."
     let Some(value) = source.get(key)? else {
         return Ok(None);
     };
 
+    // Clone only at the ownership boundary: the cache retains one copy while
+    // the caller receives the value loaded from the source.
     cache.put(key.clone(), value.clone())?;
     Ok(Some(value))
 }
@@ -7666,12 +9445,19 @@ struct Frame<'a> {
 }
 
 fn decode_frame(bytes: &[u8]) -> Result<Frame<'_>, &'static str> {
+    // Parse the fixed-size header before trusting any encoded length.
     let header = bytes.get(..4).ok_or("short header")?;
     let length = u16::from_be_bytes([header[2], header[3]]) as usize;
+
+    // Apply the protocol budget before slicing or allocating.
     if length > 4096 {
         return Err("payload too large");
     }
+
+    // Checked slicing rejects truncated input without raw pointer arithmetic.
     let payload = bytes.get(4..4 + length).ok_or("short payload")?;
+
+    // This protocol defines exactly one frame per input buffer.
     if bytes.len() != 4 + length {
         return Err("trailing data");
     }
@@ -7696,9 +9482,13 @@ const MAX_FRAME: usize = 64 * 1024;
 
 fn read_frame(stream: &mut TcpStream) -> io::Result<Vec<u8>> {
     let mut header = [0u8; 4];
+
+    // TCP is a byte stream; `read_exact` may perform several underlying reads.
     stream.read_exact(&mut header)?;
 
     let length = u32::from_be_bytes(header) as usize;
+
+    // Reject hostile lengths before allocating the payload buffer.
     if length > MAX_FRAME {
         return Err(io::Error::new(
             io::ErrorKind::InvalidData,
@@ -7707,6 +9497,8 @@ fn read_frame(stream: &mut TcpStream) -> io::Result<Vec<u8>> {
     }
 
     let mut payload = vec![0u8; length];
+
+    // EOF before `length` bytes is a truncated frame.
     stream.read_exact(&mut payload)?;
     Ok(payload)
 }
@@ -7726,24 +9518,30 @@ use std::net::{TcpListener, TcpStream};
 
 fn handle(mut stream: TcpStream) -> io::Result<()> {
     let mut request = [0u8; 4];
+
+    // The toy protocol uses one fixed four-byte request.
     stream.read_exact(&mut request)?;
 
+    // Match bytes, not UTF-8 text, because the wire format is byte-oriented.
     let response = match &request {
         b"PING" => b"PONG",
         _ => b"NOPE",
     };
 
+    // `write_all` handles partial writes for this small response.
     stream.write_all(response)?;
     Ok(())
 }
 
 fn main() -> io::Result<()> {
+    // Port 0 asks the OS for an unused port; loopback avoids LAN exposure.
     let listener = TcpListener::bind("127.0.0.1:0")?;
     println!("listening on {}", listener.local_addr()?);
 
     for incoming in listener.incoming() {
         match incoming {
             Ok(stream) => {
+                // Isolate per-connection errors from the accept loop.
                 if let Err(error) = handle(stream) {
                     eprintln!("connection error: {error}");
                 }
@@ -7800,12 +9598,16 @@ use std::time::Duration;
 
 fn request(address: &str, bytes: &[u8]) -> io::Result<Vec<u8>> {
     let mut stream = TcpStream::connect(address)?;
+
+    // Bound both directions so a silent peer cannot block forever.
     stream.set_read_timeout(Some(Duration::from_secs(3)))?;
     stream.set_write_timeout(Some(Duration::from_secs(3)))?;
 
+    // Send the complete request, then half-close to signal request EOF.
     stream.write_all(bytes)?;
     stream.shutdown(Shutdown::Write)?;
 
+    // Cap the response even if the peer never sends an application delimiter.
     let mut response = Vec::new();
     stream.take(64 * 1024).read_to_end(&mut response)?;
     Ok(response)
@@ -7843,17 +9645,20 @@ use std::net::{TcpStream, ToSocketAddrs};
 use std::time::Duration;
 
 fn connect_any(host: &str, port: u16) -> io::Result<TcpStream> {
+    // Resolution can produce several IPv4/IPv6 candidates.
     let addresses = (host, port).to_socket_addrs()?;
     let timeout = Duration::from_secs(3);
     let mut last_error = None;
 
     for address in addresses {
+        // Try each candidate until one completes within the per-address timeout.
         match TcpStream::connect_timeout(&address, timeout) {
             Ok(stream) => return Ok(stream),
             Err(error) => last_error = Some(error),
         }
     }
 
+    // Preserve the final connection error, or report an empty resolution result.
     Err(last_error.unwrap_or_else(|| {
         io::Error::new(io::ErrorKind::AddrNotAvailable, "name resolved to no addresses")
     }))
@@ -8086,6 +9891,109 @@ Message kinds:
 
 Tests should fragment a frame at every possible byte boundary, combine several frames
 into one read, truncate every field, and exercise maximum permitted sizes.
+
+### 14. Address Resolution Produces Candidates, Not One Answer
+
+Beej's socket workflow begins with `getaddrinfo`: a host/service name can resolve to
+multiple address-family, socket-type, and protocol candidates. Robust clients try
+compatible candidates until one connects.
+
+```text
+host + service + hints
+    ↓ name/service resolution
+candidate 1: IPv6 stream address ── connect fails ┐
+candidate 2: IPv4 stream address ── connect works ├─ stop
+candidate 3: ...                                  ┘
+```
+
+| Resolution concern     | Design requirement                               |
+| ---------------------- | ------------------------------------------------ |
+| IPv4 and IPv6          | avoid hard-coding one address family             |
+| multiple records       | define candidate ordering and connection timeout |
+| service names          | separate human service input from numeric port   |
+| canonical/display name | do not treat reverse lookup as authentication    |
+| DNS change             | cache with an explicit lifetime, not forever     |
+| untrusted hostname     | cap length and log safely                        |
+
+In Rust, `ToSocketAddrs` is convenient, but the same mental model applies:
+
+```rust
+use std::io;
+use std::net::{TcpStream, ToSocketAddrs};
+use std::time::Duration;
+
+fn connect_any(host: &str, port: u16) -> io::Result<TcpStream> {
+    let timeout = Duration::from_secs(3);
+    let addresses = (host, port).to_socket_addrs()?;
+    let mut last_error = None;
+
+    for address in addresses {
+        match TcpStream::connect_timeout(&address, timeout) {
+            Ok(stream) => return Ok(stream),
+            Err(error) => last_error = Some(error),
+        }
+    }
+
+    Err(last_error.unwrap_or_else(|| {
+        io::Error::new(io::ErrorKind::AddrNotAvailable, "no addresses resolved")
+    }))
+}
+```
+
+A production client should usually apply one **overall deadline**, not a full timeout
+for an unbounded number of candidates.
+
+### 15. Readiness Is Not Completion
+
+`poll`/`select`-style APIs report that an operation can make progress without blocking;
+they do not promise that a whole logical message can be transferred.
+
+```text
+socket becomes readable
+    ↓ read some bytes
+append to connection buffer
+    ↓ zero or more complete frames?
+parse bounded frames
+    ↓ preserve incomplete suffix for the next readiness event
+```
+
+| Readiness event | Possible interpretation                             |
+| --------------- | --------------------------------------------------- |
+| readable        | data, orderly EOF, or an error is available         |
+| writable        | at least some send-buffer capacity may exist        |
+| error/hangup    | inspect the socket result; buffered data may remain |
+
+For a nonblocking connection, keep explicit state:
+
+```rust
+struct ConnectionState {
+    read_buffer: Vec<u8>,
+    write_buffer: Vec<u8>,
+    written: usize,
+    peer_closed_write: bool,
+}
+```
+
+```text
+write_buffer[written..]
+    ↓ write as much as accepted
+advance `written`
+    ↓ if incomplete, wait for writable again
+compact/clear only after every byte is accepted
+```
+
+| Bug                                 | Consequence                                   |
+| ----------------------------------- | --------------------------------------------- |
+| discard suffix after partial send   | truncated protocol message                    |
+| treat `WouldBlock` as fatal         | disconnect under ordinary load                |
+| parse before full frame exists      | false malformed-input error                   |
+| keep growing read buffer            | memory exhaustion                             |
+| ignore EOF with partial frame       | ambiguous truncation                          |
+| assume writable means peer is alive | delayed failure or lost application semantics |
+
+`shutdown` can close one direction while leaving the other usable. Protocols that rely
+on half-close must define whether EOF means “end of request,” “end of response,” or an
+unexpected truncation; explicit length framing is usually easier to validate.
 
 ---
 
@@ -8345,16 +10253,21 @@ async fn request(
     connection: &quinn::Connection,
     payload: &[u8],
 ) -> Result<Vec<u8>> {
+    // One bidirectional stream gives this exchange an independent byte sequence.
     let (mut send, mut receive) = connection
         .open_bi()
         .await
         .context("open QUIC stream")?;
 
+    // `write_all` handles partial writes; a single `write` would not.
     send.write_all(payload)
         .await
         .context("write request")?;
+
+    // Finish only the sending half. The peer may still return a response.
     send.finish().context("finish request stream")?;
 
+    // The cap turns a peer-controlled response into a bounded allocation.
     receive
         .read_to_end(MAX_RESPONSE_BYTES)
         .await
@@ -8407,11 +10320,18 @@ async fn serve_connection(
     permits: Arc<Semaphore>,
 ) -> anyhow::Result<()> {
     loop {
+        // Accepting a stream does not yet start unbounded application work.
         let (send, receive) = connection.accept_bi().await?;
+
+        // Acquire before spawning so queued streams cannot create unlimited tasks.
         let permit = Arc::clone(&permits).acquire_owned().await?;
 
         tokio::spawn(async move {
+            // Keep the guard in the task; dropping it releases capacity.
             let _permit = permit;
+
+            // A stream failure is isolated and logged instead of ending the
+            // entire connection's accept loop.
             if let Err(error) = handle_stream(send, receive).await {
                 tracing::warn!(%error, "stream failed");
             }
@@ -8714,6 +10634,10 @@ representation.
 ### 2. Actix Web Application Shape
 
 Current Actix Web 4 applications construct an `App` inside an `HttpServer` factory:
+
+> 🔀 **Naming distinction:** `actix-web` is the HTTP framework; `actix` is the actor
+> framework described in [Actors: Owned State Behind a Typed Mailbox](#7-actors-owned-state-behind-a-typed-mailbox).
+> Actix Web applications do not require you to model handlers as Actix actors.
 
 ```rust
 use actix_web::{get, web, App, HttpServer, Responder};
@@ -9173,7 +11097,9 @@ use wasm_bindgen::{closure::Closure, JsCast, JsValue};
 use web_sys::{EventTarget, MouseEvent};
 
 struct ClickListener {
+    // Retaining the target lets `Drop` unregister from the same object.
     target: EventTarget,
+    // JavaScript may call this later, so the Rust owner must keep it alive.
     callback: Closure<dyn FnMut(MouseEvent)>,
 }
 
@@ -9182,17 +11108,24 @@ impl ClickListener {
         target: EventTarget,
         mut on_click: impl FnMut(MouseEvent) + 'static,
     ) -> Result<Self, JsValue> {
+        // Move the user callback into a Wasm closure with a JavaScript-callable shim.
         let callback = Closure::new(move |event: MouseEvent| on_click(event));
+
+        // This unchecked view is narrow: `Closure` guarantees that its exported
+        // JavaScript value is a function suitable for EventTarget.
         target.add_event_listener_with_callback(
             "click",
             callback.as_ref().unchecked_ref(),
         )?;
+
+        // Return both owners together so registration and lifetime cannot drift apart.
         Ok(Self { target, callback })
     }
 }
 
 impl Drop for ClickListener {
     fn drop(&mut self) {
+        // Removal is best-effort in `Drop`; destructors cannot return an error.
         let _ = self.target.remove_event_listener_with_callback(
             "click",
             self.callback.as_ref().unchecked_ref(),
@@ -9665,14 +11598,18 @@ fn claim_job(
     connection: &mut SqliteConnection,
     job_id: i32,
 ) -> QueryResult<JobRow> {
+    // Keep the conditional state transition and the confirming read atomic.
     connection.transaction(|connection| {
         use crate::schema::compile_jobs::dsl;
 
+        // The status predicate prevents overwriting a job claimed by another worker.
+        // Production code must verify that exactly one row was changed.
         diesel::update(dsl::compile_jobs.find(job_id))
             .filter(dsl::status.eq("pending"))
             .set(dsl::status.eq("running"))
             .execute(connection)?;
 
+        // Reload inside the same transaction so the returned row reflects this claim.
         dsl::compile_jobs
             .find(job_id)
             .select(JobRow::as_select())
@@ -9844,16 +11781,20 @@ use actix_web::{web, App, HttpResponse, HttpServer};
 use std::net::TcpListener;
 
 async fn health_check() -> HttpResponse {
+    // Liveness is intentionally cheap and independent of downstream services.
     HttpResponse::Ok().finish()
 }
 
 fn run(listener: TcpListener) -> std::io::Result<actix_web::dev::Server> {
+    // The factory runs once per worker, so each worker receives its own `App`.
     let server = HttpServer::new(|| {
         App::new().route("/health_check", web::get().to(health_check))
     })
+    // Accept a pre-bound listener so tests can safely ask the OS for port zero.
     .listen(listener)?
     .run();
 
+    // Return the future-like server handle; the caller chooses where to spawn/await it.
     Ok(server)
 }
 ```
@@ -10824,10 +12765,12 @@ where
     F: Fn(String) -> Fut + Clone + Send + 'static,
     Fut: Future<Output = ()> + Send + 'static,
 {
+    // `max(1)` prevents a caller-supplied zero from deadlocking all work.
     let permits = Arc::new(Semaphore::new(limit.max(1)));
     let mut tasks = Vec::new();
 
     for item in items {
+        // Acquire before spawning: pending inputs wait here without becoming tasks.
         let permit = Arc::clone(&permits)
             .acquire_owned()
             .await
@@ -10835,12 +12778,16 @@ where
         let inspect = inspect.clone();
 
         tasks.push(tokio::spawn(async move {
+            // The owned permit travels with the task and limits active inspections.
             inspect(item).await;
+            // Explicit for teaching purposes; scope exit would release it too.
             drop(permit);
         }));
     }
 
+    // Join all tasks so the function does not return while work is still running.
     for task in tasks {
+        // A production version should record or propagate JoinError explicitly.
         let _ = task.await;
     }
 }
@@ -10891,11 +12838,14 @@ and encoding**.
 
 ```rust
 fn find_u32_le(haystack: &[u8], wanted: u32) -> Vec<usize> {
+    // Convert the typed value to the byte order used by the searched format.
     let needle = wanted.to_le_bytes();
 
     haystack
+        // `windows(4)` visits every complete candidate without out-of-bounds reads.
         .windows(needle.len())
         .enumerate()
+        // Return byte offsets; these are candidates, not proof of semantic meaning.
         .filter_map(|(offset, bytes)| (bytes == needle).then_some(offset))
         .collect()
 }
@@ -10907,10 +12857,13 @@ fn retain_changed(
     width: usize,
 ) {
     candidates.retain(|&offset| {
+        // Validate the same half-open range against both snapshots.
         let end = match offset.checked_add(width) {
             Some(end) if end <= old.len() && end <= new.len() => end,
             _ => return false,
         };
+
+        // Keep only locations whose selected bytes changed between observations.
         old[offset..end] != new[offset..end]
     });
 }
@@ -11450,6 +13403,96 @@ The tooling interface is part of the language. Stable exit codes, diagnostics, s
 locations, and machine-readable output make editors, CI systems, and external tools
 possible.
 
+### 16. Job Control Connects the Shell to OS Process State
+
+The shell tracks a **job**—often a process group attached to a terminal—separately from
+an individual process ID.
+
+| Terminal action  | Typical effect                                       |
+| ---------------- | ---------------------------------------------------- |
+| `Ctrl-C`         | terminal asks foreground job to interrupt (`SIGINT`) |
+| `Ctrl-Z`         | terminal asks foreground job to stop (`SIGTSTP`)     |
+| `jobs`           | list jobs known to the current shell                 |
+| `bg %1`          | continue stopped job 1 in the background             |
+| `fg %1`          | continue/attach job 1 in the foreground              |
+| `kill -TERM PID` | request graceful termination                         |
+
+```text
+terminal
+  ↓ foreground process group
+shell ── launches pipeline ──→ process group
+  ├─ job table: running/stopped/done
+  └─ transfers terminal foreground ownership
+```
+
+Signals express requests or events; most do not guarantee immediate termination.
+`SIGKILL` cannot be handled for cleanup, so use it as a last resort after confirming the
+exact target.
+
+Backgrounding with `&` does not automatically make a job durable:
+
+| Mechanism       | What it solves                                | Remaining issue                     |
+| --------------- | --------------------------------------------- | ----------------------------------- |
+| `command &`     | returns the prompt                            | still tied to shell/terminal output |
+| `nohup`         | ignores hangup and redirects by default       | weak interactive management         |
+| `disown`        | removes job from the shell's job table        | no reattachment interface           |
+| `tmux`/`screen` | persistent detachable terminal sessions       | not a service supervisor            |
+| service manager | restart, logs, dependencies, boot integration | needs explicit service definition   |
+
+Use a service manager for production daemons; use a terminal multiplexer for interactive
+work that must survive a network disconnect.
+
+### 17. Terminal Multiplexers, SSH, and Dotfiles Form a Workflow Layer
+
+`tmux` organizes persistent work hierarchically:
+
+```text
+server
+└── session: project
+    ├── window: editor
+    │   ├── pane: source
+    │   └── pane: tests
+    └── window: debugger
+```
+
+| Object  | Meaning                      |
+| ------- | ---------------------------- |
+| session | detachable workspace         |
+| window  | tab-like full terminal view  |
+| pane    | split region inside a window |
+
+Named sessions are easier to recover than anonymous ones:
+
+```sh
+tmux new -s compiler
+tmux ls
+tmux attach -t compiler
+```
+
+For remote work:
+
+```text
+local terminal → SSH transport → remote shell → tmux session → editor/test/debug jobs
+```
+
+| SSH/dotfile practice              | Reason                                            |
+| --------------------------------- | ------------------------------------------------- |
+| use host aliases in config        | centralize host, user, port, and key selection    |
+| verify host keys                  | detect an unexpected remote identity              |
+| use least-privilege keys          | limit the effect of credential compromise         |
+| avoid agent forwarding by default | forwarded authority can be abused remotely        |
+| keep secrets out of dotfiles      | version-controlled configuration spreads widely   |
+| make setup idempotent             | repeated installation converges safely            |
+| document shell startup files      | login and interactive shells load different files |
+
+A good dotfiles repository stores small, portable configuration modules and an explicit
+installer. Machine-specific paths, credentials, tokens, and private keys belong outside
+the repository.
+
+> 🧭 **Language-tooling connection:** a compiler used over SSH should tolerate a lost
+> terminal, send diagnostics to stderr, flush important progress, handle termination,
+> and leave artifacts in a known recoverable state.
+
 ---
 
 ## 🐍 Practical Python Automation
@@ -11498,8 +13541,11 @@ class Rename:
 
 
 def plan_renames(root: Path) -> list[Rename]:
+    # Planning is pure with respect to the filesystem: no file is renamed here.
     plans: list[Rename] = []
+    # Sorting makes previews and tests deterministic across operating systems.
     for source in sorted(root.glob("*.txt")):
+        # Normalize only the stem; preserve the original extension.
         destination = source.with_name(source.stem.strip().lower() + source.suffix)
         if source != destination:
             plans.append(Rename(source, destination))
@@ -11508,14 +13554,17 @@ def plan_renames(root: Path) -> list[Rename]:
 
 def validate(plans: list[Rename]) -> None:
     destinations = [plan.destination for plan in plans]
+    # Detect many-to-one normalization before the first mutation occurs.
     if len(destinations) != len(set(destinations)):
         raise ValueError("two inputs map to the same destination")
+    # Refuse overwrites by default; an overwrite mode should be explicit.
     if any(path.exists() for path in destinations):
         raise FileExistsError("a destination already exists")
 
 
 def apply(plans: list[Rename], *, dry_run: bool) -> None:
     for plan in plans:
+        # The same plan drives both the preview and the real operation.
         print(f"{plan.source.name} -> {plan.destination.name}")
         if not dry_run:
             plan.source.rename(plan.destination)
@@ -11601,9 +13650,11 @@ from pathlib import Path
 
 
 def csv_to_json(source: Path, destination: Path) -> None:
+    # `newline=""` lets the CSV parser handle platform-specific line endings.
     with source.open(newline="", encoding="utf-8") as input_file:
         rows = list(csv.DictReader(input_file))
 
+    # Convert strings at the boundary so invalid numeric data fails before writing.
     normalized = [
         {
             "name": row["name"].strip(),
@@ -11612,6 +13663,8 @@ def csv_to_json(source: Path, destination: Path) -> None:
         for row in rows
     ]
 
+    # Write a sibling temporary file, then atomically replace the destination on
+    # filesystems that support atomic same-directory rename.
     temporary = destination.with_suffix(destination.suffix + ".tmp")
     temporary.write_text(
         json.dumps(normalized, indent=2, ensure_ascii=False) + "\n",
@@ -11638,7 +13691,9 @@ from pathlib import Path
 
 
 def record_run(database: Path, input_name: str, output_hash: str) -> None:
+    # The context manager commits on success and rolls back if an exception escapes.
     with sqlite3.connect(database) as connection:
+        # Idempotent schema setup keeps this small example self-contained.
         connection.execute(
             """
             CREATE TABLE IF NOT EXISTS runs (
@@ -11647,6 +13702,8 @@ def record_run(database: Path, input_name: str, output_hash: str) -> None:
             )
             """
         )
+        # Placeholders keep untrusted values out of SQL syntax. The upsert makes
+        # rerunning the same input deterministic instead of creating duplicates.
         connection.execute(
             """
             INSERT INTO runs(input_name, output_hash)
@@ -11679,12 +13736,15 @@ import requests
 
 
 def fetch_json(url: str) -> dict:
+    # Use a descriptive identity and separate connection/read deadlines.
     response = requests.get(
         url,
         headers={"User-Agent": "personal-automation/1.0"},
         timeout=(3.0, 15.0),
     )
+    # Convert non-success HTTP status codes into explicit exceptions.
     response.raise_for_status()
+    # Validate the representation before asking the JSON decoder to interpret it.
     if "application/json" not in response.headers.get("content-type", ""):
         raise ValueError("unexpected content type")
     return response.json()
@@ -11884,6 +13944,8 @@ job, or personal file organizer.
 | Falsifiability  | What evidence would disprove the current model?        |
 
 ---
+
+<a id="language-progression"></a>
 
 ## 🛤️ X. Language Progression
 
