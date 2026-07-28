@@ -6,6 +6,12 @@
 
 ![Markdown](https://img.shields.io/badge/format-Markdown-blue?style=flat-square) ![Rust](https://img.shields.io/badge/primary%20language-Rust-orange?style=flat-square) ![Scope](https://img.shields.io/badge/scope-compilers%20%7C%20systems%20%7C%20networking-informational?style=flat-square) ![Status](https://img.shields.io/badge/status-living%20document-brightgreen?style=flat-square)
 
+> 🔊 **ElevenLabs editions:** use the
+> [chaptered EPUB](./Programming_Compiler_Mental_Notes_ElevenLabs.epub) for Studio, or
+> the [plain-text fallback](./Programming_Compiler_Mental_Notes_ElevenLabs.txt).
+> The spoken editions retain the lessons but omit exact code and visual diagrams;
+> return to this Markdown edition when you want the implementation.
+
 <a id="how-to-use-these-notes"></a>
 
 ## 🗺️ How to Use These Notes
@@ -28,18 +34,18 @@ the layer you are building or debugging:
 The document is arranged as a dependency ladder. Read these phases **in order** on a
 first pass; use the goal index afterward as a reference.
 
-| Phase                           | Build understanding in this order                                   | Why it comes here                                  |
-| ------------------------------- | ------------------------------------------------------------------- | -------------------------------------------------- |
-| **1 · Foundations**             | grammar → CPU/memory → translation levels → CS concept map          | Establish what software eventually controls        |
-| **2 · Language front end**      | hand-built parser → Pest PEGs → AST                                 | Turn text into trusted structure                   |
-| **3 · Execution & runtimes**    | recursion → bytecode → hosted runtime → Lua case study              | Give syntax behavior, state, calls, and allocation |
-| **4 · Semantics & native code** | types → optimization → LLVM → Inkwell → classes → debugging         | Define meaning, emit native code, and verify it    |
-| **5 · Safe implementation**     | low-level memory → idiomatic Rust → patterns → FP → algorithms → ML | Build reliable tools and reusable reasoning habits |
-| **6 · Machine & OS boundary**   | processes/VM → executables/linking/ABI → bare metal → concurrency   | Explain how compiled artifacts actually run        |
-| **7 · Connected systems**       | system design → sockets/protocols → `smoltcp` → QUIC                | Move from one process to bounded distributed state |
-| **8 · UI & applications**       | browser engine → Actix/Wasm/DOM → SDL → Bevy/Diesel/Tauri           | Apply the earlier models at host and UI boundaries |
-| **9 · Read programs backward**  | x64 triage → CTF/Nightmare → authorized memory-tooling labs         | Recover hidden behavior using all prior layers     |
-| **10 · Daily practice**         | terminal/Git/builds → Python automation → workflow → progression    | Make the knowledge repeatable                      |
+| Phase                           | Build understanding in this order                                  | Why it comes here                                  |
+| ------------------------------- | ------------------------------------------------------------------ | -------------------------------------------------- |
+| **1 · Foundations**             | grammar → CPU/memory → translation levels → CS concept map         | Establish what software eventually controls        |
+| **2 · Language front end**      | hand-built parser → Pest PEGs → AST                                | Turn text into trusted structure                   |
+| **3 · Execution & runtimes**    | recursion → bytecode → hosted runtime → Lua case study             | Give syntax behavior, state, calls, and allocation |
+| **4 · Semantics & native code** | types → optimization → LLVM → Inkwell → classes → debugging        | Define meaning, emit native code, and verify it    |
+| **5 · Safe implementation**     | memory → Rust → patterns → algorithms → ML → math/media/GPU        | Build reliable tools and connect math to bytes     |
+| **6 · Machine & OS boundary**   | OS → executables/ABI → bare metal → firmware/VMs → concurrency     | Explain how compiled artifacts actually run        |
+| **7 · Connected systems**       | system design → data/caches → protocols → identity/security → QUIC | Move from one process to bounded distributed state |
+| **8 · UI & applications**       | browser → GUI/TUI → Actix/Wasm/DOM → SDL → Bevy/Diesel/Tauri       | Apply earlier models at host and UI boundaries     |
+| **9 · Read programs backward**  | x64 triage → CTF labs → memory tooling → defensive instrumentation | Recover hidden behavior using all prior layers     |
+| **10 · Daily practice**         | terminal/Git/builds → Rust automation → glossary → progression     | Make the knowledge repeatable                      |
 
 > 🧭 **First-pass rule:** when a later section mentions an unfamiliar earlier concept,
 > follow its link backward, learn that prerequisite, then return. The later sections
@@ -69,21 +75,29 @@ first pass; use the goal index afterward as a reference.
 | 🔗 Learn linked lists       | [Linked-List Ownership](#7-linked-lists-as-an-ownership-laboratory)                   | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) |
 | 🧩 Solve repeated states    | [Backtracking & Memoization](#10-backtracking-and-dfs-with-memoization)               | [Dynamic Programming](#12-dynamic-programming)                                        |
 | 🤖 Understand ML            | [Machine Learning](#-machine-learning-foundations)                                    | [System Design](#-system-design-patterns-in-rust)                                     |
+| 🎛️ Learn media & GPU math   | [Math, 3D, Audio & Video](#computer-science-math-3d-audio-video-gpus)                 | [SDL3](#-native-event-loops--multimedia-with-sdl3)                                    |
 | 🎭 Design an actor system   | [Actors](#7-actors-owned-state-behind-a-typed-mailbox)                                | [System Design](#-system-design-patterns-in-rust)                                     |
 | 🏗️ Design a service         | [System Design in Rust](#-system-design-patterns-in-rust)                             | [Networking](#-networking-protocols--wire-formats)                                    |
+| 🗄️ Choose data & caching    | [Data, APIs & Caches](#data-apis-caches-distributed-reliability)                      | [HTTP Caching](#8-http-caching-is-a-protocol-between-participants)                    |
+| 🔐 Learn identity/security  | [Network Services & Security](#-network-services-cryptography-identity--web-security) | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  |
 | 🔩 Write low-level Rust     | [Executables & Linking](#-executable-files-linkers-abis--ffi)                         | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)           |
+| 🧬 Learn firmware & VMs     | [Bare Metal & Unsafe](#-bare-metal-unsafe-rust--chromium-scale-integration)           | [Hypervisors and Hyper-V](#23-hypervisors-and-hyper-v)                                |
 | 🧱 Design Rust APIs         | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          | [Rust Patterns & Recipes](#-practical-rust-patterns--cookbook-recipes)                |
 | 📡 Embed a TCP/IP stack     | [smoltcp](#-embedded-networking-with-smoltcp)                                         | [QUIC with Quinn](#-quic-networking-with-quinn)                                       |
 | ⚡ Learn QUIC               | [QUIC with Quinn](#-quic-networking-with-quinn)                                       | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       |
-| 🕸 Build Rust web code      | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
+| 🕸 Build Rust web code       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
 | 🌳 Control the browser DOM  | [DOM from Rust](#14-the-dom-is-a-host-owned-object-graph)                             | [Wasm Ownership](#17-dom-event-listeners-need-lifetime-design)                        |
 | 🌐 Understand a browser     | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  |
+| 🖼️ Build a GUI              | [GUI Architecture](#gui-tui-graphics-library-architecture)                            | [SDL3](#-native-event-loops--multimedia-with-sdl3)                                    |
+| ⌨️ Build a TUI              | [TUI Architecture](#11-how-a-tui-reaches-the-screen)                                  | [Ratatui Application](#14-a-small-ratatui-application)                                |
 | 🎮 Build a native loop      | [SDL3](#-native-event-loops--multimedia-with-sdl3)                                    | [Bevy](#1-bevy-data-oriented-application-structure)                                   |
 | 🚀 Ship a Rust service      | [Zero to Production](#4-zero-to-production-service-engineering)                       | [Actix Web](#2-actix-web-application-shape)                                           |
 | 🧰 Build applied Rust apps  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       | [Practical Workflow](#-practical-low-level-workflow)                                  |
 | 🛡️ Study memory tooling     | [Low-Level Memory](#-low-level-memory-binary-analysis--language-runtime-architecture) | [Authorized Memory Labs](#19-authorized-memory-inspection--tooling-labs)              |
+| 🔬 Study defensive scanners | [Authorized Reversing](#defensive-instrumentation-scanners-authorized-reversing)      | [Pattern Scanning](#5-pattern-scanning-is-bounded-byte-matching)                      |
 | ⌨️ Master developer tools   | [Developer Tooling](#-developer-tooling-the-missing-semester)                         | [Practical Workflow](#-practical-low-level-workflow)                                  |
-| 🐍 Automate repetitive work | [Practical Python Automation](#-practical-python-automation)                          | [Practical Workflow](#-practical-low-level-workflow)                                  |
+| 🤖 Automate repetitive work | [Practical Automation in Rust](#-practical-automation-in-rust)                        | [Practical Workflow](#-practical-low-level-workflow)                                  |
+| 📖 Look up a low-level term | [Cross-Linked Glossary](#-low-level-glossary--section-index)                          | Follow the term's **Learn more** link                                                 |
 
 ### Reading Conventions
 
@@ -104,7 +118,7 @@ first pass; use the goal index afterward as a reference.
 ## 📚 Table of Contents
 
 <details>
-<summary>Click to expand all 41 sections</summary>
+<summary>Click to expand all 47 sections</summary>
 
 1. [🗺️ How to Use These Notes](#how-to-use-these-notes)
 2. [🧩 Grammar](#-grammar)
@@ -130,23 +144,29 @@ first pass; use the goal index afterward as a reference.
 22. [λ Functional Programming in Rust](#λ-functional-programming-in-rust)
 23. [🧮 Algorithms in Idiomatic Rust](#-algorithms-in-idiomatic-rust)
 24. [🤖 Machine Learning Foundations](#-machine-learning-foundations)
-25. [💻 Operating Systems from the Bottom Up](#-operating-systems-from-the-bottom-up)
-26. [🔗 Executable Files, Linkers, ABIs & FFI](#-executable-files-linkers-abis--ffi)
-27. [🔩 Bare-Metal, Unsafe Rust & Chromium-Scale Integration](#-bare-metal-unsafe-rust--chromium-scale-integration)
-28. [🧵 Concurrency, Atomics & Memory Models](#-concurrency-atomics--memory-models)
-29. [🏢 System Design Patterns in Rust](#-system-design-patterns-in-rust)
-30. [🌐 Networking, Protocols & Wire Formats](#-networking-protocols--wire-formats)
-31. [📡 Embedded Networking with `smoltcp`](#-embedded-networking-with-smoltcp)
-32. [⚡ QUIC Networking with Quinn](#-quic-networking-with-quinn)
-33. [🌐 How Browser Engines Turn Bytes into Pixels](#-how-browser-engines-turn-bytes-into-pixels)
-34. [🕸 Rust Web Boundaries: Actix Web & wasm-bindgen](#-rust-web-boundaries-actix-web--wasm-bindgen)
-35. [🎮 Native Event Loops & Multimedia with SDL3](#-native-event-loops--multimedia-with-sdl3)
-36. [🧰 Applied Rust Architectures: Bevy, Diesel & Tauri](#-applied-rust-architectures-bevy-diesel--tauri)
-37. [🔍 Practical x64 Windows Reverse Engineering](#-practical-x64-windows-reverse-engineering)
-38. [🔨 Developer Tooling: The Missing Semester](#-developer-tooling-the-missing-semester)
-39. [🐍 Practical Python Automation](#-practical-python-automation)
-40. [🧰 Practical Low-Level Workflow](#-practical-low-level-workflow)
-41. [🛤️ X. Language Progression](#language-progression)
+25. [🎛️ Computer-Science Math, 3D, Audio, Video & GPUs](#computer-science-math-3d-audio-video-gpus)
+26. [💻 Operating Systems from the Bottom Up](#-operating-systems-from-the-bottom-up)
+27. [🔗 Executable Files, Linkers, ABIs & FFI](#-executable-files-linkers-abis--ffi)
+28. [🔩 Bare-Metal, Unsafe Rust & Chromium-Scale Integration](#-bare-metal-unsafe-rust--chromium-scale-integration)
+29. [🧵 Concurrency, Atomics & Memory Models](#-concurrency-atomics--memory-models)
+30. [🏢 System Design Patterns in Rust](#-system-design-patterns-in-rust)
+31. [🗄️ Data, APIs, Caches & Distributed Reliability](#data-apis-caches-distributed-reliability)
+32. [🌐 Networking, Protocols & Wire Formats](#-networking-protocols--wire-formats)
+33. [🔐 Network Services, Cryptography, Identity & Web Security](#-network-services-cryptography-identity--web-security)
+34. [📡 Embedded Networking with `smoltcp`](#-embedded-networking-with-smoltcp)
+35. [⚡ QUIC Networking with Quinn](#-quic-networking-with-quinn)
+36. [🌐 How Browser Engines Turn Bytes into Pixels](#-how-browser-engines-turn-bytes-into-pixels)
+37. [🖼️ GUI, TUI & Graphics-Library Architecture](#gui-tui-graphics-library-architecture)
+38. [🕸 Rust Web Boundaries: Actix Web & wasm-bindgen](#-rust-web-boundaries-actix-web--wasm-bindgen)
+39. [🎮 Native Event Loops & Multimedia with SDL3](#-native-event-loops--multimedia-with-sdl3)
+40. [🧰 Applied Rust Architectures: Bevy, Diesel & Tauri](#-applied-rust-architectures-bevy-diesel--tauri)
+41. [🔍 Practical x64 Windows Reverse Engineering](#-practical-x64-windows-reverse-engineering)
+42. [🛡️ Defensive Instrumentation, Scanners & Authorized Reversing](#defensive-instrumentation-scanners-authorized-reversing)
+43. [🔨 Developer Tooling: The Missing Semester](#-developer-tooling-the-missing-semester)
+44. [🤖 Practical Automation in Rust](#-practical-automation-in-rust)
+45. [📖 Low-Level Glossary & Section Index](#-low-level-glossary--section-index)
+46. [🧰 Practical Low-Level Workflow](#-practical-low-level-workflow)
+47. [🛤️ X. Language Progression](#language-progression)
 
 </details>
 
@@ -3372,16 +3392,27 @@ constructors always succeed.
 
 ### The `self` Parameter
 
-`self` is a **pointer** to the object the method was called on. It is always the first
-parameter of every method — explicit, like Python:
+`self` is the **receiver** for the object the method was called on. At the machine-code
+boundary it becomes an ordinary pointer or reference argument. Rust exposes the
+receiver explicitly and therefore makes the lowering easy to see:
 
-```python
-# Thirdlang / Python style — explicit self
-def get_x(self) -> int {
-    return self.x
+```rust
+struct Point {
+    x: i64,
 }
 
-# Call: p.get_x()  →  compiled as: Point__get_x(p)
+impl Point {
+    fn get_x(&self) -> i64 {
+        // `self` is a shared reference to the receiving object.
+        self.x
+    }
+}
+
+// A compiler can lower `point.get_x()` to an ordinary function whose first
+// argument is the receiver. The exact symbol name is an implementation choice.
+fn point_get_x(self_ref: &Point) -> i64 {
+    self_ref.x
+}
 ```
 
 | Language   | Self/This                      |
@@ -5358,13 +5389,9 @@ have different contracts.
 
 #### Iteration with Index and Value
 
-```python
-for index, value in enumerate(items):
-    print(index, value)
-```
-
 ```rust
 for (index, value) in items.iter().enumerate() {
+    // `value` is borrowed; the collection remains usable after this loop.
     println!("{index}: {value}");
 }
 ```
@@ -5374,20 +5401,17 @@ collection. That choice is part of the API, not incidental syntax.
 
 #### Parse, Filter, and Collect Errors
 
-Python commonly raises on the first invalid conversion:
-
-```python
-values = [int(text) for text in fields if text.strip()]
-```
-
-Rust can make the same short-circuit contract explicit:
+Rust makes the “stop at the first invalid conversion” contract explicit:
 
 ```rust
 fn parse_nonempty(fields: &[String]) -> Result<Vec<i64>, std::num::ParseIntError> {
     fields
         .iter()
+        // Empty fields are intentionally ignored by this particular contract.
         .filter(|text| !text.trim().is_empty())
+        // Each parse produces `Result<i64, ParseIntError>`.
         .map(|text| text.parse::<i64>())
+        // Collecting results stops and returns the first error.
         .collect()
 }
 ```
@@ -5398,12 +5422,9 @@ separate typed outputs instead.
 
 #### Unicode Requires a Unit
 
-```python
-prefix = text[:5]
-```
-
 ```rust
 fn first_five_scalars(text: &str) -> String {
+    // This counts Unicode scalar values, not bytes or user-perceived graphemes.
     text.chars().take(5).collect()
 }
 ```
@@ -7303,6 +7324,307 @@ available. Use ML when approximation creates value and its uncertainty can be co
 
 ---
 
+<a id="computer-science-math-3d-audio-video-gpus"></a>
+
+## 🎛️ Computer-Science Math, 3D, Audio, Video & GPUs
+
+Low-level media code is applied mathematics constrained by **representation, memory
+bandwidth, timing, and hardware queues**. The equations say what should happen; the
+machine model explains rounding, layout, latency, and synchronization.
+
+### 1. The Math Toolbox Is Smaller Than It Looks
+
+| Tool                              | What it answers                                       | Low-level appearance                         |
+| --------------------------------- | ----------------------------------------------------- | -------------------------------------------- |
+| arithmetic and modular arithmetic | How do values wrap, align, hash, or repeat?           | integer overflow, ring buffers, addresses    |
+| algebra                           | What unknown value satisfies a relation?              | interpolation, calibration, solver passes    |
+| Boolean algebra                   | Which conditions and bit fields are set?              | masks, flags, circuits, branch conditions    |
+| logarithms and exponents          | How many bits or growth steps are needed?             | complexity, decibels, mip levels             |
+| vectors                           | What has magnitude and direction?                     | positions, velocities, normals, audio frames |
+| matrices                          | How are linear transforms composed?                   | 3D transforms, color conversion, ML layers   |
+| trigonometry                      | How do angles map to coordinates?                     | rotation, oscillators, periodic signals      |
+| calculus                          | How does a quantity change or accumulate?             | motion integration, gradients, filters       |
+| probability and statistics        | How uncertain or noisy is an observation?             | testing, compression models, heuristics      |
+| graph theory                      | How are relationships traversed?                      | ASTs, scenes, call graphs, networks          |
+| discrete math                     | What can be counted or proved over finite structures? | types, automata, protocols, algorithms       |
+
+> 🧠 **Mental model:** most systems math is not “solve a page of equations.” It is
+> **choose the correct representation, units, bounds, and error tolerance**.
+
+### 2. Floating Point Is an Approximation Contract
+
+An IEEE-style floating-point value stores a **sign**, a scaled **significand**, and an
+**exponent**. This gives a huge dynamic range, but most real numbers—including `0.1`—
+cannot be represented exactly in binary.
+
+| Property           | Consequence                                              |
+| ------------------ | -------------------------------------------------------- |
+| finite precision   | nearby real values round to the same bit pattern         |
+| nonuniform spacing | large-magnitude values have coarser gaps                 |
+| special values     | `NaN`, positive/negative infinity, and signed zero exist |
+| non-associativity  | `(a + b) + c` can differ from `a + (b + c)`              |
+| gradual underflow  | very small subnormal values trade precision for range    |
+| `NaN != NaN`       | ordinary equality is not a validity test                 |
+
+```rust
+fn approximately_equal(left: f32, right: f32, absolute: f32, relative: f32) -> bool {
+    // Reject non-finite inputs unless the surrounding domain defines another policy.
+    if !left.is_finite() || !right.is_finite() {
+        return false;
+    }
+
+    let error = (left - right).abs();
+    // Absolute tolerance handles values close to zero; relative tolerance scales
+    // with magnitude. Neither number is a universal epsilon.
+    error <= absolute.max(relative * left.abs().max(right.abs()))
+}
+```
+
+Use integers or fixed-point values when exact cents, ticks, sample positions, or
+protocol fields matter. Use floating point for continuous quantities, but define:
+
+- the accepted domain and units;
+- how non-finite values are handled;
+- the comparison tolerance;
+- whether deterministic cross-platform results are required.
+
+### 3. Vectors Encode Geometry and Meaning
+
+For vectors `a` and `b`:
+
+- **addition** combines displacements;
+- **scalar multiplication** changes magnitude;
+- **dot product** measures alignment and drives projection and lighting;
+- **cross product** in 3D produces a perpendicular vector whose direction depends on
+  coordinate handedness;
+- **normalization** produces length one but is invalid for a zero-length vector.
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Vec3 {
+    x: f32,
+    y: f32,
+    z: f32,
+}
+
+impl Vec3 {
+    fn dot(self, other: Self) -> f32 {
+        self.x * other.x + self.y * other.y + self.z * other.z
+    }
+
+    fn cross(self, other: Self) -> Self {
+        // This formula assumes the usual right-handed convention.
+        Self {
+            x: self.y * other.z - self.z * other.y,
+            y: self.z * other.x - self.x * other.z,
+            z: self.x * other.y - self.y * other.x,
+        }
+    }
+
+    fn try_normalize(self) -> Option<Self> {
+        let length_squared = self.dot(self);
+        // A tiny or non-finite length would amplify numerical noise.
+        if !length_squared.is_finite() || length_squared <= f32::EPSILON {
+            return None;
+        }
+        let inverse_length = length_squared.sqrt().recip();
+        Some(Self {
+            x: self.x * inverse_length,
+            y: self.y * inverse_length,
+            z: self.z * inverse_length,
+        })
+    }
+}
+```
+
+For a language or shader compiler, types such as `Point3`, `Direction3`, `Normal3`,
+`Radians`, and `Degrees` can prevent mathematically valid but semantically meaningless
+operations.
+
+### 4. The 3D Transform Pipeline
+
+```text
+model space → world space → view/camera space → clip space
+            → perspective divide → normalized device coordinates
+            → viewport/screen space → rasterized fragments
+```
+
+| Stage         | Question                                       | Frequent reversing clue        |
+| ------------- | ---------------------------------------------- | ------------------------------ |
+| model         | Where is a vertex relative to its object?      | mesh vertex/index buffers      |
+| world         | Where is the entity in the scene?              | transform/component structures |
+| view          | Where is it relative to the camera?            | camera basis or view matrix    |
+| projection    | How does depth map to a viewing volume?        | field of view, near/far planes |
+| clipping      | Which primitives intersect the visible volume? | clip-space `w`, plane tests    |
+| rasterization | Which pixel samples does a triangle cover?     | viewport and depth state       |
+| shading       | What color/material result is produced?        | shader constants, textures     |
+| compositing   | How are layers combined for display?           | render targets, blend state    |
+
+Matrices compose transforms, and **order matters**. With column-vector notation,
+`projection * view * model * position` applies model first. An engine using row vectors
+may write the apparent reverse. Recover convention by testing a known translation, not
+by guessing from storage order.
+
+Homogeneous coordinates add `w`: points usually use `w = 1`, directions use `w = 0`,
+and perspective projection makes the later divide possible. A quaternion compactly
+represents orientation and composes rotations without the same singularity problems as
+Euler angles, but it still needs normalization and a documented multiplication order.
+
+### 5. Scene Entities Are Relationships, Not Just Coordinates
+
+An entity/component system often separates **identity** from **storage**:
+
+| Part                | Purpose                         | Low-level pattern               |
+| ------------------- | ------------------------------- | ------------------------------- |
+| entity ID           | stable logical identity         | index plus generation counter   |
+| component pool      | dense values of one type        | contiguous array / sparse set   |
+| transform hierarchy | parent-child spatial relation   | graph or indexed parent         |
+| system              | behavior over a component query | loop or scheduled function      |
+| resource            | shared world-level state        | singleton handle or typed store |
+
+When reversing an authorized build, repeated access patterns such as
+`base + index * stride + field_offset` suggest an array of fixed-layout records.
+Pointers from one record to several component pools suggest indirection. Do not name a
+field from one observation: vary position, health, animation, and ownership separately
+and record which bytes change.
+
+For your own language, an entity declaration can lower to ordinary component schemas
+and queries. The compiler can validate component names while the runtime chooses dense
+storage for cache-friendly iteration.
+
+### 6. A GPU Is an Asynchronous Throughput Machine
+
+The CPU records work; the driver/runtime validates and translates it; the GPU consumes
+commands later.
+
+```text
+application → graphics/compute API → user-mode driver → kernel driver
+            → command queue → GPU cores/caches/memory → fence/event → CPU
+```
+
+| GPU concept    | Mental model                                         | Failure mode                    |
+| -------------- | ---------------------------------------------------- | ------------------------------- |
+| shader         | small program executed across many invocations       | divergent control flow          |
+| buffer         | typed interpretation over bytes                      | wrong stride/alignment/lifetime |
+| texture        | multidimensional sampled storage                     | wrong format/color space/layout |
+| command buffer | recorded work for later execution                    | resource freed too early        |
+| pipeline state | compiled collection of fixed and programmable stages | incompatible formats            |
+| barrier        | visibility/order constraint between uses             | stale or racing data            |
+| fence          | completion signal visible to the host                | CPU reads before completion     |
+| staging memory | host-friendly transfer area                          | excess copies and bandwidth     |
+
+**Synchronization is part of correctness.** “The submit call returned” usually means
+the queue accepted work, not that rendering finished. The same distinction appears in
+async I/O, DMA, databases, and distributed acknowledgements.
+
+### 7. Digital Audio Is Timed Sampled Data
+
+| Term               | Meaning                                                  |
+| ------------------ | -------------------------------------------------------- |
+| sample             | one amplitude value for one channel at one instant       |
+| sample rate        | audio frames per second, such as 48,000                  |
+| channel            | one signal lane: left, right, center, and so on          |
+| audio frame        | one sample for every channel at a time point             |
+| bit depth / format | integer or float representation of each sample           |
+| buffer             | contiguous frames exchanged with a device or codec       |
+| latency            | time from production/input to audible output/observation |
+| underrun           | consumer needs frames that the producer has not supplied |
+| clipping           | amplitude exceeds the representable range                |
+| resampling         | change sample rate by interpolation/filtering            |
+
+```rust
+fn mix_pcm_f32(left: &[f32], right: &[f32], output: &mut [f32]) -> Result<(), &'static str> {
+    // A real mixer must also agree on sample rate, channel layout, and timestamps.
+    if left.len() != right.len() || output.len() != left.len() {
+        return Err("buffers describe different frame counts");
+    }
+
+    for ((left_sample, right_sample), mixed) in
+        left.iter().zip(right).zip(output.iter_mut())
+    {
+        // Scaling leaves headroom before clamping to the normalized PCM range.
+        let value = 0.5 * left_sample + 0.5 * right_sample;
+        *mixed = value.clamp(-1.0, 1.0);
+    }
+    Ok(())
+}
+```
+
+Audio callbacks may run on a real-time-sensitive thread. Avoid blocking I/O,
+unbounded allocation, slow locks, and logging in the callback. Feed it from a bounded
+ring buffer and decide whether overload drops old data, inserts silence, or applies
+backpressure.
+
+### 8. Frequency, Windows, and Compression
+
+A time-domain waveform says **amplitude over time**. A Fourier transform expresses the
+same finite window as weighted frequencies. The sampling theorem links the highest
+representable frequency to sample rate, while a reconstruction/anti-alias filter makes
+the physical boundary practical.
+
+| Operation                 | Purpose                                                |
+| ------------------------- | ------------------------------------------------------ |
+| windowing                 | reduce edge discontinuities in a finite analysis block |
+| FFT                       | compute a discrete Fourier transform efficiently       |
+| convolution               | apply an impulse response/filter                       |
+| dynamic range compression | reduce amplitude range; not file compression           |
+| lossless codec            | reproduce original samples exactly                     |
+| lossy codec               | discard perceptually less important information        |
+
+“Compression” is overloaded. Always specify **data compression**, **audio dynamics
+compression**, or **geometric compression**.
+
+### 9. Video Separates Frames, Codecs, and Containers
+
+| Layer             | Contains                                          | Example concern                      |
+| ----------------- | ------------------------------------------------- | ------------------------------------ |
+| raw frame         | pixels plus dimensions, format, stride, timestamp | RGB vs YCbCr                         |
+| codec             | compressed sequence syntax                        | keyframes and inter-frame references |
+| elementary stream | encoded chunks for one track                      | decoder configuration                |
+| container         | tracks, timestamps, metadata, seek indexes        | MP4, WebM, Matroska                  |
+| transport         | how chunks move between systems                   | file, HTTP, RTP, QUIC                |
+
+A **codec** compresses/decompresses media; a **container** multiplexes tracks and
+metadata. Demuxing finds encoded chunks; decoding turns chunks into frames. Seeking
+often starts at a keyframe and decodes forward because predicted frames depend on other
+frames.
+
+YCbCr separates luma from chroma. Formats such as **4:2:0** store color at lower spatial
+resolution than brightness, reducing size. A correct frame parser must track:
+
+- coded and display dimensions;
+- pixel format and bit depth;
+- per-plane stride and offset;
+- color primaries, transfer function, and range;
+- timestamps and time base;
+- ownership while hardware decoding is in flight.
+
+### 10. Media Reversing Is Layer Identification
+
+For files and owned captures, begin with structure:
+
+1. identify magic bytes and the container;
+2. parse bounded lengths and indexes;
+3. enumerate tracks, formats, and time bases;
+4. hand encoded payloads to a maintained codec library;
+5. compare decoded frames or samples, not only file hashes;
+6. preserve the original and fuzz only disposable copies.
+
+Do not mistake obfuscated metadata for a new codec. First test ordinary causes:
+endianness, alignment, compression, encryption, checksums, and versioned headers.
+
+> 🔗 **Language-design connection:** arrays, SIMD vectors, numeric conversions,
+> foreign-function interfaces, async device queues, and resource lifetimes all become
+> concrete when a language can safely express a small renderer or audio graph.
+
+**Sources:** [SDL3 audio model](https://wiki.libsdl.org/SDL3/CategoryAudio),
+[SDL3 pixel formats](https://wiki.libsdl.org/SDL3/SDL_PixelFormat),
+[digital-audio concepts](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Audio_concepts),
+[digital-video concepts](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Video_concepts),
+and [frames, codecs, and containers](https://developer.mozilla.org/en-US/docs/Web/API/WebCodecs_API/Video_processing_concepts).
+
+---
+
 ## 💻 Operating Systems from the Bottom Up
 
 This section connects the compiler's output to the operating system that actually runs
@@ -8708,6 +9030,205 @@ release. They are part of the evidence needed to reproduce a low-level bug.
 
 ---
 
+### 18. Firmware, Bootloaders, Kernels, and Drivers Form a Chain
+
+```text
+reset vector
+  → immutable/early firmware
+  → platform firmware and hardware initialization
+  → bootloader chooses and verifies an image
+  → kernel initializes memory, interrupts, scheduler, and drivers
+  → init/service manager starts user space
+  → applications call libraries and system calls
+```
+
+| Layer      | Primary responsibility                                           | Typical artifact                   |
+| ---------- | ---------------------------------------------------------------- | ---------------------------------- |
+| firmware   | configure a device below the ordinary OS boundary                | flash image, UEFI module           |
+| bootloader | initialize enough hardware to locate, verify, and start a kernel | U-Boot, UEFI loader                |
+| kernel     | privileged resource management and isolation                     | kernel image plus modules          |
+| driver     | translate a device model into an OS interface                    | kernel module or user-mode service |
+| middleware | reusable behavior between application and platform               | media, RPC, database layer         |
+| backend    | server-side policy, data, and integrations                       | service process                    |
+| frontend   | user-facing presentation and interaction                         | native/web UI                      |
+
+These are **roles**, not guaranteed processes. Firmware may include an RTOS; a
+microkernel may run drivers in user space; middleware may exist on the client, server,
+or both.
+
+A secure-boot chain verifies the next stage before transferring control. A signature
+answers “was this approved key used over these exact bytes?” It does not prove that the
+signed code is bug-free.
+
+### 19. A Driver Is a Concurrent Translator
+
+A driver connects two contracts:
+
+- the OS contract: handles, files, sockets, queues, power states, and errors;
+- the hardware contract: registers, interrupts, descriptors, timing, and DMA.
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DeviceState {
+    Reset,
+    Ready,
+    Busy,
+    Fault,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum DriverError {
+    WrongState,
+    BufferTooLarge,
+}
+
+fn begin_transfer(state: &mut DeviceState, bytes: usize) -> Result<(), DriverError> {
+    // Model the hardware state transition before touching real registers.
+    if *state != DeviceState::Ready {
+        return Err(DriverError::WrongState);
+    }
+    if bytes == 0 || bytes > 4096 {
+        return Err(DriverError::BufferTooLarge);
+    }
+    *state = DeviceState::Busy;
+    Ok(())
+}
+```
+
+The toy state machine is useful even when the final implementation is `unsafe`: it
+separates protocol validity from the tiny adapter that performs volatile reads/writes.
+
+### 20. DMA Lets a Device Access Memory Without CPU Copies
+
+Direct memory access changes the data path:
+
+```text
+CPU virtual address ─page tables─> physical memory
+device DMA address ─── IOMMU ────> permitted physical pages
+```
+
+| Term                 | Meaning                                                     |
+| -------------------- | ----------------------------------------------------------- |
+| descriptor           | record telling a device where and how much to transfer      |
+| coherent buffer      | CPU/device views obey a platform-defined coherence contract |
+| streaming mapping    | temporary mapping for a directional transfer                |
+| IOMMU                | translates and restricts device-visible addresses           |
+| bounce buffer        | intermediary used when addressing or isolation requires it  |
+| completion interrupt | device reports finished work                                |
+
+An external DMA-capable device can be powerful because it may operate outside the
+ordinary process/page-table path. Defensive design uses an IOMMU, minimal mapped
+ranges, short mapping lifetimes, device authorization, signed firmware, and physical
+security. These notes do not provide bypass or unauthorized acquisition procedures.
+
+### 21. JTAG and SWD Expose Hardware Debug State
+
+JTAG began as a boundary-scan interface and is also commonly used to reach processor
+debug infrastructure. ARM's SWD provides a lower-pin-count debug transport.
+
+Authorized debugging may expose:
+
+- halt, resume, and single-step;
+- registers and memory;
+- hardware breakpoints/watchpoints;
+- flash programming;
+- trace and peripheral access.
+
+That power makes lifecycle policy essential: production devices may authenticate,
+limit, or permanently disable debug access. Practice with a development board you own,
+document voltage and pinout first, and never assume a connector is electrically safe.
+
+### 22. Real Hardware, Simulator, Emulator, VM, and Container
+
+| Environment     | What is reproduced                            | Kernel relation          | Best use                                  |
+| --------------- | --------------------------------------------- | ------------------------ | ----------------------------------------- |
+| simulator       | selected behavior at an abstract level        | implementation-specific  | circuits, devices, deterministic teaching |
+| emulator        | another machine/ISA or device behavior        | may run a guest kernel   | compatibility and firmware labs           |
+| virtual machine | virtualized hardware for a guest OS           | guest has its own kernel | OS isolation and testing                  |
+| container       | isolated host processes                       | shares host kernel       | packaging and service isolation           |
+| sandbox         | restricted authority, regardless of mechanism | varies                   | limiting untrusted components             |
+| real hardware   | actual timing, buses, analog effects          | actual target            | final validation                          |
+
+[Wokwi](https://docs.wokwi.com/) simulates boards such as Arduino, ESP32, and STM32 and
+offers virtual logic analysis, GDB debugging, networking, SD cards, and custom chips.
+It is excellent for repeatable firmware experiments, but a simulator cannot fully
+guarantee real electrical behavior, performance, radio conditions, or silicon errata.
+
+### 23. Hypervisors and Hyper-V
+
+A hypervisor controls privileged execution, second-level address translation, virtual
+interrupts, and device access so several guest systems can share hardware.
+
+| Concept                | Meaning                                             |
+| ---------------------- | --------------------------------------------------- |
+| VM exit                | guest operation transfers control to the hypervisor |
+| guest virtual address  | address used by code inside the guest               |
+| guest physical address | “physical” address visible to the guest             |
+| host physical address  | actual machine memory                               |
+| SLAT / EPT / NPT       | hardware-assisted guest-physical translation        |
+| virtual device         | emulated or paravirtualized hardware interface      |
+| root/parent partition  | privileged management environment in Hyper-V        |
+| child partition        | guest environment managed through the hypervisor    |
+
+Memory introspection from a hypervisor can observe a guest outside its ordinary OS
+process model, which helps debuggers, incident response, and malware analysis. It also
+creates an exceptionally privileged trust boundary. [secret.club's hypervisor
+article](https://secret.club/2025/06/02/hypervisors-for-memory-introspection-and-reverse-engineering.html)
+is useful for understanding VM exits and second-level translation; apply those ideas
+only to owned guests and defensive laboratories.
+
+[Hyper-V's architecture](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/architecture)
+uses a hypervisor plus root and child partitions, with VMBus for synthetic device
+communication. Nested virtualization adds another translation and scheduling layer, so
+performance measurements need to state the full nesting topology.
+
+### 24. Containers Are Process Isolation, Not Tiny VMs
+
+A Docker container packages a process and its filesystem view while normally sharing
+the host kernel. Namespaces isolate selected resource views; cgroups account for and
+limit resources; capabilities, seccomp, labels, and read-only mounts reduce authority.
+
+| Boundary     | Question                                                          |
+| ------------ | ----------------------------------------------------------------- |
+| image        | What exact files and configuration are supplied?                  |
+| namespace    | Which processes, mounts, network interfaces, and IDs are visible? |
+| capability   | Which privileged kernel operations remain allowed?                |
+| cgroup       | What CPU, memory, and I/O limits apply?                           |
+| secret       | How is sensitive configuration supplied and rotated?              |
+| supply chain | Are base images pinned, scanned, and reproducible?                |
+
+Containers improve packaging and isolation but do not turn unsafe host-kernel exposure
+into a security boundary automatically. Compare this with the [Docker container
+model](https://docs.docker.com/get-started/docker-concepts/the-basics/what-is-a-container/).
+
+### 25. Platform Storage and Machine Identity
+
+| Mechanism               | Scope                                        | Low-level lesson                                       |
+| ----------------------- | -------------------------------------------- | ------------------------------------------------------ |
+| filesystem              | hierarchical byte streams plus metadata      | names are not identities; links and races exist        |
+| Windows Registry        | typed hierarchical configuration database    | views, hives, ACLs, and transaction behavior matter    |
+| property list (`plist`) | Apple structured configuration/serialization | XML and binary encodings can represent the same values |
+| environment variable    | inherited process string map                 | observable, size-limited, not a secret vault           |
+| secure credential store | OS-mediated secret storage                   | access policy and user context matter                  |
+| hardware identifier     | property derived from one or more components | can change, collide, or expose privacy                 |
+
+An HWID is not a cryptographic identity. Hardware changes, virtualization, driver
+normalization, privacy controls, and collisions make it unsuitable as the sole
+authentication factor. If device enrollment is required, generate a key pair in an
+OS/hardware-backed keystore, register the public key, rotate it, and provide recovery.
+
+For cross-platform tools, keep a typed configuration model in the core and place
+Registry/plist/filesystem adapters at the edge. Do not collect broad fingerprints when
+a random installation ID or authenticated device key meets the requirement.
+
+**Sources:** [Linux DMA mapping guide](https://docs.kernel.org/6.12/core-api/dma-api-howto.html),
+[Android bootloader overview](https://source.android.com/docs/core/architecture/bootloader),
+[ARM debug access overview](https://developer.arm.com/-/media/developer/products/software-tools/arm-development-studio/images/arm-debugger-manual-configuration-tutorial/Arm_Debugger_Manual_Configuration_Tutorial.pdf),
+[Wokwi documentation](https://docs.wokwi.com/), and
+[Docker overview](https://docs.docker.com/get-started/docker-overview/).
+
+---
+
 ## 🧵 Concurrency, Atomics & Memory Models
 
 Concurrency adds a second ordering problem. A compiler already reasons about the order
@@ -9382,6 +9903,390 @@ consistency across the partition. Different operations may make different choice
 
 ---
 
+<a id="data-apis-caches-distributed-reliability"></a>
+
+## 🗄️ Data, APIs, Caches & Distributed Reliability
+
+A storage engine turns logical operations into bytes on media. A distributed system
+adds copies, messages, clocks, and partial failure. The useful question is never merely
+“SQL or NoSQL?” It is **which operations, invariants, access paths, failure behavior,
+and consistency guarantees are required?**
+
+### 1. Database Families Optimize Different Access Patterns
+
+| Family            | Natural model                        | Strength                                   | Typical cost                                 |
+| ----------------- | ------------------------------------ | ------------------------------------------ | -------------------------------------------- |
+| relational        | tables, rows, keys, constraints      | joins, transactions, integrity             | schema and query planning discipline         |
+| document          | nested records such as BSON/JSON     | aggregate-shaped reads and flexible fields | duplicated data and cross-document work      |
+| key-value         | opaque value by key                  | predictable direct lookup                  | secondary relationships are application work |
+| wide-column       | sparse rows partitioned by key       | large distributed write/read workloads     | queries must follow partition design         |
+| graph             | vertices, edges, properties          | relationship traversal                     | partitioning and global traversal cost       |
+| time-series       | timestamped measurements             | range aggregation, retention, compression  | specialized query shape                      |
+| search index      | tokens, postings, ranking            | text search and relevance                  | usually not source of truth                  |
+| object/blob store | named immutable-ish byte objects     | durable large-file storage                 | limited transactional/query semantics        |
+| embedded          | library and local file, often SQL/KV | simple deployment and local durability     | one-machine concurrency boundaries           |
+
+“NoSQL” is a broad label for several of these models, not a single consistency or schema
+policy. Document databases still have schemas—the schema may be enforced by the
+application, validation rules, or migration code rather than a traditional DDL.
+
+### 2. Relational Design Connects Identity and Constraints
+
+| Concept           | Meaning                                                              |
+| ----------------- | -------------------------------------------------------------------- |
+| primary key       | stable row identity inside a relation                                |
+| foreign key       | declared reference to another relation                               |
+| unique constraint | database-enforced non-duplication                                    |
+| index             | auxiliary structure that accelerates selected access paths           |
+| transaction       | group of operations with an atomicity boundary                       |
+| isolation         | which concurrent intermediate states can be observed                 |
+| MVCC              | keep versions so readers and writers can overlap under defined rules |
+| migration         | versioned transformation of schema and stored data                   |
+
+An index trades write amplification and space for faster lookup. A foreign key is not
+an index in every database. Query plans are algorithms over cardinality estimates; use
+the database's plan inspector rather than assuming a query is “obviously fast.”
+
+### 3. `NULL`, Missing, Empty, and Unknown Are Different
+
+SQL `NULL` represents an absent/unknown marker and uses three-valued logic. `x = NULL`
+does not test nullness; SQL uses `IS NULL`. At an application boundary, distinguish:
+
+| State             | Example meaning                          |
+| ----------------- | ---------------------------------------- |
+| missing field     | client made no statement                 |
+| explicit `null`   | client asks to clear or declares unknown |
+| empty string/list | present value with zero content          |
+| default           | value inferred by policy                 |
+| tombstone         | record intentionally deleted             |
+
+```rust
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum FieldPatch<T> {
+    // The request omitted the field, so preserve the stored value.
+    Unchanged,
+    // The request explicitly supplied null, so clear the stored value.
+    Clear,
+    // The request supplied a replacement.
+    Set(T),
+}
+
+fn apply_patch<T>(slot: &mut Option<T>, patch: FieldPatch<T>) {
+    match patch {
+        FieldPatch::Unchanged => {}
+        FieldPatch::Clear => *slot = None,
+        FieldPatch::Set(value) => *slot = Some(value),
+    }
+}
+```
+
+This enum is also a language-design lesson: one nullable pointer cannot express every
+business state without conventions.
+
+### 4. GraphQL Is an API Language, Not a Database
+
+GraphQL defines a typed schema and lets a client request a response shape. Resolvers
+may read SQL, documents, caches, services, or generated values.
+
+| Benefit                                | Required discipline                       |
+| -------------------------------------- | ----------------------------------------- |
+| client selects fields                  | depth/complexity limits                   |
+| schema enables validation and tooling  | authorization at every resolver/data edge |
+| one request can traverse relationships | batching to avoid N+1 lookups             |
+| types document possible values         | explicit nullability and error semantics  |
+| schema evolves additively              | deprecation and usage measurement         |
+
+REST, RPC, and GraphQL are API styles, not mutually exclusive transport protocols.
+GraphQL commonly travels over HTTP, while the database behind it remains an independent
+choice. The [GraphQL overview](https://graphql.org/) explicitly describes it as a query
+language and runtime that is not tied to a storage engine.
+
+### 5. Serialization Is a Versioned Boundary
+
+Serialization maps typed state to bytes; deserialization attempts the inverse. It is
+also a **parser for untrusted input**.
+
+| Decision         | Questions                                                     |
+| ---------------- | ------------------------------------------------------------- |
+| framing          | where does one value end and the next begin?                  |
+| schema           | which fields, types, tags, and defaults exist?                |
+| encoding         | JSON, XML, CBOR, Protobuf, custom binary?                     |
+| compatibility    | can old readers skip new fields?                              |
+| limits           | maximum depth, size, collection count, and allocation?        |
+| canonicalization | is there exactly one byte representation for signing/hashing? |
+| validation       | which semantic invariants follow syntactic parsing?           |
+
+```rust
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct WireMessage {
+    version: u16,
+    request_id: String,
+    payload: Vec<u8>,
+}
+
+fn validate_message(message: WireMessage) -> Result<WireMessage, &'static str> {
+    // Deserialization proves only that the syntax matched the Rust shape.
+    if message.version != 1 {
+        return Err("unsupported wire version");
+    }
+    if message.request_id.is_empty() || message.request_id.len() > 64 {
+        return Err("invalid request ID length");
+    }
+    if message.payload.len() > 1024 * 1024 {
+        return Err("payload exceeds one-megabyte policy");
+    }
+    Ok(message)
+}
+```
+
+XML adds namespaces, attributes, mixed text, and entity-processing policy. Disable
+external entity resolution unless a tightly controlled use case requires it; bind
+values to a domain model instead of interpreting arbitrary object types.
+
+### 6. UUIDs Are Identifiers, Not Authentication
+
+A UUID is 128 bits with a version/variant structure. Different versions make different
+tradeoffs:
+
+| Kind         | Useful property                  | Caution                                   |
+| ------------ | -------------------------------- | ----------------------------------------- |
+| random-style | decentralized generation         | collisions are improbable, not impossible |
+| time-ordered | index locality and rough order   | may reveal timing; ordering is not trust  |
+| name-derived | deterministic for namespace/name | changes when either input changes         |
+
+Use a current implementation of [RFC 9562](https://www.rfc-editor.org/rfc/rfc9562.html).
+A UUID does not prove identity, authorization, secrecy, or unpredictability unless the
+specific version and generator provide the property—and even then it should not replace
+a cryptographic session token.
+
+### 7. Cache Layers Trade Freshness for Time
+
+| Layer               | Near                      | Typical contents            | Invalidation signal     |
+| ------------------- | ------------------------- | --------------------------- | ----------------------- |
+| CPU cache           | processor core            | memory cache lines          | coherence protocol      |
+| OS page cache       | kernel/filesystem         | file-backed pages           | writes, reclaim         |
+| in-process          | one service instance      | parsed/computed values      | TTL/version/event       |
+| Redis/network cache | several service instances | shared hot records          | TTL/delete/event        |
+| HTTP browser/proxy  | user or intermediary      | responses                   | validators/directives   |
+| CDN edge            | geographically near users | cacheable web/media objects | TTL/purge/versioned URL |
+
+Every cache needs:
+
+- a **key** and namespace;
+- a value plus version/expiry;
+- a miss/loading policy;
+- an invalidation or freshness model;
+- stampede protection;
+- size/eviction limits;
+- observability for hits, misses, stale results, and origin load.
+
+Redis provides typed structures—not only strings—including hashes, lists, sets, sorted
+sets, streams, and probabilistic structures. It can persist, but treating it as
+disposable cache or durable primary storage are different architectures. Review its
+[data types](https://redis.io/docs/latest/develop/data-types/) and
+[persistence choices](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)
+before relying on recovery behavior.
+
+### 8. HTTP Caching Is a Protocol Between Participants
+
+| Mechanism                             | Meaning                                               |
+| ------------------------------------- | ----------------------------------------------------- |
+| `Cache-Control: max-age=N`            | response is fresh for a defined time                  |
+| `no-store`                            | do not store this response                            |
+| `no-cache`                            | storage may occur, but revalidate before reuse        |
+| `private`                             | shared caches must not store it                       |
+| `ETag` / `If-None-Match`              | validator for a selected representation               |
+| `Last-Modified` / `If-Modified-Since` | time-based validator                                  |
+| `Vary`                                | request headers that select different representations |
+| `304 Not Modified`                    | reuse stored body after successful validation         |
+
+Cache keys must include every representation selector described by policy. Personalized
+responses accidentally stored in shared caches are security incidents, not merely
+staleness bugs. See [RFC 9111](https://www.rfc-editor.org/rfc/rfc9111.html) and the
+[HTTP caching guide](https://roadmap.sh/guides/http-caching).
+
+### 9. CDNs Combine Reverse Proxying, Caching, and Routing
+
+A CDN places edge servers closer to clients. On a cache hit, the edge answers without
+origin work; on a miss, it retrieves or forwards to the origin and may store a copy.
+
+| Benefit                    | New concern                           |
+| -------------------------- | ------------------------------------- |
+| lower latency              | cache-key correctness                 |
+| origin offload             | purge/propagation delay               |
+| traffic absorption         | provider and control-plane dependency |
+| TLS termination near users | certificate/key lifecycle             |
+| geographic presence        | data residency and logging            |
+
+Versioned immutable asset names make invalidation simple: deploy a new URL instead of
+trying to retract an ambiguous old value. Cloudflare's
+[caching overview](https://www.cloudflare.com/learning/cdn/what-is-caching/) provides a
+useful edge/origin mental model.
+
+### 10. Consistency Is a Per-Operation Promise
+
+| Model                 | Reader may observe                                    | Suitable when                           |
+| --------------------- | ----------------------------------------------------- | --------------------------------------- |
+| strong / linearizable | latest completed write in one global order            | locks, ownership, critical coordination |
+| sequential            | one order consistent with each client's program order | some replicated state machines          |
+| causal                | causally related operations in order                  | collaboration and messaging             |
+| eventual              | replicas converge after writes stop                   | caches, feeds, derived views            |
+| weak                  | few ordering/freshness promises                       | telemetry or best-effort data           |
+| read-your-writes      | a client sees its own accepted updates                | user-facing settings                    |
+
+“The database is eventually consistent” is too vague. Name the operation, object,
+failure case, and session guarantee. The [consistency patterns
+guide](https://roadmap.sh/guides/consistency-patterns-in-distributed-systems) is a useful
+comparison; verify the actual database configuration and API semantics.
+
+### 11. Consensus Is Agreement Under Failure
+
+A consensus algorithm lets a group agree on a sequence/value despite delays and some
+failures. A leader-based replicated log usually separates:
+
+```text
+leader election → log replication → quorum acknowledgement → commit → state-machine apply
+```
+
+| Term          | Meaning                                                   |
+| ------------- | --------------------------------------------------------- |
+| quorum        | overlapping majority or configured voting set             |
+| term/epoch    | logical leadership generation                             |
+| commit index  | highest entry known to meet the commit rule               |
+| state machine | deterministic application of committed commands           |
+| split brain   | more than one side incorrectly acts authoritative         |
+| fencing token | monotonically increasing proof that rejects stale leaders |
+
+Consensus does not make a service automatically available, fast, or correct. The state
+machine can contain bugs; clients need retry/idempotency semantics; quorum loss may
+choose safety over progress.
+
+### 12. Fault Tolerance Starts with a Failure Model
+
+| Failure            | Design response                                 |
+| ------------------ | ----------------------------------------------- |
+| process crash      | supervisor, durable checkpoint, restart budget  |
+| request timeout    | deadline, cancellation, bounded retry           |
+| duplicate delivery | idempotency key and deduplication window        |
+| message loss       | acknowledgement and redelivery policy           |
+| reordering         | sequence/term numbers where order matters       |
+| network partition  | explicit availability/consistency choice        |
+| slow dependency    | bulkhead, circuit breaker, backpressure         |
+| corrupt data       | checksum/signature, validation, replica repair  |
+| region loss        | independent failure domains and tested recovery |
+
+Reliability is the probability a system meets its specified behavior over time.
+Availability is the fraction of time it can serve according to the contract.
+Durability concerns accepted data surviving. Do not merge all three into “uptime.”
+
+### 13. Heartbeats Detect Silence, Not Death
+
+A heartbeat periodically reports liveness or lease renewal. Missing heartbeats means
+“the observer did not receive timely evidence,” which could be a crashed peer, network
+delay, scheduler pause, overload, or clock issue.
+
+```rust
+use std::time::{Duration, Instant};
+
+#[derive(Debug)]
+struct Heartbeat {
+    last_seen: Instant,
+    generation: u64,
+}
+
+impl Heartbeat {
+    fn is_suspect(&self, now: Instant, timeout: Duration) -> bool {
+        // `saturating_duration_since` remains safe if the supplied clock sample
+        // appears earlier; production code should use a monotonic clock source.
+        now.saturating_duration_since(self.last_seen) > timeout
+    }
+}
+```
+
+Use several missed intervals, generation/lease numbers, and a **suspect → verify →
+failed** state transition. A heartbeat alone must not authorize destructive failover.
+
+### 14. Event-Driven and Stream Processing
+
+| Concept          | Meaning                                                  |
+| ---------------- | -------------------------------------------------------- |
+| event            | immutable statement that something happened              |
+| command          | request that something should happen                     |
+| event loop       | dispatches readiness/messages to handlers                |
+| broker/log       | stores and distributes ordered records                   |
+| stream processor | transforms unbounded event sequences                     |
+| event time       | time occurrence claims to have happened                  |
+| processing time  | time the processor handled it                            |
+| watermark        | estimate that earlier event-time data is mostly complete |
+| window           | finite grouping over an unbounded stream                 |
+
+Event-driven development decouples producers and consumers, but it introduces schema
+evolution, duplicates, ordering domains, backpressure, poison messages, and
+observability needs. “Exactly once” usually describes a scoped combination of broker,
+state store, and sink protocol—not a magic end-to-end guarantee.
+
+### 15. Synchronous, Asynchronous, Futures, and Promises
+
+| Term         | Meaning                                                    |
+| ------------ | ---------------------------------------------------------- |
+| synchronous  | caller's control flow waits for completion                 |
+| asynchronous | operation can make progress while caller does other work   |
+| blocking     | thread cannot do other work while waiting                  |
+| nonblocking  | operation returns without waiting for unavailable progress |
+| future       | value representing a computation that may complete later   |
+| promise      | writable/completion side of a future in some ecosystems    |
+| task         | schedulable async state machine                            |
+
+Rust's `async fn` compiles into a state machine implementing `Future`; polling must not
+block. Cancellation often occurs by dropping the future, so partial-effect and cleanup
+contracts matter. Concurrency allows interleaving; parallelism means simultaneous
+execution.
+
+### 16. Load Balancing Selects a Destination
+
+| Strategy          | Good for                                       | Watch for                  |
+| ----------------- | ---------------------------------------------- | -------------------------- |
+| round robin       | similar healthy instances                      | unequal work               |
+| least connections | long-lived sessions                            | connections differ in cost |
+| latency-aware     | geographically/disparately performing backends | noisy feedback loops       |
+| consistent hash   | affinity and partitioned caches                | skew and rebalancing       |
+| weighted          | mixed capacity or gradual rollout              | stale weights              |
+
+Health checking, connection draining, overload signals, retry budgets, and session
+affinity matter as much as the selection algorithm. A retry routed to another backend
+can duplicate a non-idempotent operation.
+
+### 17. TDD and Reliability Tests Operate at Different Scales
+
+Test-driven development uses a short feedback loop:
+
+```text
+write a failing behavioral example → implement the smallest passing change
+→ refactor while tests remain green
+```
+
+| Test              | Proves                                                 |
+| ----------------- | ------------------------------------------------------ |
+| unit              | local transformation/invariant                         |
+| property          | behavior over generated input classes                  |
+| integration       | boundary adapters cooperate                            |
+| contract          | client/provider assumptions match                      |
+| concurrency/model | allowed interleavings preserve invariants              |
+| fault-injection   | timeouts, loss, retries, and crashes are handled       |
+| load/soak         | behavior under volume and time                         |
+| recovery          | backups, failover, and replay actually restore service |
+
+Tests are evidence about specified cases, not proof of absence of defects. Keep clocks,
+randomness, storage, and network adapters injectable so unusual states become
+repeatable.
+
+**Database sources:** [PostgreSQL tutorial](https://www.postgresql.org/docs/current/tutorial.html),
+[PostgreSQL concurrency control](https://www.postgresql.org/docs/current/mvcc.html),
+[MongoDB data modeling](https://www.mongodb.com/docs/manual/data-modeling/), and
+[MongoDB embedded documents](https://www.mongodb.com/docs/manual/data-modeling/embedding/).
+
+---
+
 ## 🌐 Networking, Protocols & Wire Formats
 
 Networking is low-level I/O plus a shared language. A protocol has **syntax** (frame
@@ -9997,6 +10902,378 @@ unexpected truncation; explicit length framing is usually easier to validate.
 
 ---
 
+## 🔐 Network Services, Cryptography, Identity & Web Security
+
+This chapter connects wire protocols to trust. The recurring rule is:
+
+> **Parse and bound bytes first, authenticate the peer and message second, authorize
+> the requested action third, and only then perform a side effect.**
+
+### 1. Client, Server, Proxy, and Load Balancer Are Roles
+
+| Role          | Initiates/accepts                          | Main responsibility              |
+| ------------- | ------------------------------------------ | -------------------------------- |
+| client        | initiates a request/connection             | asks for a service               |
+| server        | accepts and responds                       | owns a service contract          |
+| forward proxy | client connects to it                      | reaches destinations for clients |
+| reverse proxy | appears to be the server                   | fronts one or more origins       |
+| load balancer | selects a healthy destination              | distributes connections/requests |
+| gateway       | translates policy/protocol/domain boundary | mediates unlike systems          |
+| CDN edge      | reverse proxy near users                   | caches/serves/forwards content   |
+
+One process can play several roles. A browser is an HTTP client and may also accept
+local debugging connections; a reverse proxy is a server to the client and a client to
+the origin. The [proxy-server guide](https://roadmap.sh/guides/proxy-servers) compares
+forward and reverse placement.
+
+### 2. Ports Identify Transport Endpoints
+
+An IP address selects an interface/host route; a transport port helps select an
+endpoint within that network stack. A socket is identified by protocol and addressing
+state, often summarized for TCP by:
+
+```text
+(source IP, source port, destination IP, destination port, transport protocol)
+```
+
+Ports are 16-bit numbers, not security identities. A familiar port suggests an
+application protocol but does not prove it; TLS, authentication, and application
+parsing determine what the peer is actually speaking.
+
+| Protocol | Typical role                               | Important distinction                        |
+| -------- | ------------------------------------------ | -------------------------------------------- |
+| IP       | packet addressing/routing                  | best effort; no application message boundary |
+| TCP      | reliable ordered byte stream               | no record boundaries                         |
+| UDP      | message-oriented datagrams                 | loss, duplication, and reordering possible   |
+| QUIC     | secure multiplexed transport over UDP      | application still defines messages           |
+| HTTP     | request/response semantics                 | may run over TCP/TLS or QUIC                 |
+| DNS      | names and typed resource records           | caching and authority are core               |
+| SSH      | secure remote shell/tunneling protocol     | not the same protocol as TLS                 |
+| FTP      | legacy file-transfer control/data channels | plaintext unless separately secured          |
+
+### 3. HTTP Is a Typed Message Exchange
+
+Simplified HTTP/1.1 shape:
+
+```http
+GET /notes/42 HTTP/1.1
+Host: example.test
+Accept: application/json
+If-None-Match: "revision-7"
+
+```
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 31
+Cache-Control: private, max-age=60
+ETag: "revision-8"
+
+{"id":42,"title":"Low level"}
+```
+
+The blank line ends headers. `Content-Length` counts body **octets**, not Unicode
+characters. HTTP/2 and HTTP/3 encode frames differently but retain HTTP method, status,
+field, representation, and caching semantics.
+
+| Header                  | Boundary question                                       |
+| ----------------------- | ------------------------------------------------------- |
+| `Host` / `:authority`   | which virtual service is addressed?                     |
+| `Content-Type`          | how should body bytes be interpreted?                   |
+| `Content-Encoding`      | which representation coding must be decoded?            |
+| `Accept`                | which response media types can the client process?      |
+| `Authorization`         | what credential accompanies this request?               |
+| `Cookie` / `Set-Cookie` | which browser-managed state is sent or stored?          |
+| `Origin`                | which web origin initiated the request?                 |
+| `Cache-Control`         | where/how long may the response be reused?              |
+| `Forwarded`             | what proxy-origin information is asserted, and by whom? |
+
+Trust forwarding headers only from proxies you control and after stripping untrusted
+copies at the edge.
+
+### 4. DNS Resolves Typed Names Through Delegation
+
+```text
+application → stub resolver → recursive resolver cache
+                         miss → root → TLD → authoritative server
+```
+
+| Record       | Purpose                                               |
+| ------------ | ----------------------------------------------------- |
+| `A` / `AAAA` | IPv4 / IPv6 address                                   |
+| `CNAME`      | alias to another canonical name                       |
+| `NS`         | authoritative server delegation                       |
+| `MX`         | mail exchanger                                        |
+| `TXT`        | arbitrary text used by several higher-level protocols |
+| `SRV`        | service location with port/priority/weight            |
+| `CAA`        | certificate-authority issuance policy                 |
+
+A TTL bounds how long a cached record should be reused; it is not a propagation
+guarantee or lease on the whole Internet. A recursive resolver answers from cache or
+pursues referrals; an authoritative server answers from the zones it serves. DNSSEC
+authenticates signed DNS data and denial proofs, but it does not encrypt ordinary DNS
+queries. See [RFC 7719 DNS terminology](https://www.rfc-editor.org/rfc/rfc7719.html).
+
+### 5. FTP, FTPS, SFTP, and File APIs Are Not Synonyms
+
+| Name             | Built on                               | Security note                                   |
+| ---------------- | -------------------------------------- | ----------------------------------------------- |
+| FTP              | separate TCP control and data channels | credentials/data are plaintext by default       |
+| FTPS             | FTP protected with TLS                 | still retains FTP's channel/firewall complexity |
+| SFTP             | SSH file-transfer subsystem            | not FTP over SSH                                |
+| SCP              | SSH-based copying protocol/tooling     | different semantics from SFTP                   |
+| HTTPS object API | HTTP/TLS                               | common for cloud/object storage                 |
+
+For new systems, prefer a maintained secure protocol with explicit authentication,
+integrity, limits, resumability, atomic destination behavior, and path containment.
+
+### 6. VPN, Tunnel, and Shadowsocks Cover Different Traffic
+
+| Mechanism         | Usually captures                                         | Endpoint sees             |
+| ----------------- | -------------------------------------------------------- | ------------------------- |
+| application proxy | traffic from configured applications                     | proxy as network peer     |
+| SOCKS proxy       | supported TCP/UDP destinations                           | proxy as relay            |
+| Shadowsocks       | traffic explicitly sent through local secure split proxy | remote relay              |
+| VPN               | selected IP routes or an interface                       | VPN gateway as routed hop |
+| SSH tunnel        | explicitly forwarded ports/connections                   | SSH server as relay       |
+
+[Shadowsocks](https://shadowsocks.org/doc/what-is-shadowsocks.html) describes itself as a
+secure split proxy loosely based on SOCKS5: local and remote components protect the
+relay leg, then the remote connects to the target. It is not automatically a
+device-wide VPN, anonymity system, or substitute for end-to-end TLS.
+
+A tunnel changes routing and observation points. It does not make a malicious endpoint
+safe, and DNS or other traffic can escape if routing policy is incomplete.
+
+### 7. Encoding, Compression, Encryption, and Obfuscation
+
+| Transformation    | Goal                                        | Key required?   | Reversible?             | Security property                                       |
+| ----------------- | ------------------------------------------- | --------------- | ----------------------- | ------------------------------------------------------- |
+| encoding          | represent data under a syntax               | no              | yes                     | none                                                    |
+| decoding          | recover represented data                    | no              | yes                     | none                                                    |
+| compression       | remove redundancy                           | no              | yes/lossy               | none                                                    |
+| encryption        | confidentiality under a key                 | yes             | yes with key            | confidentiality; integrity only with authenticated mode |
+| hashing           | fixed-size one-way digest                   | no              | not generally           | integrity building block                                |
+| MAC               | authenticate bytes with shared key          | yes             | verification            | integrity/authenticity to key holders                   |
+| digital signature | authenticate bytes with private/public keys | private to sign | verification            | integrity, signer-key authenticity                      |
+| obfuscation       | make understanding harder                   | usually no      | intentionally difficult | delay, not a trust boundary                             |
+
+Base64, hex, URL encoding, and character encodings are not encryption. Packing,
+minification, symbol stripping, control-flow flattening, and string hiding are forms of
+obfuscation, not permission checks.
+
+For data that will be both compressed and encrypted, protocols generally **compress
+before encryption**, because good ciphertext should not retain compressible patterns.
+Compression of attacker-influenced data beside secrets can leak through output length,
+so security protocols need a threat-specific policy.
+
+### 8. Symmetric and Asymmetric Cryptography Work Together
+
+| Family                    | Key relationship               | Good at                                  | Main operational risk               |
+| ------------------------- | ------------------------------ | ---------------------------------------- | ----------------------------------- |
+| symmetric encryption      | same secret protects/recovers  | fast bulk confidentiality                | safely sharing/rotating the secret  |
+| MAC                       | shared secret authenticates    | fast message integrity                   | every verifier can also forge       |
+| asymmetric encryption/KEM | public/private pair            | establishing a shared secret             | key validation and algorithm misuse |
+| digital signature         | private signs; public verifies | software/document identity and integrity | private-key compromise              |
+
+Real protocols are commonly **hybrid**: authenticate peers and establish a fresh shared
+secret using asymmetric techniques, then protect bulk records with an authenticated
+symmetric cipher. Use a maintained protocol/library and an AEAD construction; do not
+invent a cipher mode, nonce scheme, padding scheme, or certificate validator.
+
+### 9. Signing Protects Exact Bytes and Context
+
+A safe signing design defines:
+
+```text
+domain label || version || algorithm identifiers || canonical metadata || payload hash
+```
+
+The domain label prevents a valid signature for one protocol from being replayed as a
+different kind of authorization. Canonical encoding prevents multiple byte
+representations of the “same” logical value. Verification must also check purpose,
+identity, time policy, revocation/status policy, and key trust—not only the math.
+
+### 10. Certificates Bind Keys to Claims
+
+A digital certificate is a signed structure binding a public key to names/attributes
+under an issuer and validity policy.
+
+```text
+trust anchor
+  signs intermediate CA certificate
+    signs leaf/service certificate
+      contains service public key and permitted names/usages
+```
+
+TLS certificate validation commonly checks:
+
+- a chain to a trusted anchor;
+- signatures and allowed algorithms;
+- current validity interval;
+- requested hostname/IP against subject alternative names;
+- key usage and extended key usage;
+- basic constraints/path limits;
+- status/revocation policy when applicable.
+
+Installing a certificate does not itself prove control of the corresponding private
+key; TLS proves possession during the handshake. A self-signed certificate can encrypt
+a connection but provides no external identity unless its fingerprint/key is trusted
+through another channel.
+
+### 11. TLS and SSH Protect Different Application Boundaries
+
+TLS provides a secure transport for protocols such as HTTP, database connections, and
+custom services. SSH defines secure remote login, channels, port forwarding, and file
+transfer.
+
+| Question           | TLS                                     | SSH                                        |
+| ------------------ | --------------------------------------- | ------------------------------------------ |
+| common identity    | certificate name/key                    | host key plus user credential              |
+| common trust store | public/private CAs                      | `known_hosts`, enterprise CA, explicit key |
+| application        | layered beneath an application protocol | includes channel/subsystem model           |
+| first-use risk     | PKI/domain validation policy            | host-key verification/TOFU policy          |
+
+Both require correct host identity verification. Disabling certificate or host-key
+checks turns active interception into expected behavior. See
+[TLS 1.3](https://www.rfc-editor.org/rfc/rfc8446.html) and the
+[TLS-versus-SSH guide](https://roadmap.sh/guides/ssl-tls-https-ssh).
+
+### 12. Authentication, Authorization, and API Keys
+
+| Step                  | Question                                                  |
+| --------------------- | --------------------------------------------------------- |
+| identification        | which identity is being claimed?                          |
+| authentication        | what evidence supports that claim?                        |
+| session establishment | how is repeated proof represented safely?                 |
+| authorization         | may this identity perform this action on this object now? |
+| accounting/audit      | what security-relevant decision occurred?                 |
+
+An API key is usually a bearer secret identifying an integration/project; it is not
+automatically an end-user identity. Store only a verifier/hash when possible, show the
+secret once, scope it, rotate it, rate-limit it, and keep it out of URLs and logs.
+
+Authorization belongs at the object/action boundary. “User is logged in” does not imply
+“user may read record 42.”
+
+### 13. Password Storage Uses Slow Verification, Salt, and Policy
+
+Passwords should be stored with a maintained **password-hashing function**, not
+reversible encryption or a fast general-purpose hash.
+
+| Component                | Purpose                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| per-password salt        | makes equal passwords produce different stored verifiers |
+| memory-hard work factor  | makes each offline guess expensive                       |
+| pepper (optional)        | separate server-held secret outside the database         |
+| algorithm/version fields | allow verification and future upgrades                   |
+| rehash-on-login          | migrate accepted old parameters to current policy        |
+| rate limiting/MFA        | reduce online-guessing and credential-reuse damage       |
+
+A salt is not secret and must be unique enough for each password. A pepper is secret
+and must be rotatable with an incident plan. Follow current
+[OWASP password-storage guidance](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+rather than copying fixed parameters forever.
+
+### 14. Sessions, Cookies, Tokens, and JWTs
+
+| Item          | Meaning                                                                 |
+| ------------- | ----------------------------------------------------------------------- |
+| session       | server-recognized continuity of authenticated state                     |
+| cookie        | browser storage/attachment mechanism scoped by attributes               |
+| bearer token  | possession grants the represented authority                             |
+| refresh token | longer-lived credential used to obtain new access tokens                |
+| JWT           | signed and/or encrypted claims container with defined registered claims |
+
+JWT is a **format**, not an authentication architecture. A signed JWT is normally
+readable; the signature prevents undetected modification but does not encrypt claims.
+Validate the allowed algorithm, signature, issuer, audience, time claims, token type,
+key selection, and application-specific authorization. See
+[RFC 7519](https://www.rfc-editor.org/rfc/rfc7519.html).
+
+For browser session cookies:
+
+- use `Secure` so HTTPS is required;
+- use `HttpOnly` to reduce script access;
+- choose `SameSite` deliberately;
+- set narrow `Path`/`Domain`;
+- rotate the session ID after authentication/privilege changes;
+- enforce idle and absolute expiry server-side;
+- revoke or version sensitive sessions.
+
+Follow the [OWASP session-management
+guide](https://cheatsheetseries.owasp.org/cheatsheets/Session_Management_Cheat_Sheet.html).
+
+### 15. CORS, CSRF, and XSS Solve Different Problems
+
+| Risk/control       | What it concerns                                            | Core defense                                      |
+| ------------------ | ----------------------------------------------------------- | ------------------------------------------------- |
+| same-origin policy | browser script reading another origin                       | browser-enforced isolation                        |
+| CORS               | server opts selected origins into cross-origin reads        | exact origin/method/header policy                 |
+| CSRF               | victim's browser sends authenticated unwanted request       | SameSite, CSRF token, origin checks, safe methods |
+| XSS                | attacker-controlled content executes as trusted page script | contextual output encoding, safe DOM APIs, CSP    |
+
+CORS is not authentication, and it does not stop non-browser clients from sending
+requests. CSRF primarily matters when credentials are attached automatically, such as
+cookies. XSS can often defeat CSRF tokens by acting inside the trusted origin, so
+preventing injection remains essential. Use the [OWASP CSRF
+guide](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html),
+[OWASP XSS guide](https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html),
+and [MDN CORS guide](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS).
+
+### 16. Fingerprinting and Canvas Are Privacy Boundaries
+
+Fingerprinting combines observable features—headers, screen properties, fonts,
+rendering differences, timing, device capabilities, and storage state—to correlate a
+browser/device. Canvas fingerprinting renders controlled content and hashes or analyzes
+the resulting pixels, whose small differences may reflect graphics and font stacks.
+
+Defensive/product guidance:
+
+- collect only what a documented purpose requires;
+- prefer authenticated account/device keys over probabilistic fingerprints;
+- obtain consent where required and define retention;
+- treat a fingerprint as a noisy risk signal, not identity proof;
+- give users recovery and appeal paths;
+- avoid silently expanding the attributes collected.
+
+### 17. Random Numbers Must Match the Domain
+
+| Need                            | Appropriate source                                                     |
+| ------------------------------- | ---------------------------------------------------------------------- |
+| simulation/test reproducibility | explicitly seeded deterministic PRNG                                   |
+| randomized algorithm            | fast PRNG with documented seed                                         |
+| session/token/key/nonce         | operating-system cryptographic randomness through a maintained library |
+| unique database ID              | UUID/sequence according to collision/order policy                      |
+
+Never use timestamps, process IDs, ordinary hashes, or a non-cryptographic PRNG for
+secrets. Never reuse a nonce where the selected AEAD/signature scheme forbids it.
+Randomness tests cannot prove that a secret generator is unpredictable; entropy source,
+state protection, reseeding, and construction matter. NIST maintains current
+[cryptographic standards and random-bit-generation guidance](https://csrc.nist.gov/Projects/cryptographic-standards-and-guidelines).
+
+### 18. Sandboxing Is Authority Reduction
+
+A sandbox restricts what code can observe or mutate. Mechanisms include:
+
+| Mechanism             | Restricts                                        |
+| --------------------- | ------------------------------------------------ |
+| process boundary      | address space and crash containment              |
+| OS user/ACL           | files, objects, services                         |
+| capability handle     | specific resource operations                     |
+| syscall filter        | kernel entry points                              |
+| namespace             | resource view                                    |
+| VM/hypervisor         | guest machine boundary                           |
+| language/Wasm runtime | instructions, memory, imports, fuel              |
+| broker process        | privileged operations through validated messages |
+
+A sandbox is only as strong as its escape surface: syscalls, parsers, shared memory,
+GPU/driver interfaces, JITs, IPC brokers, and configuration. Start with no authority and
+grant narrow handles rather than passing ambient global access.
+
+---
+
 ## 📡 Embedded Networking with `smoltcp`
 
 [`smoltcp`](https://github.com/smoltcp-rs/smoltcp) is a standalone, event-driven TCP/IP
@@ -10599,6 +11876,666 @@ for every case.
 
 > ➡️ **Next:** Actix shows the server side of the web boundary, while `wasm-bindgen`,
 > `web-sys`, and the DOM expose the browser-hosted side.
+
+---
+
+<a id="gui-tui-graphics-library-architecture"></a>
+
+## 🖼️ GUI, TUI & Graphics-Library Architecture
+
+A user interface is a feedback loop over state:
+
+```text
+OS/terminal input → normalize event → update application state
+→ layout visible elements → generate drawing commands → render/present
+→ wait for the next input, timer, or completed task
+```
+
+A GUI targets windows and pixels. A TUI targets a terminal's character-cell protocol.
+Their output devices differ, but both need event handling, state, layout, focus,
+incremental redraw, accessibility, testing, and cleanup.
+
+### 1. A GUI Sits on Several Layers
+
+| Layer                    | Responsibility                                   | Rust examples                        |
+| ------------------------ | ------------------------------------------------ | ------------------------------------ |
+| application model        | domain state and commands                        | your structs, enums, reducers        |
+| UI toolkit               | widgets, layout, focus, accessibility, styling   | `egui`, `iced`, Slint, GTK4          |
+| text/2D scene            | shaping, paths, images, glyphs, clipping         | Skia, Cairo, `tiny-skia`             |
+| graphics API             | buffers, textures, shaders, command queues       | `wgpu`, Vulkan, Metal, D3D12, OpenGL |
+| window/event layer       | windows, monitors, input, IME, DPI, lifecycle    | `winit`, SDL3                        |
+| compositor/window system | combines application surfaces on screen          | Wayland/X11, DWM, Quartz             |
+| driver/GPU/display       | executes commands and scans completed images out | platform hardware stack              |
+
+A full toolkit may own most layers; a focused library may own one. `winit` creates
+windows and dispatches events but is not a widget toolkit. `wgpu` submits graphics work
+but does not provide buttons, layout, or text editing.
+
+### 2. The Event Loop Owns Platform Lifecycle
+
+Desktop platforms deliver resize, scale-factor, keyboard, pointer, touch, IME, theme,
+focus, suspend/resume, redraw, and close events. The event loop often has thread and
+lifecycle restrictions, so create windows only when the platform says it is valid.
+
+```text
+resumed → create/recreate window and graphics surface
+window/input event → update state and mark dirty
+redraw requested → acquire surface image → paint → submit → present
+suspended → release resources the platform may invalidate
+close requested → save/confirm policy → exit
+```
+
+Current `winit` uses `ApplicationHandler` with `EventLoop::run_app`; windows are commonly
+created through `ActiveEventLoop` during `resumed`. A redraw request means “produce a
+frame when dispatched,” not “draw immediately inside every input callback.”
+
+Separate raw platform events from domain messages:
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Message {
+    Increment,
+    Decrement,
+    Reset,
+    WindowCloseRequested,
+}
+
+#[derive(Debug, Default, PartialEq, Eq)]
+struct CounterState {
+    value: i64,
+    should_close: bool,
+}
+
+fn update(state: &mut CounterState, message: Message) {
+    // The reducer is independent of winit, egui, a terminal, and the GPU.
+    match message {
+        Message::Increment => state.value = state.value.saturating_add(1),
+        Message::Decrement => state.value = state.value.saturating_sub(1),
+        Message::Reset => state.value = 0,
+        Message::WindowCloseRequested => state.should_close = true,
+    }
+}
+```
+
+This pure update core can be driven by a GUI, TUI, tests, network command, or your own
+language runtime.
+
+### 3. Retained, Immediate, and Declarative UI
+
+| Model                | Programmer describes                          | Toolkit retains                                     | Good fit                         |
+| -------------------- | --------------------------------------------- | --------------------------------------------------- | -------------------------------- |
+| retained mode        | create/update a persistent widget/object tree | widgets and invalidation state                      | document/form-style applications |
+| immediate mode       | rebuild desired widgets each frame/pass       | interaction memory keyed by IDs                     | tools, editors, debug panels     |
+| declarative/reactive | desired UI as a function of state             | dependency graph or virtual/retained representation | data-driven apps                 |
+| Elm/reducer style    | messages, pure update, view                   | runtime effects/subscriptions/tree                  | explicit state transitions       |
+
+“Immediate” does not mean the GPU redraws every pixel for every method call. A toolkit
+can collect a frame's UI description, tessellate once, and repaint only when requested.
+“Retained” does not eliminate application state; it means the toolkit retains UI
+objects and schedules updates.
+
+Stable widget IDs matter in immediate-mode systems: focus, drag state, open/closed
+state, and text editing must remain attached to the same logical control across frames.
+
+### 4. Layout Is Constraint Solving Over a Tree
+
+Most layout engines perform some variation of:
+
+```text
+parent supplies constraints → child measures intrinsic/preferred size
+→ parent allocates rectangles → child lays out descendants
+```
+
+| Input          | Examples                                   |
+| -------------- | ------------------------------------------ |
+| constraints    | minimum/maximum width and height           |
+| intrinsic size | text, image, control content               |
+| policy         | row/column/grid, flex, alignment, padding  |
+| environment    | DPI scale, font metrics, locale, theme     |
+| output         | logical rectangles plus clip and transform |
+
+Use **logical units** for layout and convert to physical pixels at the rendering
+boundary. Fractional scale factors mean rounding each child independently can create
+gaps or drift; distribute rounding with a documented policy.
+
+Cycles require rules. “Parent sizes to child while child fills parent” cannot be solved
+by naive recursion. Real toolkits use bounded passes, priority constraints, or
+well-defined flex/intrinsic algorithms.
+
+### 5. Painting Produces a Display List
+
+Widgets should usually emit drawing primitives rather than talk directly to the GPU:
+
+```text
+filled rectangle → clipped rounded path → shaped glyph run → image
+```
+
+The renderer then:
+
+1. resolves clips/transforms and z-order;
+2. shapes text and locates glyphs;
+3. batches compatible primitives;
+4. uploads changed buffers/textures;
+5. records graphics commands;
+6. submits and presents;
+7. retains resources until the GPU has finished.
+
+Dirty-region/damage tracking avoids repainting unaffected areas. Immediate-mode
+toolkits may still cache fonts, meshes, textures, and unchanged windows.
+
+### 6. Text Is the Hardest “Simple” Widget
+
+Text input/rendering involves:
+
+| Concern           | Why bytes or scalar values are insufficient                 |
+| ----------------- | ----------------------------------------------------------- |
+| shaping           | several characters may become one glyph or contextual forms |
+| grapheme clusters | one perceived character may contain several scalars         |
+| bidi              | visual order can differ from logical storage order          |
+| line breaking     | language and punctuation rules affect breaks                |
+| font fallback     | one run may require several fonts                           |
+| cursor selection  | byte, scalar, grapheme, glyph, and visual positions differ  |
+| IME               | composition text is provisional until committed             |
+| accessibility     | semantic label/value/role differs from painted pixels       |
+
+Keep source text and semantic selection separate from shaped glyph positions. A glyph
+atlas is a cache of rasterized glyph images, not the authoritative text.
+
+### 7. Input Becomes Routing, Focus, and Gestures
+
+```text
+device event → window coordinates → inverse transforms → hit test
+→ pointer capture/focus → widget event → domain message
+```
+
+| Mechanism              | Purpose                                              |
+| ---------------------- | ---------------------------------------------------- |
+| hit testing            | choose visual target under a point                   |
+| focus                  | choose keyboard/IME target                           |
+| pointer capture        | keep receiving drag events outside original bounds   |
+| event bubbling/capture | route through ancestors under toolkit policy         |
+| gesture recognition    | convert temporal pointer/touch sequences into intent |
+| command mapping        | turn shortcuts/menu actions into domain messages     |
+
+Do not identify keyboard shortcuts only by produced text; physical key, logical key,
+modifiers, keyboard layout, and IME composition are different representations.
+
+### 8. Accessibility Is a Parallel Semantic Tree
+
+A painted rectangle does not tell assistive technology that it is a checked,
+disabled button named “Mute.” Expose a semantic tree containing:
+
+- role, label, value, description, and state;
+- parent/child relationships and reading order;
+- focus and selection;
+- available actions;
+- live-region/change notifications;
+- bounds when the platform requires them.
+
+Keyboard operation, visible focus, contrast, scalable text, reduced motion, and screen
+reader semantics are architectural requirements. Test the accessibility tree and real
+assistive technology; a mouse-only visual test is insufficient.
+
+### 9. GUI and Graphics Library Selection
+
+| Library               | Layer/model                                       | Choose it when                                               | It does not replace                  |
+| --------------------- | ------------------------------------------------- | ------------------------------------------------------------ | ------------------------------------ |
+| `winit`               | cross-platform windows/events                     | building a custom renderer or toolkit                        | widgets, text, renderer              |
+| `wgpu`                | safe cross-platform GPU API                       | custom 2D/3D/compute rendering                               | window/event loop and UI             |
+| `tiny-skia`           | small pure-Rust CPU 2D rasterizer                 | paths and pixels without a GPU stack                         | full widgets and windowing           |
+| Skia / Cairo bindings | mature 2D graphics/text ecosystem                 | complex vector/text rendering or integration                 | application UI architecture          |
+| `egui` / `eframe`     | immediate-mode Rust GUI                           | tools, inspectors, editors, rapid native/web UI              | native platform widgets              |
+| `iced`                | typed Elm-inspired GUI                            | message/update/view architecture and async tasks             | OS-native widget toolkit             |
+| Slint                 | declarative UI language plus Rust API             | designer-friendly declarative apps, embedded/desktop targets | arbitrary platform-native widgets    |
+| `gtk4-rs` / Relm4     | bindings / Elm-like layer over GTK4               | established toolkit, accessibility, GNOME integration        | small dependency footprint           |
+| Tauri                 | system webview plus Rust backend/capabilities     | HTML/CSS UI with a Rust desktop boundary                     | custom native/GPU widget toolkit     |
+| SDL3                  | window/input/audio/2D/GPU-oriented platform layer | games, media tools, custom loops                             | complete application widget set      |
+| Bevy                  | ECS game/application engine                       | data-oriented scenes, games, visual tools                    | traditional desktop widget semantics |
+
+No toolkit is universally “best.” Decide using:
+
+| Requirement       | Verify before choosing                                          |
+| ----------------- | --------------------------------------------------------------- |
+| target platforms  | desktop, web, mobile, embedded, remote                          |
+| look/behavior     | native toolkit, custom brand, game/tool style                   |
+| accessibility/IME | real support on every required platform                         |
+| renderer          | CPU, GPU, webview/DOM, remote                                   |
+| application model | immediate, retained, reducer, reactive                          |
+| packaging         | runtime libraries, binary size, system dependencies             |
+| licensing         | toolkit and transitive/native dependencies                      |
+| testability       | headless/test backend, event injection, accessibility snapshots |
+| maturity          | releases, migration cost, issue responsiveness                  |
+
+### 10. A Small Immediate-Mode `egui` View
+
+```rust
+fn counter_view(ui: &mut egui::Ui, state: &mut CounterState) {
+    ui.heading("Counter");
+    ui.label(format!("Current value: {}", state.value));
+
+    ui.horizontal(|ui| {
+        // Each button response is converted into the same domain messages a TUI
+        // or test could send. The reducer remains the source of behavior.
+        if ui.button("−").clicked() {
+            update(state, Message::Decrement);
+        }
+        if ui.button("Reset").clicked() {
+            update(state, Message::Reset);
+        }
+        if ui.button("+").clicked() {
+            update(state, Message::Increment);
+        }
+    });
+}
+```
+
+The function describes the current frame's controls. `egui` remembers interaction state
+through stable IDs and returns responses such as `clicked`. Long-running work belongs
+in a task/thread; send a result back and request repaint rather than blocking the UI
+thread.
+
+### 11. How a TUI Reaches the Screen
+
+A terminal user interface usually writes a stream of characters and control sequences
+to a **terminal emulator**:
+
+```text
+TUI process ↔ pseudo-terminal/console ↔ terminal emulator
+                                      → glyph cells → GUI compositor → display
+```
+
+| Terminal concept        | Meaning                                                                    |
+| ----------------------- | -------------------------------------------------------------------------- |
+| cell grid               | rows/columns containing glyph, style, and width state                      |
+| escape/control sequence | protocol command for cursor, color, erase, mode, and more                  |
+| raw mode                | deliver key bytes/events without ordinary line editing/echo                |
+| alternate screen        | temporary full-screen buffer used by many TUIs                             |
+| cursor state            | position, visibility, and style                                            |
+| terminal size           | current rows/columns; can change asynchronously                            |
+| PTY                     | bidirectional pseudo-device connecting program and terminal/remote session |
+
+The terminal ultimately draws pixels too, but the TUI normally controls **cells**, not
+the terminal emulator's font rasterizer or compositor.
+
+### 12. TUI Rendering Uses a Back Buffer and Diff
+
+For each frame:
+
+1. query the current terminal area;
+2. lay out widgets in cell coordinates;
+3. render all visible widgets into an in-memory cell buffer;
+4. compare with the previous buffer;
+5. emit control sequences only for changed runs;
+6. flush, then wait for events/ticks.
+
+Wide Unicode graphemes may occupy two cells; combining marks and terminal capability
+differences complicate width. Test with the terminal families and locales you support.
+
+### 13. TUI Library Selection
+
+| Library                          | Role                                                           | Use                                             |
+| -------------------------------- | -------------------------------------------------------------- | ----------------------------------------------- |
+| Ratatui                          | immediate-rendered widgets, layout, terminal/frame abstraction | build the TUI                                   |
+| Crossterm                        | cross-platform terminal modes, cursor, style, input events     | common Ratatui backend and lower-level control  |
+| Termion                          | Unix-oriented terminal control/backend                         | alternative backend in Unix-focused apps        |
+| Termwiz                          | terminal model/input/rendering utilities                       | advanced terminal behavior or alternate backend |
+| `tui-textarea` and widget crates | reusable higher-level widgets                                  | avoid rewriting complex editing behavior        |
+
+Ratatui 0.30's main crate is the recommended application entry point, and its `run`
+helper initializes and restores the terminal around the application closure.
+
+### 14. A Small Ratatui Application
+
+```rust
+use crossterm::event::{self, Event, KeyCode, KeyEventKind};
+use ratatui::{
+    layout::{Constraint, Layout},
+    widgets::{Block, Borders, Paragraph},
+    DefaultTerminal, Frame,
+};
+
+#[derive(Debug, Default)]
+struct App {
+    counter: CounterState,
+    quit: bool,
+}
+
+impl App {
+    fn run(&mut self, terminal: &mut DefaultTerminal) -> std::io::Result<()> {
+        while !self.quit {
+            // Ratatui draws the complete desired UI into an intermediate buffer,
+            // then the backend emits the terminal-cell differences.
+            terminal.draw(|frame| self.render(frame))?;
+            self.handle_event()?;
+        }
+        Ok(())
+    }
+
+    fn render(&self, frame: &mut Frame) {
+        let [header, body, help] = Layout::vertical([
+            Constraint::Length(3),
+            Constraint::Min(1),
+            Constraint::Length(3),
+        ])
+        .areas(frame.area());
+
+        frame.render_widget(
+            Paragraph::new("Low-Level Counter")
+                .block(Block::default().borders(Borders::ALL)),
+            header,
+        );
+        frame.render_widget(
+            Paragraph::new(format!("Value: {}", self.counter.value)),
+            body,
+        );
+        frame.render_widget(
+            Paragraph::new("←/→ change · r reset · q quit")
+                .block(Block::default().borders(Borders::TOP)),
+            help,
+        );
+    }
+
+    fn handle_event(&mut self) -> std::io::Result<()> {
+        if let Event::Key(key) = event::read()? {
+            // Some backends also report release/repeat; act only on key presses.
+            if key.kind == KeyEventKind::Press {
+                match key.code {
+                    KeyCode::Left => update(&mut self.counter, Message::Decrement),
+                    KeyCode::Right => update(&mut self.counter, Message::Increment),
+                    KeyCode::Char('r') => update(&mut self.counter, Message::Reset),
+                    KeyCode::Char('q') => self.quit = true,
+                    _ => {}
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut app = App::default();
+    // `run` restores terminal modes even when the closure returns an error.
+    ratatui::run(|terminal| app.run(terminal))?;
+    Ok(())
+}
+```
+
+For periodic animation or background work, poll with a deadline or use an event channel
+instead of blocking forever on `event::read`. Keep the channel bounded and coalesce
+frequent progress updates.
+
+### 15. Terminal Cleanup and Escape-Sequence Safety
+
+If a TUI enables raw mode, hides the cursor, or enters the alternate screen, restore
+the terminal on normal return, errors, and panics where practical. A stuck terminal is
+usually recoverable, but it is an avoidable failure.
+
+Untrusted text may contain control sequences that change colors, titles, hyperlinks,
+clipboard-related controls, or apparent log content. A widget string API that escapes
+or treats content as text is safer than printing raw bytes. Bound input length and
+filter control characters according to the display contract.
+
+### 16. UI Performance and Correctness Checklist
+
+| Symptom               | Inspect                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| idle CPU/GPU usage    | repaint requests, polling control flow, animations         |
+| typing lag            | synchronous work on UI thread, shaping/layout invalidation |
+| resize flicker        | surface reconfiguration and retained frame policy          |
+| blurry text           | logical-to-physical scale and half-pixel transforms        |
+| lost clicks           | hit-test transforms, clipping, pointer capture             |
+| wrong key input       | physical/logical key and IME composition handling          |
+| TUI corruption        | terminal restore, width calculation, partial writes        |
+| screen-reader gaps    | missing role/name/state/action semantics                   |
+| memory growth         | texture/glyph/widget caches and stale IDs                  |
+| GPU validation errors | resource lifetime, format, alignment, barriers             |
+
+Measure event-to-present latency separately from frames per second. A form that redraws
+only on input may feel excellent at zero idle FPS; a game may need continuous,
+well-paced frames.
+
+### 17. Designing a UI System for Your Own Language
+
+A small UI language can lower through familiar compiler stages:
+
+```text
+declarative source → parsed UI AST → type/style validation → widget/scene tree
+→ constraints and layout → display list or terminal-cell buffer → backend
+```
+
+| Language feature   | Runtime representation                                   |
+| ------------------ | -------------------------------------------------------- |
+| component/function | constructor plus state slot                              |
+| property           | typed field or reactive value                            |
+| event handler      | closure/function reference plus environment              |
+| conditional/list   | tree diff or immediate iteration with stable key         |
+| async command      | future/task that sends a typed message                   |
+| style              | resolved rules/tokens converted to paint/layout values   |
+| accessibility      | semantic nodes emitted beside visuals                    |
+| backend            | DOM, native toolkit, GPU display list, or terminal cells |
+
+Define whether updates are synchronous, batched, or transactional; whether event
+handlers may re-enter layout; how stable identity works; and which thread owns UI
+objects. Make resource handles and backend capabilities explicit.
+
+When reversing a UI runtime, look for the same stages in reverse: event dispatch tables,
+widget/component trees, string/font caches, layout rectangles, display lists, GPU
+buffers, and platform accessibility/IME calls.
+
+### 18. Native Window API Basics: Win32 as a Concrete Example
+
+“Window API” can mean a portable layer such as `winit`, or the operating system's
+native windowing interface. Win32 makes the lower-level pieces unusually explicit:
+
+| Win32 concept    | Meaning                                                                      |
+| ---------------- | ---------------------------------------------------------------------------- |
+| `HINSTANCE`      | handle identifying the loaded application/module instance                    |
+| window class     | registered metadata shared by windows, including a window procedure          |
+| `HWND`           | opaque handle identifying one live window; it is not an owned Rust reference |
+| window procedure | ABI callback that receives messages for a window                             |
+| message queue    | per-thread queued input/lifecycle work retrieved by the pump                 |
+| sent message     | synchronous call into a target procedure; may cause re-entrancy              |
+| client area      | application-painted content inside the non-client frame                      |
+| update region    | invalid portion that needs repainting                                        |
+| device context   | GDI drawing state/target used during painting                                |
+
+The basic lifetime is:
+
+```text
+register class → create HWND → show/update → pump and dispatch messages
+→ receive close/destroy → post quit → leave pump → release application state
+```
+
+#### Window Classes and `HWND`
+
+`RegisterClassW` registers a name plus behavior such as the `WNDPROC`. A window class is
+not an object-oriented class and is not one visible window. `CreateWindowExW` creates
+an instance and returns its `HWND`.
+
+Handles are opaque tokens owned under platform rules. After destruction, an `HWND`
+must not be used; the numeric value may eventually be reused for another object.
+
+#### The Window Procedure and Message Pump
+
+```text
+GetMessageW → TranslateMessage → DispatchMessageW → your WNDPROC
+```
+
+`GetMessageW` has three outcomes: positive means a message was retrieved, zero means
+`WM_QUIT`, and negative means an error. Do not write `while GetMessageW(...).as_bool()`
+without preserving the error case.
+
+The window procedure receives `(HWND, message ID, WPARAM, LPARAM)`. The meaning and
+ownership of both parameter-sized values depend entirely on the message. Delegate
+unhandled messages to `DefWindowProcW`; default behavior includes ordinary activation,
+non-client interaction, and close processing.
+
+#### Paint, Resize, DPI, and Close
+
+| Message                     | Typical responsibility                                         |
+| --------------------------- | -------------------------------------------------------------- |
+| `WM_NCCREATE` / `WM_CREATE` | attach and initialize instance state                           |
+| `WM_SIZE`                   | update logical size and resize/reconfigure render targets      |
+| `WM_PAINT`                  | validate the update region and paint the requested client area |
+| `WM_DPICHANGED`             | update scale and usually apply the suggested window rectangle  |
+| `WM_CLOSE`                  | confirm/save policy or allow default destruction               |
+| `WM_DESTROY`                | release window resources and post quit for a single-window app |
+| `WM_NCDESTROY`              | final point to detach per-window state                         |
+
+`BeginPaint` and `EndPaint` define the ordinary `WM_PAINT` validation scope. Continuous
+renderers may use a swap chain and explicit frame scheduling, but they still need to
+respect invalidation, occlusion, resize, and device-loss behavior.
+
+Set DPI awareness through the supported manifest/context policy before creating
+windows. Use logical layout units, query the window's current DPI, and handle
+`WM_DPICHANGED` when crossing monitors rather than assuming 96 DPI forever.
+
+#### Minimal `windows-rs` Skeleton
+
+This example exposes the raw boundary for learning. A production application will
+usually prefer `winit`, `windows-window`, GTK, `egui`/`eframe`, `iced`, Slint, or
+another wrapper that owns more lifecycle invariants.
+
+```rust
+#[cfg(target_os = "windows")]
+mod win32_window {
+    use windows::{
+        core::{w, Error, Result},
+        Win32::{
+            Foundation::{HINSTANCE, HWND, LPARAM, LRESULT, WPARAM},
+            Graphics::Gdi::{BeginPaint, EndPaint, PAINTSTRUCT},
+            System::LibraryLoader::GetModuleHandleW,
+            UI::WindowsAndMessaging::{
+                CreateWindowExW, DefWindowProcW, DispatchMessageW, GetMessageW,
+                PostQuitMessage, RegisterClassW, TranslateMessage, CW_USEDEFAULT, MSG,
+                WINDOW_EX_STYLE, WM_DESTROY, WM_PAINT, WNDCLASSW, WS_OVERLAPPEDWINDOW,
+                WS_VISIBLE,
+            },
+        },
+    };
+
+    // Win32 calls this function using the system ABI. Every pointer-sized message
+    // parameter must be interpreted only according to that message's documentation.
+    unsafe extern "system" fn window_proc(
+        hwnd: HWND,
+        message: u32,
+        wparam: WPARAM,
+        lparam: LPARAM,
+    ) -> LRESULT {
+        match message {
+            WM_PAINT => {
+                let mut paint = PAINTSTRUCT::default();
+                // `BeginPaint` returns a temporary device context and validates the
+                // dirty region when paired with `EndPaint`.
+                let _device_context = unsafe { BeginPaint(hwnd, &mut paint) };
+
+                // Draw client content here, or hand the HWND/surface to a renderer.
+
+                let _ = unsafe { EndPaint(hwnd, &paint) };
+                LRESULT(0)
+            }
+            WM_DESTROY => {
+                // For a one-window application, end the thread's message loop.
+                unsafe { PostQuitMessage(0) };
+                LRESULT(0)
+            }
+            _ => {
+                // Preserve the operating system's default behavior for messages this
+                // small program does not handle.
+                unsafe { DefWindowProcW(hwnd, message, wparam, lparam) }
+            }
+        }
+    }
+
+    pub fn run() -> Result<()> {
+        // All raw Win32 interaction stays inside this reviewed adapter.
+        unsafe {
+            let module = GetModuleHandleW(None)?;
+            let instance = HINSTANCE(module.0);
+            let class_name = w!("LowLevelNotesWindow");
+
+            let window_class = WNDCLASSW {
+                hInstance: instance,
+                lpszClassName: class_name,
+                lpfnWndProc: Some(window_proc),
+                ..Default::default()
+            };
+
+            // Unlike many windows-rs functions, RegisterClassW returns zero on failure
+            // rather than a `Result`, so convert the platform error explicitly.
+            if RegisterClassW(&window_class) == 0 {
+                return Err(Error::from_win32());
+            }
+
+            let _window = CreateWindowExW(
+                WINDOW_EX_STYLE::default(),
+                class_name,
+                w!("Window API Basics"),
+                WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+                CW_USEDEFAULT,
+                CW_USEDEFAULT,
+                960,
+                640,
+                None,
+                None,
+                Some(instance),
+                None,
+            )?;
+
+            let mut message = MSG::default();
+            loop {
+                let status = GetMessageW(&mut message, None, 0, 0).0;
+                if status == -1 {
+                    return Err(Error::from_win32());
+                }
+                if status == 0 {
+                    break; // `WM_QUIT`
+                }
+                let _ = TranslateMessage(&message);
+                DispatchMessageW(&message);
+            }
+        }
+        Ok(())
+    }
+}
+```
+
+The `windows` crate needs only the Win32 feature groups used by the adapter. Prefer the
+Unicode `W` APIs, keep UTF-16 conversion at the boundary, and use
+`windows::core::Error::from_win32()` immediately when a sentinel-returning function
+fails so a later call cannot overwrite the thread's last-error value.
+
+#### Attaching Rust State Safely
+
+Raw Win32 programs often pass a boxed state pointer through `CreateWindowExW`, receive
+it during `WM_NCCREATE`, store it with window-associated user data, and recover it in
+later messages. That adapter must guarantee:
+
+- the allocation outlives every message that can reference it;
+- it is initialized once and detached during final destruction;
+- callbacks never create simultaneous mutable Rust references;
+- re-entrant sent messages cannot observe a half-mutated state;
+- a panic never unwinds across the foreign callback ABI;
+- worker threads communicate by messages/channels rather than directly mutating UI
+  state.
+
+A safe wrapper can encode those invariants in one owner type. Keep the rest of the
+application on the `Message → update → render` architecture shown earlier.
+
+**Win32 references:** [Microsoft's first-window
+walkthrough](https://learn.microsoft.com/en-us/windows/win32/learnwin32/your-first-windows-program),
+[`WM_PAINT`](https://learn.microsoft.com/en-us/windows/win32/gdi/wm-paint),
+[high-DPI APIs](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-reference),
+and the current [`windows-rs` Win32
+bindings](https://microsoft.github.io/windows-docs-rs/doc/windows/Win32/UI/WindowsAndMessaging/).
+
+**Current references:** [`winit` event loop](https://docs.rs/winit/latest/winit/event_loop/struct.EventLoop.html),
+[`wgpu` architecture](https://docs.rs/wgpu/latest/wgpu/),
+[`egui` immediate-mode GUI](https://docs.rs/egui/latest/egui/),
+[`iced` typed Elm-inspired GUI](https://docs.iced.rs/),
+[Slint's Rust API](https://docs.slint.dev/latest/docs/rust/slint/),
+[GTK4 Rust book](https://gtk-rs.org/gtk4-rs/git/book/introduction.html), and
+[Ratatui application model](https://docs.rs/ratatui/latest/ratatui/).
 
 ---
 
@@ -13044,6 +14981,337 @@ assumptions.
 
 ---
 
+<a id="defensive-instrumentation-scanners-authorized-reversing"></a>
+
+## 🛡️ Defensive Instrumentation, Scanners & Authorized Reversing
+
+This section is for software you own, purpose-built challenge binaries, and explicitly
+authorized laboratories. It explains mechanics so you can build debuggers, validate
+your own runtime, and recognize abuse. It does **not** provide remote-process injection,
+credential interception, anti-cheat/DRM bypass, persistence, or security-evasion code.
+
+### 1. Begin with an Authorization and Evidence Contract
+
+| Before touching the target | Record                                                |
+| -------------------------- | ----------------------------------------------------- |
+| authority                  | owner, written scope, allowed machines/accounts       |
+| artifact                   | hashes, architecture, format, version, source         |
+| isolation                  | disposable VM/device, network policy, snapshot        |
+| data policy                | whether secrets or personal data may appear           |
+| stopping rule              | what behavior must not be triggered                   |
+| evidence                   | timestamps, tool versions, observations vs hypotheses |
+
+The safest reverse-engineering input is an offline copy. Dynamic behavior belongs in a
+disposable lab with synthetic accounts and no valuable credentials.
+
+### 2. Function Pointers Turn Data into Control Flow
+
+A function pointer is a value interpreted as a callable code address under an ABI.
+Indirect calls appear in several higher-level forms:
+
+| Form                 | Representation clue                              |
+| -------------------- | ------------------------------------------------ |
+| callback             | function pointer plus optional context pointer   |
+| C function table     | struct/array of function pointers                |
+| C++ virtual dispatch | object points to vtable; slot selects method     |
+| Rust trait object    | data pointer plus vtable metadata                |
+| import table         | loader-populated pointer to an external function |
+| JIT dispatch         | runtime-generated code pointer or entry table    |
+| bytecode VM          | opcode indexes a handler table                   |
+
+To recover an indirect call, determine:
+
+1. where the pointer came from;
+2. which calling convention and signature the call site implies;
+3. which concrete targets can populate that slot;
+4. whether the pointer belongs to an expected executable mapping;
+5. how the object/table lifetime is protected.
+
+Calling an address with the wrong ABI or signature is undefined behavior even when the
+address points into valid executable memory.
+
+### 3. Entity Structures Emerge from Correlated Accesses
+
+Suppose authorized traces repeatedly show:
+
+```text
+entity_base + index * 0x40 + 0x10  read as three floats
+entity_base + index * 0x40 + 0x20  read as a 32-bit integer
+entity_base + index * 0x40 + 0x28  followed as a pointer
+```
+
+This supports hypotheses—perhaps position, state, and component/owner pointer—but does
+not prove names. Validate each field independently:
+
+| Experiment             | Observation                                 |
+| ---------------------- | ------------------------------------------- |
+| move only one entity   | which 12-byte groups change?                |
+| toggle one state       | which bit/word changes and when?            |
+| destroy/recreate       | does a generation counter change?           |
+| reorder/spawn          | is storage dense, sparse, or pointer-based? |
+| cross a scene boundary | which base pointer or pool changes?         |
+
+Draw a typed structure with `unknown_XX` fields and confidence labels. Preserve
+alignment and padding; never compress unknown bytes merely to make the sketch pretty.
+
+### 4. A Safe Call Logger Wraps Your Own Interface
+
+The following records calls to a callback the program already owns. It demonstrates
+instrumentation without patching code or another process:
+
+```rust
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct CallRecord {
+    operation: &'static str,
+    input: i64,
+    output: i64,
+}
+
+struct LoggedCallback<F> {
+    name: &'static str,
+    inner: F,
+    records: Vec<CallRecord>,
+}
+
+impl<F> LoggedCallback<F>
+where
+    F: FnMut(i64) -> i64,
+{
+    fn call(&mut self, input: i64) -> i64 {
+        // Invoke the original behavior exactly once.
+        let output = (self.inner)(input);
+        // Log only explicitly approved, non-secret fields.
+        self.records.push(CallRecord {
+            operation: self.name,
+            input,
+            output,
+        });
+        output
+    }
+}
+
+fn main() {
+    let mut doubled = LoggedCallback {
+        name: "double",
+        inner: |value| value * 2,
+        records: Vec::new(),
+    };
+    assert_eq!(doubled.call(21), 42);
+    assert_eq!(doubled.records.len(), 1);
+}
+```
+
+Production tracing needs bounded storage, sampling, redaction, recursion protection,
+thread identity, monotonic timestamps, and an explicit failure policy. Logging raw
+arguments can leak passwords, tokens, personal data, or cryptographic keys.
+
+### 5. Pattern Scanning Is Bounded Byte Matching
+
+A pattern scanner searches an **owned byte slice** for known bytes and optional
+wildcards. It is useful for file-format tests, compiler snapshots, firmware you built,
+and disposable challenge fixtures.
+
+```rust
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PatternByte {
+    Exact(u8),
+    Any,
+}
+
+fn find_pattern(haystack: &[u8], pattern: &[PatternByte]) -> Vec<usize> {
+    // Define empty-pattern behavior explicitly instead of relying on `windows(0)`.
+    if pattern.is_empty() || pattern.len() > haystack.len() {
+        return Vec::new();
+    }
+
+    haystack
+        .windows(pattern.len())
+        .enumerate()
+        .filter_map(|(offset, window)| {
+            let matches = window.iter().zip(pattern).all(|(byte, expected)| {
+                matches!(expected, PatternByte::Any)
+                    || matches!(expected, PatternByte::Exact(value) if byte == value)
+            });
+            matches.then_some(offset)
+        })
+        .collect()
+}
+
+#[test]
+fn wildcard_pattern_finds_owned_fixture() {
+    let bytes = [0x48, 0x8B, 0x01, 0x90, 0x48, 0x8B, 0xFF];
+    let pattern = [
+        PatternByte::Exact(0x48),
+        PatternByte::Exact(0x8B),
+        PatternByte::Any,
+    ];
+    assert_eq!(find_pattern(&bytes, &pattern), vec![0, 4]);
+}
+```
+
+Patterns are brittle across compiler versions, link order, relocations, and
+optimization. Prefer symbols, debug metadata, exported IDs, structured headers, or a
+versioned introspection API when you control the software.
+
+### 6. A Memory Scanner Is a Query Over Snapshots
+
+Separate a scanner into:
+
+```text
+authorized acquisition → immutable snapshot → typed decoding → predicate
+→ candidate set → repeated experiment → report
+```
+
+| Scan                | Predicate over candidate values                  |
+| ------------------- | ------------------------------------------------ |
+| exact               | value equals a controlled input                  |
+| range               | value is within valid domain                     |
+| changed/unchanged   | current differs from / equals previous snapshot  |
+| increased/decreased | ordered comparison between snapshots             |
+| pointer-like        | aligned value falls inside a known mapped region |
+| structure           | several offsets satisfy independent invariants   |
+
+The existing [authorized memory-tooling labs](#19-authorized-memory-inspection--tooling-labs)
+show safe snapshots and parsing. Acquisition is platform-sensitive and privileged; keep
+it outside the pure query engine and refuse targets outside the documented lab scope.
+
+### 7. Call Traces Need Semantics, Not Just Addresses
+
+A call trace becomes useful when normalized into:
+
+| Field                       | Why it matters                                 |
+| --------------------------- | ---------------------------------------------- |
+| module plus relative offset | stable across address randomization            |
+| thread/task                 | separates interleaved control flow             |
+| timestamp/duration          | reveals blocking and hot paths                 |
+| call/return pairing         | reconstructs nesting                           |
+| typed arguments             | only after ABI/signature recovery              |
+| correlation ID              | connects file, network, and application events |
+
+Stack unwinding may use frame pointers, platform unwind metadata, debug information, or
+heuristics. Tail calls, optimized/inlined functions, exceptions, signal frames, and JIT
+code make “one source call equals one stack frame” unreliable.
+
+### 8. DLL Loading and Injection: Mechanics and Defensive Signals
+
+A DLL is a mapped executable image with imports, exports, relocations, sections, and
+initialization behavior. Normal loading already crosses sensitive boundaries:
+
+```text
+resolve requested module → choose path → map image → relocate → resolve imports
+→ set page protections → run permitted initialization → expose exports
+```
+
+Unauthorized injection techniques try to cause a process to map or execute code it did
+not select. Defenders can look for combinations of:
+
+- unexpected module paths, hashes, signers, or parent-child relationships;
+- private executable pages not backed by an expected image;
+- writable-to-executable protection transitions;
+- thread starts or indirect targets outside known executable modules;
+- import/function-table pointers leaving expected ownership ranges;
+- cross-process handles with memory/thread rights;
+- loader events that disagree with memory mappings;
+- abnormal callbacks, scheduled work, or image metadata.
+
+No single signal proves injection: JITs, profilers, debuggers, overlays, accessibility
+tools, and security products may legitimately produce similar evidence. Correlate
+process, memory, loader, signing, and behavioral telemetry.
+
+### 9. Import Tables and Vtables Are Integrity Boundaries
+
+The loader populates an import address table with resolved function addresses. A vtable
+or callback table similarly routes indirect calls. Altering a pointer can redirect
+control without modifying the call instruction itself.
+
+Defensive validation asks:
+
+- Is the table stored where the image/object model predicts?
+- Does each target fall in an executable mapping owned by an allowed module?
+- Does the in-memory table match the loaded image plus legitimate relocations?
+- Did a writable transition or unexpected writer precede the change?
+- Is control-flow integrity or pointer authentication available?
+
+[ired.team's IAT-hooking
+walkthrough](https://www.ired.team/offensive-security/code-injection-process-injection/import-adress-table-iat-hooking)
+can be read as an observable map: understand which table changes so defenders can
+measure ownership and integrity. Do not reproduce the mutation on third-party
+processes.
+
+### 10. Obfuscation Adds Transformations, Not New Semantics
+
+Common transformations include:
+
+| Transformation             | Analyst response                                 |
+| -------------------------- | ------------------------------------------------ |
+| renamed/stripped symbols   | recover roles from data flow and call sites      |
+| encoded strings            | locate decode boundary and record input/output   |
+| packed/compressed sections | identify format and observe authorized unpacking |
+| opaque predicates          | simplify using known invariants                  |
+| control-flow flattening    | reconstruct dispatcher state transitions         |
+| indirect calls             | resolve pointer provenance and possible targets  |
+| virtualized bytecode       | recover VM state, opcode format, and handlers    |
+
+A safe deobfuscation workflow is:
+
+```text
+identify representation → find transformation boundary → capture a small owned sample
+→ model inverse transform → validate on held-out samples → document uncertainty
+```
+
+Never treat “looks random” as proof of encryption. Measure entropy, locate headers,
+test compression/container formats, inspect key/nonce-sized data flow, and distinguish
+encoding, packing, and authenticated ciphertext.
+
+### 11. Signature-Based and Heuristic Scanning Complement Each Other
+
+| Scanner               | Matches                             | Strength                  | Weakness                            |
+| --------------------- | ----------------------------------- | ------------------------- | ----------------------------------- |
+| exact hash            | whole known artifact                | precise                   | any byte change breaks match        |
+| byte/string signature | local stable sequence               | fast and explainable      | version/obfuscation brittle         |
+| structural rule       | import/section/format relationships | generalizes across builds | parser complexity                   |
+| heuristic             | weighted suspicious properties      | finds novel variants      | false positives                     |
+| behavioral            | observed actions/sequences          | closer to intent          | expensive and environment-dependent |
+| reputation            | signer/source/prevalence history    | useful context            | not proof of safety                 |
+
+Good rules bind several independent, explainable features and include negative
+conditions for known benign cases. Test against clean and malicious corpora, measure
+precision/recall, version rules, and preserve analyst override.
+
+### 12. Hypervisor Introspection Changes the Observer
+
+An in-guest tool relies on the guest kernel's view. Hypervisor-based introspection can
+observe guest-physical memory and selected execution events from outside that view.
+That can help validate a compromised guest, but creates a **semantic gap**:
+
+```text
+physical bytes → guest page tables → virtual address spaces → kernel objects
+→ process/module/runtime meaning
+```
+
+Every arrow depends on guest OS version, layout, and synchronization. Pause/snapshot
+policy affects consistency; encrypted guest memory and device state may limit
+visibility. Use symbol/type metadata and versioned profiles instead of hard-coded
+offsets where possible.
+
+### 13. Research Catalogs as Defensive Indexes
+
+| Source                                                          | Best defensive use                                     |
+| --------------------------------------------------------------- | ------------------------------------------------------ |
+| [secret.club](https://secret.club/)                             | deep systems research, hypervisors, browsers, runtimes |
+| [HackTricks](https://hacktricks.wiki/en/index.html)             | platform assessment checklist and mitigation prompts   |
+| [Cloud HackTricks](https://cloud.hacktricks.wiki/en/index.html) | cloud identity/configuration review checklist          |
+| [ired.team](https://www.ired.team/)                             | Windows/identity technique-to-telemetry mapping        |
+| [Game Hacking Academy](https://gamehacking.academy/)            | isolated game/CTF-style reversing concepts             |
+| [CTF 101](https://ctf101.org/)                                  | intentionally vulnerable learning categories           |
+
+These catalogs include offensive material. Keep only the conceptual and defensive
+parts relevant to an owned lab: preconditions, affected boundary, observable artifacts,
+mitigations, and validation tests. Current product behavior, laws, and platform
+protections must be checked against primary documentation.
+
+---
+
 ## 🔨 Developer Tooling: The Missing Semester
 
 [The Missing Semester of Your CS Education](https://missing.csail.mit.edu/) treats tool
@@ -13495,22 +15763,28 @@ the repository.
 
 ---
 
-## 🐍 Practical Python Automation
+## 🤖 Practical Automation in Rust
 
 [Automate the Boring Stuff with Python, 3rd Edition](https://automatetheboringstuff.com/3e/)
 progresses from Python basics and debugging into files, command-line programs, web
 scraping, spreadsheets, databases, documents, structured data, scheduling,
-notifications, images, OCR, GUI control, and speech.
+notifications, images, OCR, GUI control, and speech. This chapter keeps that useful
+problem sequence but implements its examples in **Rust**, using ownership and typed
+errors to make each boundary visible.
 
 > 🤖 **Automation mental model:** a script is a tiny data pipeline with side effects.
 > Make inputs explicit, validate the transformation, preview the output, then commit the
 > external change.
 
+📦 **Example crates:** later snippets use `regex`, `csv`, `serde` with `derive`,
+`serde_json`, `rusqlite`, `reqwest` with `blocking`/`json`, and `image`. Select current
+compatible releases and only the features your tool needs.
+
 ### 1. Choose Automation by Boundary
 
 | Repetitive work             | Prefer                                           |
 | --------------------------- | ------------------------------------------------ |
-| rename/sort local files     | `pathlib`, metadata, explicit destination plan   |
+| rename/sort local files     | `std::path`, metadata, explicit destination plan |
 | edit structured text        | CSV/JSON/XML parser, not ad hoc string splitting |
 | collect web data            | documented API first; respectful HTTP otherwise  |
 | update spreadsheet values   | workbook library with formula/style awareness    |
@@ -13529,45 +15803,65 @@ library/API > documented CLI > file format > browser automation > mouse coordina
 
 ### 2. Every Useful Script Has the Same Skeleton
 
-```python
-from dataclasses import dataclass
-from pathlib import Path
+```rust
+use std::collections::HashSet;
+use std::fs;
+use std::io;
+use std::path::{Path, PathBuf};
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Rename {
+    source: PathBuf,
+    destination: PathBuf,
+}
 
-@dataclass(frozen=True)
-class Rename:
-    source: Path
-    destination: Path
+fn plan_renames(root: &Path) -> io::Result<Vec<Rename>> {
+    let mut sources = Vec::new();
 
+    for entry in fs::read_dir(root)? {
+        let path = entry?.path();
+        // Select only ordinary `.txt` entries inside the explicit root.
+        if path.is_file() && path.extension().is_some_and(|ext| ext == "txt") {
+            sources.push(path);
+        }
+    }
 
-def plan_renames(root: Path) -> list[Rename]:
-    # Planning is pure with respect to the filesystem: no file is renamed here.
-    plans: list[Rename] = []
-    # Sorting makes previews and tests deterministic across operating systems.
-    for source in sorted(root.glob("*.txt")):
-        # Normalize only the stem; preserve the original extension.
-        destination = source.with_name(source.stem.strip().lower() + source.suffix)
-        if source != destination:
-            plans.append(Rename(source, destination))
-    return plans
+    // Stable ordering makes previews and tests deterministic.
+    sources.sort();
+    let plans = sources
+        .into_iter()
+        .filter_map(|source| {
+            let stem = source.file_stem()?.to_str()?;
+            let destination = source.with_file_name(format!("{}.txt", stem.trim().to_lowercase()));
+            (source != destination).then_some(Rename { source, destination })
+        })
+        .collect();
+    Ok(plans)
+}
 
+fn validate(plans: &[Rename]) -> io::Result<()> {
+    let unique: HashSet<&Path> = plans.iter().map(|plan| plan.destination.as_path()).collect();
 
-def validate(plans: list[Rename]) -> None:
-    destinations = [plan.destination for plan in plans]
-    # Detect many-to-one normalization before the first mutation occurs.
-    if len(destinations) != len(set(destinations)):
-        raise ValueError("two inputs map to the same destination")
-    # Refuse overwrites by default; an overwrite mode should be explicit.
-    if any(path.exists() for path in destinations):
-        raise FileExistsError("a destination already exists")
+    // Reject many-to-one normalization before performing any mutation.
+    if unique.len() != plans.len() {
+        return Err(io::Error::new(io::ErrorKind::AlreadyExists, "destination collision"));
+    }
+    if plans.iter().any(|plan| plan.destination.exists()) {
+        return Err(io::Error::new(io::ErrorKind::AlreadyExists, "destination exists"));
+    }
+    Ok(())
+}
 
-
-def apply(plans: list[Rename], *, dry_run: bool) -> None:
-    for plan in plans:
-        # The same plan drives both the preview and the real operation.
-        print(f"{plan.source.name} -> {plan.destination.name}")
-        if not dry_run:
-            plan.source.rename(plan.destination)
+fn apply(plans: &[Rename], dry_run: bool) -> io::Result<()> {
+    for plan in plans {
+        // Preview and real execution consume the exact same validated plan.
+        println!("{} -> {}", plan.source.display(), plan.destination.display());
+        if !dry_run {
+            fs::rename(&plan.source, &plan.destination)?;
+        }
+    }
+    Ok(())
+}
 ```
 
 | Phase    | Invariant                                                |
@@ -13583,17 +15877,23 @@ def apply(plans: list[Rename], *, dry_run: bool) -> None:
 
 ### 3. Filesystem Automation Needs a Blast-Radius Limit
 
-```python
-from pathlib import Path
+```rust
+use std::io;
+use std::path::{Path, PathBuf};
 
+fn resolved_child(root: &Path, user_name: &str) -> io::Result<PathBuf> {
+    // Canonicalization resolves `..` and symbolic links before the containment check.
+    let trusted_root = root.canonicalize()?;
+    let candidate = trusted_root.join(user_name).canonicalize()?;
 
-def resolved_child(root: Path, user_name: str) -> Path:
-    root = root.resolve(strict=True)
-    candidate = (root / user_name).resolve()
-
-    if not candidate.is_relative_to(root):
-        raise ValueError("path escapes the allowed root")
-    return candidate
+    if !candidate.starts_with(&trusted_root) {
+        return Err(io::Error::new(
+            io::ErrorKind::PermissionDenied,
+            "path escapes the allowed root",
+        ));
+    }
+    Ok(candidate)
+}
 ```
 
 | Risk                          | Safer design                                  |
@@ -13614,19 +15914,32 @@ Regular expressions are small pattern languages. Use them when the input is genu
 textual and local—not as a substitute for an HTML, JSON, CSV, or programming-language
 parser.
 
-```python
-import re
+```rust
+use regex::Regex;
 
-LOG_LINE = re.compile(
-    r"^(?P<level>INFO|WARN|ERROR)\s+"
-    r"request_id=(?P<request_id>[A-Za-z0-9_-]{1,64})\s+"
-    r"message=(?P<message>.*)$"
-)
+#[derive(Debug, PartialEq, Eq)]
+struct LogLine<'a> {
+    level: &'a str,
+    request_id: &'a str,
+    message: &'a str,
+}
 
+fn parse_log_line<'a>(pattern: &Regex, line: &'a str) -> Option<LogLine<'a>> {
+    // Anchors in the compiled pattern require the complete trimmed line to match.
+    let captures = pattern.captures(line.trim_end_matches(&['\r', '\n'][..]))?;
+    Some(LogLine {
+        level: captures.name("level")?.as_str(),
+        request_id: captures.name("request_id")?.as_str(),
+        message: captures.name("message")?.as_str(),
+    })
+}
 
-def parse_log_line(line: str) -> dict[str, str] | None:
-    match = LOG_LINE.fullmatch(line.rstrip("\n"))
-    return match.groupdict() if match else None
+fn log_pattern() -> Result<Regex, regex::Error> {
+    // Compile once during program setup and reuse for every input line.
+    Regex::new(
+        r"^(?<level>INFO|WARN|ERROR)\s+request_id=(?<request_id>[A-Za-z0-9_-]{1,64})\s+message=(?<message>.*)$",
+    )
+}
 ```
 
 | Regex habit              | Reason                                              |
@@ -13643,34 +15956,45 @@ source spans clear. Balanced nesting and contextual syntax belong in a parser.
 
 ### 5. Structured Files Preserve Types and Context
 
-```python
-import csv
-import json
-from pathlib import Path
+```rust
+use serde::{Deserialize, Serialize};
+use std::error::Error;
+use std::fs::{self, File};
+use std::io::BufWriter;
+use std::path::Path;
 
+#[derive(Debug, Deserialize)]
+struct CsvRow {
+    name: String,
+    score: String,
+}
 
-def csv_to_json(source: Path, destination: Path) -> None:
-    # `newline=""` lets the CSV parser handle platform-specific line endings.
-    with source.open(newline="", encoding="utf-8") as input_file:
-        rows = list(csv.DictReader(input_file))
+#[derive(Debug, Serialize)]
+struct Score {
+    name: String,
+    score: i64,
+}
 
-    # Convert strings at the boundary so invalid numeric data fails before writing.
-    normalized = [
-        {
-            "name": row["name"].strip(),
-            "score": int(row["score"]),
-        }
-        for row in rows
-    ]
+fn csv_to_json(source: &Path, destination: &Path) -> Result<(), Box<dyn Error>> {
+    let mut reader = csv::Reader::from_path(source)?;
+    let mut normalized = Vec::new();
 
-    # Write a sibling temporary file, then atomically replace the destination on
-    # filesystems that support atomic same-directory rename.
-    temporary = destination.with_suffix(destination.suffix + ".tmp")
-    temporary.write_text(
-        json.dumps(normalized, indent=2, ensure_ascii=False) + "\n",
-        encoding="utf-8",
-    )
-    temporary.replace(destination)
+    for row in reader.deserialize::<CsvRow>() {
+        let row = row?;
+        // Convert strings at the boundary; invalid numbers stop before output commit.
+        normalized.push(Score {
+            name: row.name.trim().to_owned(),
+            score: row.score.parse()?,
+        });
+    }
+
+    // A same-directory temporary file can be atomically renamed on common filesystems.
+    let temporary = destination.with_extension("json.tmp");
+    let output = BufWriter::new(File::create(&temporary)?);
+    serde_json::to_writer_pretty(output, &normalized)?;
+    fs::rename(temporary, destination)?;
+    Ok(())
+}
 ```
 
 | Format | Important edge                                   |
@@ -13685,34 +16009,31 @@ round-trip contract requires them.
 
 ### 6. SQLite Turns a Script into a Small Durable System
 
-```python
-import sqlite3
-from pathlib import Path
+```rust
+use rusqlite::{params, Connection, Result};
+use std::path::Path;
 
-
-def record_run(database: Path, input_name: str, output_hash: str) -> None:
-    # The context manager commits on success and rolls back if an exception escapes.
-    with sqlite3.connect(database) as connection:
-        # Idempotent schema setup keeps this small example self-contained.
-        connection.execute(
-            """
-            CREATE TABLE IF NOT EXISTS runs (
-                input_name TEXT PRIMARY KEY,
-                output_hash TEXT NOT NULL
-            )
-            """
-        )
-        # Placeholders keep untrusted values out of SQL syntax. The upsert makes
-        # rerunning the same input deterministic instead of creating duplicates.
-        connection.execute(
-            """
-            INSERT INTO runs(input_name, output_hash)
-            VALUES (?, ?)
-            ON CONFLICT(input_name)
-            DO UPDATE SET output_hash = excluded.output_hash
-            """,
-            (input_name, output_hash),
-        )
+fn record_run(database: &Path, input_name: &str, output_hash: &str) -> Result<()> {
+    let mut connection = Connection::open(database)?;
+    // A transaction rolls back on early return unless `commit` succeeds.
+    let transaction = connection.transaction()?;
+    transaction.execute(
+        "CREATE TABLE IF NOT EXISTS runs (
+            input_name TEXT PRIMARY KEY,
+            output_hash TEXT NOT NULL
+        )",
+        [],
+    )?;
+    transaction.execute(
+        "INSERT INTO runs(input_name, output_hash)
+         VALUES (?1, ?2)
+         ON CONFLICT(input_name)
+         DO UPDATE SET output_hash = excluded.output_hash",
+        // Parameters keep untrusted values separate from SQL syntax.
+        params![input_name, output_hash],
+    )?;
+    transaction.commit()
+}
 ```
 
 Placeholders keep data separate from SQL syntax. The context manager commits on success
@@ -13731,23 +16052,33 @@ strategy, backup, and failure behavior.
 
 ### 7. Web Automation Starts with Permission and Protocols
 
-```python
-import requests
+```rust
+use reqwest::blocking::Client;
+use reqwest::header::CONTENT_TYPE;
+use serde_json::Value;
+use std::error::Error;
+use std::io;
+use std::time::Duration;
 
+fn fetch_json(url: &str) -> Result<Value, Box<dyn Error>> {
+    let client = Client::builder()
+        .user_agent("personal-automation/1.0")
+        .connect_timeout(Duration::from_secs(3))
+        .timeout(Duration::from_secs(15))
+        .build()?;
 
-def fetch_json(url: str) -> dict:
-    # Use a descriptive identity and separate connection/read deadlines.
-    response = requests.get(
-        url,
-        headers={"User-Agent": "personal-automation/1.0"},
-        timeout=(3.0, 15.0),
-    )
-    # Convert non-success HTTP status codes into explicit exceptions.
-    response.raise_for_status()
-    # Validate the representation before asking the JSON decoder to interpret it.
-    if "application/json" not in response.headers.get("content-type", ""):
-        raise ValueError("unexpected content type")
-    return response.json()
+    // Non-success status codes become explicit errors before body parsing.
+    let response = client.get(url).send()?.error_for_status()?;
+    let content_type = response
+        .headers()
+        .get(CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .unwrap_or("");
+    if !content_type.starts_with("application/json") {
+        return Err(io::Error::new(io::ErrorKind::InvalidData, "unexpected content type").into());
+    }
+    Ok(response.json()?)
+}
 ```
 
 Before scraping:
@@ -13779,15 +16110,22 @@ Never assume that a visually empty spreadsheet cell is absent, that PDF text ext
 matches reading order, or that OCR output is exact. Keep the original artifact and
 render the generated result for visual verification when layout matters.
 
-```python
-from PIL import Image, ImageOps
+```rust
+use image::codecs::jpeg::JpegEncoder;
+use std::error::Error;
+use std::fs::File;
+use std::path::Path;
 
-
-def make_thumbnail(source: str, destination: str) -> None:
-    with Image.open(source) as image:
-        image = ImageOps.exif_transpose(image)
-        image.thumbnail((512, 512))
-        image.convert("RGB").save(destination, quality=90)
+fn make_thumbnail(source: &Path, destination: &Path) -> Result<(), Box<dyn Error>> {
+    // Decode into a typed pixel buffer; keep the original file untouched.
+    let image = image::open(source)?;
+    // `thumbnail` preserves aspect ratio inside the 512-by-512 bounding box.
+    let thumbnail = image.thumbnail(512, 512).into_rgb8();
+    let output = File::create(destination)?;
+    // JPEG is lossy, so make the quality choice explicit at the output boundary.
+    JpegEncoder::new_with_quality(output, 90).encode_image(&thumbnail)?;
+    Ok(())
+}
 ```
 
 ### 9. Scheduling Requires Idempotency
@@ -13818,23 +16156,22 @@ of the transformation core so the same job can be tested manually.
 
 Separate rendering from sending:
 
-```python
-from dataclasses import dataclass
+```rust
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct Message {
+    recipient: String,
+    subject: String,
+    body: String,
+}
 
-
-@dataclass(frozen=True)
-class Message:
-    recipient: str
-    subject: str
-    body: str
-
-
-def build_summary(recipient: str, changed: int) -> Message:
-    return Message(
-        recipient=recipient,
-        subject="Automation summary",
-        body=f"Changed items: {changed}\n",
-    )
+fn build_summary(recipient: impl Into<String>, changed: usize) -> Message {
+    // Construct a value only; a separate adapter performs the external send.
+    Message {
+        recipient: recipient.into(),
+        subject: "Automation summary".to_owned(),
+        body: format!("Changed items: {changed}\n"),
+    }
+}
 ```
 
 Test the `Message` value, preview it, then let a narrow adapter send it. Use recipient
@@ -13899,6 +16236,173 @@ job, or personal file organizer.
 > 🧭 **Progression:** automate one deterministic transformation first. Then add a CLI,
 > dry-run mode, structured logs, durable checkpoints, scheduling, and notifications in
 > that order.
+
+---
+
+## 📖 Low-Level Glossary & Section Index
+
+Use this glossary to decode a term quickly, then follow **Learn more** for the full
+mental model, examples, invariants, and failure modes.
+
+### A–D
+
+| Term                                  | Low-level meaning                                                                                                               | Learn more                                                                                        |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| **3D fundamentals**                   | Coordinates, vectors, transforms, clipping, rasterization, depth, and shading turn geometry into pixels.                        | [3D transform pipeline](#4-the-3d-transform-pipeline)                                             |
+| **accessibility tree**                | A semantic parallel to painted UI exposes roles, names, values, focus, and actions to assistive technology.                     | [GUI accessibility](#8-accessibility-is-a-parallel-semantic-tree)                                 |
+| **API**                               | An application programming interface is a source/behavior contract; it may sit above a different binary ABI or wire protocol.   | [ABI versus API](#7-abi-versus-api)                                                               |
+| **asymmetric cryptography**           | A public/private key relationship supports key establishment or signatures without sharing the private key.                     | [Symmetric and asymmetric cryptography](#8-symmetric-and-asymmetric-cryptography-work-together)   |
+| **async / asynchronous**              | Work is represented so the caller can make progress before that work completes.                                                 | [Async, futures, and promises](#15-synchronous-asynchronous-futures-and-promises)                 |
+| **audio**                             | Timed frames of per-channel samples flow through buffers, devices, resamplers, mixers, and codecs.                              | [Digital audio](#7-digital-audio-is-timed-sampled-data)                                           |
+| **authentication**                    | Evidence is checked for a claimed identity before a session is established.                                                     | [Authentication and authorization](#12-authentication-authorization-and-api-keys)                 |
+| **authorization**                     | Policy decides whether an authenticated identity may perform an action on a particular resource.                                | [Authentication and authorization](#12-authentication-authorization-and-api-keys)                 |
+| **backend**                           | Server-side policy, persistence, computation, and integrations behind a client-facing boundary.                                 | [Platform and application layers](#18-firmware-bootloaders-kernels-and-drivers-form-a-chain)      |
+| **bootloader**                        | Early privileged code initializes enough hardware to choose, verify, load, and enter a kernel.                                  | [Firmware-to-application chain](#18-firmware-bootloaders-kernels-and-drivers-form-a-chain)        |
+| **cache**                             | A nearer copy trades space and possible staleness for lower access time and origin work.                                        | [Cache layers](#7-cache-layers-trade-freshness-for-time)                                          |
+| **call logger**                       | Instrumentation records approved metadata around calls so behavior and timing can be reconstructed.                             | [Safe call logger](#4-a-safe-call-logger-wraps-your-own-interface)                                |
+| **canvas fingerprinting**             | Rendered pixel differences contribute a probabilistic browser/device correlation signal.                                        | [Fingerprinting and canvas](#16-fingerprinting-and-canvas-are-privacy-boundaries)                 |
+| **CDN**                               | A distributed reverse-proxy edge serves cached content nearer users and forwards misses to an origin.                           | [CDNs](#9-cdns-combine-reverse-proxying-caching-and-routing)                                      |
+| **certificate / digital certificate** | A signed structure binds a public key to names or attributes under an issuer and policy.                                        | [Certificates](#10-certificates-bind-keys-to-claims)                                              |
+| **client–server**                     | The client initiates a service interaction; the server accepts and answers under a protocol contract.                           | [Network roles](#1-client-server-proxy-and-load-balancer-are-roles)                               |
+| **command-line environment**          | A terminal, shell, environment, streams, paths, and process model compose text-oriented tools.                                  | [Terminal, shell, and program](#1-terminal-shell-and-program)                                     |
+| **compositor**                        | A system combines application surfaces/layers into the final display image under clipping, transform, and z-order rules.        | [GUI layers](#1-a-gui-sits-on-several-layers)                                                     |
+| **compression**                       | A transform reduces redundant representation; it may be lossless or deliberately lossy.                                         | [Encoding, compression, and encryption](#7-encoding-compression-encryption-and-obfuscation)       |
+| **consensus algorithm**               | Replicas agree on a value or ordered log despite delays and a defined set of failures.                                          | [Consensus](#11-consensus-is-agreement-under-failure)                                             |
+| **consistency: eventual**             | Replicas are allowed to differ but should converge after updates stop and communication succeeds.                               | [Consistency models](#10-consistency-is-a-per-operation-promise)                                  |
+| **consistency: strong**               | An operation observes a tightly ordered, current view such as linearizable behavior.                                            | [Consistency models](#10-consistency-is-a-per-operation-promise)                                  |
+| **consistency: weak**                 | The system gives few freshness or ordering promises for the operation.                                                          | [Consistency models](#10-consistency-is-a-per-operation-promise)                                  |
+| **container / containerization**      | A packaged process receives restricted resource views while normally sharing the host kernel.                                   | [Containers](#24-containers-are-process-isolation-not-tiny-vms)                                   |
+| **cookie**                            | Browser-managed state is stored and attached to matching requests under security/scope attributes.                              | [Sessions, cookies, and tokens](#14-sessions-cookies-tokens-and-jwts)                             |
+| **CORS**                              | HTTP response headers let a server opt selected web origins into browser-readable cross-origin responses.                       | [CORS, CSRF, and XSS](#15-cors-csrf-and-xss-solve-different-problems)                             |
+| **cryptographic signing**             | A private key signs exact context-bound bytes; a public key verifies integrity and signer-key possession.                       | [Signing](#9-signing-protects-exact-bytes-and-context)                                            |
+| **CSRF**                              | A browser may attach ambient credentials to an unwanted cross-site request.                                                     | [CORS, CSRF, and XSS](#15-cors-csrf-and-xss-solve-different-problems)                             |
+| **database**                          | A storage engine provides a data model, access paths, concurrency rules, and durability/failure semantics.                      | [Database families](#1-database-families-optimize-different-access-patterns)                      |
+| **decoding**                          | Bytes in an encoding are parsed back into another representation under explicit validity rules.                                 | [Encoding distinctions](#7-encoding-compression-encryption-and-obfuscation)                       |
+| **deserialization**                   | A byte/text representation is parsed into typed values and must then pass semantic validation.                                  | [Serialization boundary](#5-serialization-is-a-versioned-boundary)                                |
+| **DLL injection**                     | A process is induced to map or execute code it did not select; defenders correlate loader, memory, thread, and handle evidence. | [DLL loading and injection signals](#8-dll-loading-and-injection-mechanics-and-defensive-signals) |
+| **DMA / DMA card**                    | A device reads or writes mapped memory without CPU copying; an IOMMU can translate and restrict those accesses.                 | [DMA and IOMMU](#20-dma-lets-a-device-access-memory-without-cpu-copies)                           |
+| **DNS**                               | A delegated, cached database maps names to typed resource records through resolvers and authoritative servers.                  | [DNS](#4-dns-resolves-typed-names-through-delegation)                                             |
+| **Docker**                            | A container platform that builds images and runs isolated processes sharing the host kernel by default.                         | [Containers](#24-containers-are-process-isolation-not-tiny-vms)                                   |
+| **document database**                 | Records naturally store nested aggregate-shaped documents and may duplicate related data for access locality.                   | [Database families](#1-database-families-optimize-different-access-patterns)                      |
+| **driver**                            | Concurrent privileged code translates an OS resource contract into device registers, queues, interrupts, and DMA.               | [Driver model](#19-a-driver-is-a-concurrent-translator)                                           |
+
+### E–M
+
+| Term                         | Low-level meaning                                                                                                         | Learn more                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| **emulator**                 | Software reproduces another ISA, machine, or device closely enough to run target software.                                | [Execution environments](#22-real-hardware-simulator-emulator-vm-and-container)              |
+| **encoding**                 | A syntax maps information into representable bytes or characters without providing secrecy.                               | [Encoding distinctions](#7-encoding-compression-encryption-and-obfuscation)                  |
+| **encryption**               | A keyed transformation provides confidentiality; authenticated encryption also detects modification.                      | [Cryptography families](#8-symmetric-and-asymmetric-cryptography-work-together)              |
+| **entity structure**         | Identity and component storage form data relationships inferred from strides, offsets, pointers, and controlled changes.  | [Recovering entity structures](#3-entity-structures-emerge-from-correlated-accesses)         |
+| **event loop**               | A platform/runtime dispatches input, lifecycle, timers, tasks, and redraw work while owning thread-sensitive UI state.    | [GUI event loop](#2-the-event-loop-owns-platform-lifecycle)                                  |
+| **event-driven development** | Commands/events are dispatched to handlers, decoupling producers while introducing ordering and backpressure concerns.    | [Event-driven and stream processing](#14-event-driven-and-stream-processing)                 |
+| **fault tolerance**          | The design continues safely or recovers under an explicit crash, delay, loss, corruption, or partition model.             | [Fault tolerance](#12-fault-tolerance-starts-with-a-failure-model)                           |
+| **file storage**             | Filesystems or object stores retain named byte sequences plus metadata under durability and atomicity rules.              | [Database and storage families](#1-database-families-optimize-different-access-patterns)     |
+| **filesystem**               | A kernel/storage abstraction organizes byte streams, directories, links, permissions, and metadata.                       | [Platform storage](#25-platform-storage-and-machine-identity)                                |
+| **fingerprinting**           | Multiple observable attributes are combined into a noisy correlation signal, not cryptographic identity.                  | [Fingerprinting and canvas](#16-fingerprinting-and-canvas-are-privacy-boundaries)            |
+| **firmware**                 | Software stored with a device/platform initializes or controls hardware below ordinary application boundaries.            | [Firmware-to-application chain](#18-firmware-bootloaders-kernels-and-drivers-form-a-chain)   |
+| **floating point**           | Significand/exponent values approximate real numbers with finite precision and special non-finite states.                 | [Floating-point contract](#2-floating-point-is-an-approximation-contract)                    |
+| **forward proxy**            | A relay acts on behalf of clients when reaching destinations.                                                             | [Network roles](#1-client-server-proxy-and-load-balancer-are-roles)                          |
+| **frontend**                 | User-facing presentation and interaction code consuming host/backend capabilities.                                        | [Platform and application layers](#18-firmware-bootloaders-kernels-and-drivers-form-a-chain) |
+| **FTP / FTPS / SFTP**        | Distinct file-transfer protocols: legacy FTP, TLS-protected FTP, and SSH's file subsystem.                                | [File-transfer protocols](#5-ftp-ftps-sftp-and-file-apis-are-not-synonyms)                   |
+| **function pointer**         | A value selects callable code under a specific ABI and signature.                                                         | [Function pointers](#2-function-pointers-turn-data-into-control-flow)                        |
+| **future**                   | A pollable value represents computation that may produce a result later.                                                  | [Async, futures, and promises](#15-synchronous-asynchronous-futures-and-promises)            |
+| **graphics API**             | A command/resource interface submits buffers, textures, shaders, and synchronization to a GPU or renderer.                | [GUI and graphics libraries](#9-gui-and-graphics-library-selection)                          |
+| **GPU**                      | An asynchronous throughput processor consumes queued shader/compute/transfer work over explicit memory contracts.         | [GPU pipeline](#6-a-gpu-is-an-asynchronous-throughput-machine)                               |
+| **GraphQL**                  | A typed API query language/runtime that resolves requested fields over arbitrary backing systems; it is not a database.   | [GraphQL](#4-graphql-is-an-api-language-not-a-database)                                      |
+| **GUI**                      | A graphical user interface maps input events and application state through layout/paint into window-system surfaces.      | [GUI architecture](#gui-tui-graphics-library-architecture)                                   |
+| **headers, HTTP**            | Metadata fields select representations, credentials, caching, routing context, and body interpretation.                   | [HTTP messages and headers](#3-http-is-a-typed-message-exchange)                             |
+| **heartbeat**                | Periodic liveness evidence supports suspicion and leases but cannot distinguish every cause of silence.                   | [Heartbeats](#13-heartbeats-detect-silence-not-death)                                        |
+| **heuristic scanning**       | Weighted structural or behavioral signals generalize beyond exact signatures but require false-positive management.       | [Scanner comparison](#11-signature-based-and-heuristic-scanning-complement-each-other)       |
+| **HTML canvas**              | A scriptable pixel surface used for graphics whose outputs can also become a fingerprinting signal.                       | [Fingerprinting and canvas](#16-fingerprinting-and-canvas-are-privacy-boundaries)            |
+| **HTTP**                     | An application protocol defines request methods, status responses, fields, representations, and caching semantics.        | [HTTP messages](#3-http-is-a-typed-message-exchange)                                         |
+| **HTTP caching**             | Freshness directives and validators coordinate reuse of stored responses across browsers and intermediaries.              | [HTTP caching](#8-http-caching-is-a-protocol-between-participants)                           |
+| **`HWND`**                   | An opaque Win32 handle identifies one live window under OS lifetime rules; it is not a Rust reference or ownership proof. | [Native Window API basics](#18-native-window-api-basics-win32-as-a-concrete-example)         |
+| **HWID**                     | A hardware-derived identifier is mutable, privacy-sensitive, and unsuitable as the sole proof of identity.                | [Platform identity](#25-platform-storage-and-machine-identity)                               |
+| **Hyper-V**                  | Microsoft's hypervisor architecture organizes a root partition and child guest partitions with synthetic device channels. | [Hypervisors and Hyper-V](#23-hypervisors-and-hyper-v)                                       |
+| **hypervisor**               | Privileged software virtualizes CPU, memory, interrupts, and devices for guest machines.                                  | [Hypervisors and Hyper-V](#23-hypervisors-and-hyper-v)                                       |
+| **immediate-mode UI**        | The application describes the desired controls each frame/pass while the toolkit retains interaction state by identity.   | [UI models](#3-retained-immediate-and-declarative-ui)                                        |
+| **JTAG / SWD**               | Hardware debug transports can expose scan, halt, registers, memory, trace, and programming capabilities.                  | [JTAG and SWD](#21-jtag-and-swd-expose-hardware-debug-state)                                 |
+| **JWT**                      | A standardized claims container that may be signed/encrypted; it is a format, not an authentication design.               | [Sessions, cookies, and tokens](#14-sessions-cookies-tokens-and-jwts)                        |
+| **kernel**                   | The privileged resource manager controls processes, virtual memory, scheduling, devices, files, and isolation.            | [Operating systems](#-operating-systems-from-the-bottom-up)                                  |
+| **layout engine**            | Constraints, intrinsic sizes, policy, and scale become rectangles, clips, and transforms for a UI tree.                   | [GUI layout](#4-layout-is-constraint-solving-over-a-tree)                                    |
+| **load balancing**           | A policy selects a healthy destination while accounting for capacity, affinity, draining, and retries.                    | [Load balancing](#16-load-balancing-selects-a-destination)                                   |
+| **memory scanner**           | A bounded query compares typed values across authorized immutable memory snapshots.                                       | [Memory scanners](#6-a-memory-scanner-is-a-query-over-snapshots)                             |
+| **middleware**               | Reusable translation/policy behavior sits between application logic and a platform, protocol, or data service.            | [Platform and application layers](#18-firmware-bootloaders-kernels-and-drivers-form-a-chain) |
+
+### N–Z
+
+| Term                              | Low-level meaning                                                                                                          | Learn more                                                                             |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| **NoSQL**                         | An umbrella for non-relational models such as document, key-value, wide-column, and graph—not one consistency policy.      | [Database families](#1-database-families-optimize-different-access-patterns)           |
+| **`NULL` / nullability**          | Absence/unknown is a distinct state whose logic and wire/update meaning must be modeled explicitly.                        | [Null, missing, and empty](#3-null-missing-empty-and-unknown-are-different)            |
+| **obfuscation**                   | Transformations raise analysis cost but do not provide cryptographic trust or authorization.                               | [Obfuscation analysis](#10-obfuscation-adds-transformations-not-new-semantics)         |
+| **password salting**              | A unique non-secret salt ensures equal passwords do not produce equal stored verifiers.                                    | [Password storage](#13-password-storage-uses-slow-verification-salt-and-policy)        |
+| **password storage**              | A slow memory-hard password-hashing verifier replaces plaintext, reversible encryption, or fast hashes.                    | [Password storage](#13-password-storage-uses-slow-verification-salt-and-policy)        |
+| **pattern scanner**               | A bounded matcher locates exact/wildcard byte sequences in an owned file or snapshot.                                      | [Pattern scanning](#5-pattern-scanning-is-bounded-byte-matching)                       |
+| **permissions**                   | ACLs, ownership, capabilities, page protections, and handles restrict specific operations on resources.                    | [Sandbox authority](#18-sandboxing-is-authority-reduction)                             |
+| **plist**                         | Apple's property-list model serializes structured configuration in XML or binary form.                                     | [Platform storage](#25-platform-storage-and-machine-identity)                          |
+| **port**                          | A 16-bit transport endpoint selector used with addresses and protocol state.                                               | [Ports](#2-ports-identify-transport-endpoints)                                         |
+| **promise**                       | In some async models, the completion/writable counterpart to a future.                                                     | [Async, futures, and promises](#15-synchronous-asynchronous-futures-and-promises)      |
+| **protocol**                      | A shared syntax, state machine, timing model, and error contract between participants.                                     | [Layered networking](#1-layered-mental-model)                                          |
+| **proxying**                      | A relay terminates one participant role and initiates another, changing trust and observation points.                      | [Network roles](#1-client-server-proxy-and-load-balancer-are-roles)                    |
+| **random number**                 | A value comes from a generator selected for either reproducibility/performance or cryptographic unpredictability.          | [Random-number domains](#17-random-numbers-must-match-the-domain)                      |
+| **Redis**                         | A networked typed data-structure server often used for caching, coordination, queues, or fast derived state.               | [Cache layers and Redis](#7-cache-layers-trade-freshness-for-time)                     |
+| **Registry**                      | Windows' typed hierarchical configuration database has hives, views, permissions, and platform-specific semantics.         | [Platform storage](#25-platform-storage-and-machine-identity)                          |
+| **relational database**           | Tables, keys, constraints, indexes, joins, and transactions model and protect relationships.                               | [Relational design](#2-relational-design-connects-identity-and-constraints)            |
+| **reliability**                   | The probability a system satisfies its behavior contract over time, distinct from availability and durability.             | [Fault tolerance and reliability](#12-fault-tolerance-starts-with-a-failure-model)     |
+| **retained-mode UI**              | A toolkit keeps a persistent widget/object tree and invalidates or redraws it when properties change.                      | [UI models](#3-retained-immediate-and-declarative-ui)                                  |
+| **reverse proxy**                 | A relay appears to clients as the service and forwards selected requests to origins.                                       | [Network roles](#1-client-server-proxy-and-load-balancer-are-roles)                    |
+| **sandbox**                       | Several mechanisms reduce ambient authority and isolate a component's address, syscall, resource, or runtime view.         | [Sandboxing](#18-sandboxing-is-authority-reduction)                                    |
+| **serialization**                 | Typed state is encoded into a versioned byte/text representation with framing and compatibility rules.                     | [Serialization boundary](#5-serialization-is-a-versioned-boundary)                     |
+| **session management**            | A service creates, rotates, expires, and revokes continuity of authenticated state.                                        | [Sessions, cookies, and tokens](#14-sessions-cookies-tokens-and-jwts)                  |
+| **Shadowsocks**                   | A secure split proxy protects traffic between local and remote relay components; it is not automatically a full VPN.       | [VPNs and Shadowsocks](#6-vpn-tunnel-and-shadowsocks-cover-different-traffic)          |
+| **signature-based scanning**      | Exact hashes or stable byte/structural signatures recognize known artifacts efficiently.                                   | [Scanner comparison](#11-signature-based-and-heuristic-scanning-complement-each-other) |
+| **simulator**                     | An abstract behavioral model reproduces selected system properties without necessarily running the exact target machine.   | [Execution environments](#22-real-hardware-simulator-emulator-vm-and-container)        |
+| **SSH**                           | A secure protocol provides remote login, authenticated host/user channels, forwarding, and subsystems such as SFTP.        | [TLS and SSH](#11-tls-and-ssh-protect-different-application-boundaries)                |
+| **stream processing**             | Operators transform an unbounded event sequence using ordering, time, windows, state, and recovery policy.                 | [Event-driven and stream processing](#14-event-driven-and-stream-processing)           |
+| **symmetric cryptography**        | Participants share a secret for fast encryption or message authentication.                                                 | [Cryptography families](#8-symmetric-and-asymmetric-cryptography-work-together)        |
+| **sync / synchronous**            | Control flow waits for an operation to complete before proceeding.                                                         | [Async, futures, and promises](#15-synchronous-asynchronous-futures-and-promises)      |
+| **test-driven development (TDD)** | A failing behavioral example precedes the smallest implementation change, followed by refactoring.                         | [TDD and reliability tests](#17-tdd-and-reliability-tests-operate-at-different-scales) |
+| **terminal emulator**             | A GUI program interprets terminal control sequences and renders a character-cell model into pixels.                        | [How a TUI reaches the screen](#11-how-a-tui-reaches-the-screen)                       |
+| **TLS**                           | A handshake and record protocol authenticates endpoints and protects application data in transit.                          | [TLS and SSH](#11-tls-and-ssh-protect-different-application-boundaries)                |
+| **token**                         | A credential or typed symbol represents authority or syntax; security tokens must be scoped and protected as secrets.      | [Sessions, cookies, and tokens](#14-sessions-cookies-tokens-and-jwts)                  |
+| **TUI**                           | A terminal user interface lays out widgets in cells and emits only the changed terminal state through a backend.           | [TUI rendering](#12-tui-rendering-uses-a-back-buffer-and-diff)                         |
+| **UI toolkit**                    | A library owns widgets, input routing, layout, styling, accessibility, and rendering integration at some chosen level.     | [GUI library selection](#9-gui-and-graphics-library-selection)                         |
+| **UUID**                          | A 128-bit versioned identifier supports decentralized or ordered/name-derived generation; it is not proof of identity.     | [UUIDs](#6-uuids-are-identifiers-not-authentication)                                   |
+| **video**                         | Timestamped frames are compressed into codec streams and multiplexed with metadata/tracks in containers.                   | [Video](#9-video-separates-frames-codecs-and-containers)                               |
+| **virtual machine (VM)**          | Virtualized hardware runs a guest OS with its own kernel under a hypervisor.                                               | [Execution environments](#22-real-hardware-simulator-emulator-vm-and-container)        |
+| **VPN**                           | A tunnel/routing policy carries selected IP traffic through a gateway; it changes paths, not endpoint trust.               | [VPNs and Shadowsocks](#6-vpn-tunnel-and-shadowsocks-cover-different-traffic)          |
+| **widget**                        | A logical UI element contributes semantics, layout, event handling, and paint/cell output.                                 | [GUI architecture](#gui-tui-graphics-library-architecture)                             |
+| **window API / Win32**            | A native windowing API registers window behavior, creates opaque handles, dispatches events/messages, and schedules paint. | [Native Window API basics](#18-native-window-api-basics-win32-as-a-concrete-example)   |
+| **window procedure**              | A Win32 system-ABI callback receives typed-by-message parameters and must delegate unhandled behavior to the OS default.   | [Window procedure and pump](#the-window-procedure-and-message-pump)                    |
+| **XSS**                           | Untrusted content executes as script in a trusted origin unless contextual encoding and safe DOM APIs prevent injection.   | [CORS, CSRF, and XSS](#15-cors-csrf-and-xss-solve-different-problems)                  |
+| **XML**                           | A structured text format with elements, attributes, namespaces, mixed content, and security-sensitive entity policy.       | [Serialization boundary](#5-serialization-is-a-versioned-boundary)                     |
+
+> 🧭 **Glossary habit:** if two terms sound interchangeable, follow both links and
+> compare their boundaries. Common costly confusions include encoding versus
+> encryption, container versus VM, GraphQL versus database, SFTP versus FTPS, JWT
+> versus session, and CORS versus CSRF.
+
+### How These Domains Feed Your Own Language
+
+| Domain                  | When building a language                                                               | When reversing a language/runtime                                                |
+| ----------------------- | -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| numeric/media           | define integer overflow, floating point, SIMD/vector types, units, and foreign buffers | identify numeric width, matrix convention, buffer layout, and hardware calls     |
+| memory/OS               | define ownership, allocation, page permission, thread, and file/socket abstractions    | recover object layout, lifetimes, mappings, syscalls, and synchronization        |
+| bytecode/native code    | define instruction encoding, call frames, ABI, imports, and debug metadata             | reconstruct opcodes, dispatch, indirect calls, symbols, and control flow         |
+| serialization/protocols | define stable schemas, framing, versioning, and bounded parsing                        | infer message boundaries, state machines, checksums, and field meaning           |
+| async/events            | define task, future, cancellation, channel, and backpressure semantics                 | recognize compiler-generated state machines, event loops, queues, and callbacks  |
+| database/cache          | define persistence APIs, null/missing states, transactions, and deterministic encoding | distinguish source of truth from cache, index, journal, or derived state         |
+| cryptography/identity   | expose safe library-backed types and keep keys/nonces unforgeable in ordinary code     | locate trust decisions, canonical bytes, certificate use, and failure paths      |
+| sandbox/VM              | restrict imports, syscalls, memory, time, and execution fuel                           | identify host/guest boundaries and the authority of each escape edge             |
+| GUI/TUI                 | define components, stable identity, events, layout, tasks, and backend capabilities    | recover widget trees, dispatch, layout boxes, display lists, and terminal output |
+| observability           | emit source maps, spans, structured events, and stable IDs                             | correlate addresses with modules, calls, data flow, and external effects         |
+
+> 🏗️ **Design principle:** give a programmer safe, typed access to the concept—not raw
+> authority by default. A `Socket`, `File`, `Future`, `SecretKey`, or `GpuBuffer` should
+> carry ownership, lifetime, state, and permission rules that the compiler/runtime can
+> enforce.
 
 ---
 
