@@ -4,6 +4,8 @@
 > network protocols—with the same ideas viewed from both the builder's and reverse
 > engineer's perspective.
 
+![Markdown](https://img.shields.io/badge/format-Markdown-blue?style=flat-square) ![Rust](https://img.shields.io/badge/primary%20language-Rust-orange?style=flat-square) ![Scope](https://img.shields.io/badge/scope-compilers%20%7C%20systems%20%7C%20networking-informational?style=flat-square) ![Status](https://img.shields.io/badge/status-living%20document-brightgreen?style=flat-square)
+
 ## 🗺️ How to Use These Notes
 
 These notes are organized as a **first-pass curriculum** and a **long-term reference**.
@@ -66,7 +68,7 @@ first pass; use the goal index afterward as a reference.
 | 🧱 Design Rust APIs         | [Idiomatic Rust](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)          | [Rust Patterns & Recipes](#-practical-rust-patterns--cookbook-recipes)                |
 | 📡 Embed a TCP/IP stack     | [smoltcp](#-embedded-networking-with-smoltcp)                                         | [QUIC with Quinn](#-quic-networking-with-quinn)                                       |
 | ⚡ Learn QUIC               | [QUIC with Quinn](#-quic-networking-with-quinn)                                       | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       |
-| 🕸 Build Rust web code      | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
+| 🕸 Build Rust web code       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  | [Applied Rust](#-applied-rust-architectures-bevy-diesel--tauri)                       |
 | 🌳 Control the browser DOM  | [DOM from Rust](#14-the-dom-is-a-host-owned-object-graph)                             | [Wasm Ownership](#17-dom-event-listeners-need-lifetime-design)                        |
 | 🌐 Understand a browser     | [Browser Engines](#-how-browser-engines-turn-bytes-into-pixels)                       | [Rust Web Boundaries](#-rust-web-boundaries-actix-web--wasm-bindgen)                  |
 | 🎮 Build a native loop      | [SDL3](#-native-event-loops--multimedia-with-sdl3)                                    | [Bevy](#1-bevy-data-oriented-application-structure)                                   |
@@ -85,6 +87,57 @@ first pass; use the goal index afterward as a reference.
 - 🚧 **Boundary** is where data changes representation or trust level.
 - ⚠️ **Failure mode** names what can go wrong and why.
 - 🦀 **Rust examples** favor clarity and explicit checks over cleverness.
+
+---
+
+## 📚 Table of Contents
+
+<details>
+<summary>Click to expand all 41 sections</summary>
+
+1. [🗺️ How to Use These Notes](#-how-to-use-these-notes)
+2. [🧩 Grammar](#-grammar)
+3. [🔧 I. Hardware Fundamentals](#-i-hardware-fundamentals)
+4. [🪜 II. The Language Hierarchy & Translation](#-ii-the-language-hierarchy--translation)
+5. [🧭 A Computer Science Concept Map](#-a-computer-science-concept-map)
+6. [🧱 Building a Parser](#-building-a-parser)
+7. [🦗 Pest PEG Parsing in Practice](#-pest-peg-parsing-in-practice)
+8. [🌳 III. The Execution Pipeline & AST](#-iii-the-execution-pipeline--ast)
+9. [🔁 Recursion](#-recursion)
+10. [🧮 IV. Bytecode & Virtual Machines](#-iv-bytecode--virtual-machines)
+11. [🏠 Hosted Language Runtime Design in Rust](#-hosted-language-runtime-design-in-rust)
+12. [🌙 Building a Minimal Lua Interpreter in Rust](#-building-a-minimal-lua-interpreter-in-rust)
+13. [🔖 V. Types & Type Inference](#-v-types--type-inference)
+14. [🚀 VI. Compiler Optimizations](#-vi-compiler-optimizations)
+15. [🏭 VII. LLVM IR & Advanced Code Generation](#-vii-llvm-ir--advanced-code-generation)
+16. [🧪 Testing LLVM Codegen with Inkwell](#-testing-llvm-codegen-with-inkwell)
+17. [📦 VIII. Object-Oriented Concepts (Classes)](#-viii-object-oriented-concepts-classes)
+18. [🐛 IX. Debugging](#-ix-debugging)
+19. [🧠 Low-Level Memory, Binary Analysis & Language Runtime Architecture](#-low-level-memory-binary-analysis--language-runtime-architecture)
+20. [🦀 Idiomatic Rust for Compilers, Parsers, and Low-Level Tools](#-idiomatic-rust-for-compilers-parsers-and-low-level-tools)
+21. [🧱 Practical Rust Patterns & Cookbook Recipes](#-practical-rust-patterns--cookbook-recipes)
+22. [λ Functional Programming in Rust](#λ-functional-programming-in-rust)
+23. [🧮 Algorithms in Idiomatic Rust](#-algorithms-in-idiomatic-rust)
+24. [🤖 Machine Learning Foundations](#-machine-learning-foundations)
+25. [💻 Operating Systems from the Bottom Up](#-operating-systems-from-the-bottom-up)
+26. [🔗 Executable Files, Linkers, ABIs & FFI](#-executable-files-linkers-abis--ffi)
+27. [🔩 Bare-Metal, Unsafe Rust & Chromium-Scale Integration](#-bare-metal-unsafe-rust--chromium-scale-integration)
+28. [🧵 Concurrency, Atomics & Memory Models](#-concurrency-atomics--memory-models)
+29. [🏢 System Design Patterns in Rust](#-system-design-patterns-in-rust)
+30. [🌐 Networking, Protocols & Wire Formats](#-networking-protocols--wire-formats)
+31. [📡 Embedded Networking with `smoltcp`](#-embedded-networking-with-smoltcp)
+32. [⚡ QUIC Networking with Quinn](#-quic-networking-with-quinn)
+33. [🌐 How Browser Engines Turn Bytes into Pixels](#-how-browser-engines-turn-bytes-into-pixels)
+34. [🕸 Rust Web Boundaries: Actix Web & wasm-bindgen](#-rust-web-boundaries-actix-web--wasm-bindgen)
+35. [🎮 Native Event Loops & Multimedia with SDL3](#-native-event-loops--multimedia-with-sdl3)
+36. [🧰 Applied Rust Architectures: Bevy, Diesel & Tauri](#-applied-rust-architectures-bevy-diesel--tauri)
+37. [🔍 Practical x64 Windows Reverse Engineering](#-practical-x64-windows-reverse-engineering)
+38. [🔨 Developer Tooling: The Missing Semester](#-developer-tooling-the-missing-semester)
+39. [🐍 Practical Python Automation](#-practical-python-automation)
+40. [🧰 Practical Low-Level Workflow](#-practical-low-level-workflow)
+41. [🛤️ X. Language Progression](#-x-language-progression)
+
+</details>
 
 ---
 
@@ -560,21 +613,21 @@ WHITESPACE = _{ " " | "\t" }
 
 #### Cheat sheet
 
-|      Syntax      |             Meaning             |       Syntax        |      Meaning       |
+| Syntax           | Meaning                         | Syntax              | Meaning            |
 | :--------------: | :-----------------------------: | :-----------------: | :----------------: |
-| `foo = { ... }`  |          regular rule           |  `baz = @{ ... }`   |       atomic       |
-| `bar = _{ ... }` |             silent              |  `qux = ${ ... }`   |  compound-atomic   |
-|   `#tag = ...`   |              tags               | `plugh = !{ ... }`  |     non-atomic     |
-|     `"abc"`      |          exact string           |      `^"abc"`       |  case insensitive  |
-|    `'a'..'z'`    |         character range         |        `ANY`        |   any character    |
-|   `foo ~ bar`    |            sequence             |    `baz \| qux`     |   ordered choice   |
-|      `foo*`      |          zero or more           |       `bar+`        |    one or more     |
-|      `baz?`      |            optional             |      `qux{n}`       |    exactly _n_     |
-|   `qux{m, n}`    | between _m_ and _n_ (inclusive) |                     |                    |
-|      `&foo`      |       positive predicate        |       `!bar`        | negative predicate |
-|   `PUSH(baz)`    |         match and push          | `PUSH_LITERAL("a")` | push without match |
-|      `POP`       |          match and pop          |       `PEEK`        | match without pop  |
-|      `DROP`      |      pop without matching       |     `PEEK_ALL`      | match entire stack |
+| `foo = { ... }`  | regular rule                    | `baz = @{ ... }`    | atomic             |
+| `bar = _{ ... }` | silent                          | `qux = ${ ... }`    | compound-atomic    |
+| `#tag = ...`     | tags                            | `plugh = !{ ... }`  | non-atomic         |
+| `"abc"`          | exact string                    | `^"abc"`            | case insensitive   |
+| `'a'..'z'`       | character range                 | `ANY`               | any character      |
+| `foo ~ bar`      | sequence                        | `baz \| qux`        | ordered choice     |
+| `foo*`           | zero or more                    | `bar+`              | one or more        |
+| `baz?`           | optional                        | `qux{n}`            | exactly _n_        |
+| `qux{m, n}`      | between _m_ and _n_ (inclusive) |                     |                    |
+| `&foo`           | positive predicate              | `!bar`              | negative predicate |
+| `PUSH(baz)`      | match and push                  | `PUSH_LITERAL("a")` | push without match |
+| `POP`            | match and pop                   | `PEEK`              | match without pop  |
+| `DROP`           | pop without matching            | `PEEK_ALL`          | match entire stack |
 
 ### 2. Defining the Abstract Syntax Tree (AST)
 
@@ -978,6 +1031,8 @@ AST values so formatting changes do not break semantic tests.
 
 > ➡️ **Next:** the execution-pipeline section treats the AST as the trusted input to an
 > interpreter or backend. Pest-specific details stop here; the language model continues.
+
+---
 
 ## 🌳 III. The Execution Pipeline & AST
 
