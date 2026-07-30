@@ -48,12 +48,12 @@ The document uses Rust libraries as **executable models of computer-science idea
 
 Read each concept in six passes:
 
-1. **Definition** — say what the concept is in one precise sentence.
-2. **Problem** — identify the constraint that makes the concept necessary.
-3. **Representation** — find the bytes, types, nodes, buffers, or tables that store it.
-4. **Mechanism** — trace one input through each state transition to an output.
-5. **Invariant and failure** — state what must remain true and how it can break.
-6. **Transfer** — find the same model in a compiler, OS, network, browser, database, or
+1. **What is it?** — Define the concept and say what the concept is in one precise sentence.
+2. **Why does it exist?** — say what problem it helps solve and identify the constraint that makes the concept necessary.
+3. **What does it keep track of?** — Represent the data objects and Information involved and  find the bytes, types, nodes, buffers, or tables that store it.
+4. **What changes?** —Give the mechanics to one small before and after example and trace one input through each state transition to an output.
+5. **What must not break?** — name the rule that must stay true, and one way it could break, state what must remain invariant and how it can failure.
+6. **Where else does this show up?** — Transfer the same pattern in another system or topic, find the same model in a compiler, OS, network, browser, database, or
    embedded device.
 
 Code is evidence for the mechanism, not the lesson by itself. Comments explain why a
