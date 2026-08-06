@@ -41,7 +41,6 @@ fn is_prime_lookup(table: &[bool], n: usize) -> bool { table[n] } // O(1), memor
 
 ---
 
----
 
 ## ⌨️ Basic Coding Principles
 
@@ -91,7 +90,6 @@ fn sum_into_good(data: &[i32], result: &mut i32) {
 
 ---
 
----
 
 ## ⚙️ Low-Level Optimizations & Rust Patterns
 
@@ -192,7 +190,6 @@ fn sum_indexed(data: &[i32]) -> i32 {
 
 ---
 
----
 
 ## 📦 Allocation & Collection Management
 
@@ -223,22 +220,23 @@ fn format_good(data: &[&str]) -> String {
 
 > **💡 Clippy Lint:** `clippy::format_in_loop`
 
-### 📥 Reserve Capacity (Vector Reallocation Overhead)
+### 📥 Reserve Capacity & Amortized Complexity
 
-📜 **Rule:** If you know (or can estimate) the final size of a collection, pre-allocate it with `with_capacity`.
+📜 **Rule:** If you know (or can estimate) the final size of a collection, pre-allocate with `with_capacity`. Judge structure cost by *average* cost over a long sequence of operations, not the worst single call.
 
-* 🚧 **The Reallocation-and-Copy Overhead:** `Vec::new()` starts at zero capacity. As you push, it must repeatedly ask the allocator for a bigger block and copy every existing element over — an $O(N)$ operation happening *multiple times*.
-* 🚀 **The Capacity Pre-Allocation Technique:** `with_capacity(n)` allocates the final block *once*, so every subsequent `push` is a simple, allocation-free write.
+* 🚧 **Reallocation-and-copy:** `Vec::new()` starts empty and grows by doubling — each growth is `malloc` + `memcpy` of all elements. Amortized cost per push is still $O(1)$, but spikes hurt latency-sensitive paths.
+* ⚡ **Pre-allocation:** `with_capacity(n)` pays allocation once so every push is a flat write — same amortized $O(1)$, near-zero variance.
+* 🎯 **Amortized vs average-case:** Amortized spreads one expensive op over many calls to the *same structure*. It is not the same as average-case over different *inputs* (e.g. quicksort).
 
 ```rust
-// ❌ BAD: Vec reallocates and copies ~log2(N) times as it grows.
+// ❌ BAD: ~log2(N) reallocations; spiky latency.
 fn build_bad(n: usize) -> Vec<u32> {
     let mut v = Vec::new();
     for i in 0..n { v.push(i as u32); }
     v
 }
 
-// ✅ GOOD: One allocation, zero reallocations during the loop.
+// ✅ GOOD: one allocation; every push is O(1) wall-clock.
 fn build_good(n: usize) -> Vec<u32> {
     let mut v = Vec::with_capacity(n);
     for i in 0..n { v.push(i as u32); }
@@ -246,56 +244,8 @@ fn build_good(n: usize) -> Vec<u32> {
 }
 ```
 
-> **💡 Clippy Lint:** `clippy::vec_init_then_push`, `with_capacity_zero`
+> **💡 Clippy Lints:** `clippy::vec_init_then_push`, `clippy::slow_vector_initialization`
 
-### ⏱️ Amortized Complexity
-
-📜 **Rule:** Don't judge a data structure's cost by its worst single operation — judge it by the *average* cost per operation across a long sequence of them.
-
-* 🚧 **The Worst-Case Illusion:** `Vec::push` occasionally triggers an $O(N)$ reallocation-and-copy (see the *"Reserve Capacity"* section above). Looking at that one expensive call in isolation makes `push` look slow.
-* 🖥️ **What actually happens in hardware/OS terms:** A growth event is not "free bookkeeping" — it is a real `malloc`-style system call that asks the OS's virtual memory manager for a new, larger block (which may require a page fault if new physical pages must be mapped in), followed by a `memcpy` of every existing element from the old block to the new one (each element touching RAM, not just registers), followed by a `free`/`munmap`-style release of the old block. That's real memory-bandwidth and TLB pressure, just paid infrequently instead of constantly.
-* ⚡ **The Amortized-Analysis Technique:** Because each doubling-growth reallocation happens only after $N$ cheap pushes since the last one, the *total* cost of $N$ pushes is $O(N)$, making the *average* cost per push $O(1)$ — this is what "amortized $O(1)$" means. Concretely: growing by doubling means the reallocation sizes form a geometric series ($1, 2, 4, 8, \ldots, N$), which sums to $< 2N$ total element-copies across the *entire* run — so even though copies happen, the total copying work is only proportional to the final size, not to (final size) × (number of pushes). The same reasoning applies to hash-table resizing, dynamic-array-backed stacks/queues, and union-find's path compression.
-* 🎯 **Why it matters for optimization:** Amortized analysis is the reason `with_capacity` is a *tuning* optimization rather than a correctness fix — the growth strategy already guarantees amortized $O(1)$ pushes; pre-allocating just removes the occasional expensive spike so *every* push is uniformly cheap, which matters for latency-sensitive code (e.g., a real-time audio loop, where even one $O(N)$ stall inside your 5ms callback budget causes an audible glitch) even when the *average* throughput was already fine.
-
-> 💡 **Distinguish from *averaging over inputs*:** Amortized complexity is about spreading one expensive operation's cost over many *calls to the same structure*; it says nothing about how a single call's cost varies across different *inputs* (that's average-case complexity, a separate concept — e.g., quicksort is $O(N \log N)$ average-case but $O(N^2)$ worst-case on adversarial input).
-
-```rust
-// ❌ BAD: No visibility into reallocation cost — capacity silently doubles: 0→4→8→16→32...
-// Each doubling triggers a fresh heap allocation + a memcpy of every prior element.
-fn build_bad(n: usize) -> Vec<u64> {
-    let mut v = Vec::new();
-    for i in 0..n {
-        v.push(i as u64); // amortized O(1) — but with real, spiky worst-case stalls
-    }
-    v
-}
-
-// ✅ GOOD: Reserve up front. The amortized cost per push is unchanged (still O(1) on
-// average) but the *variance* drops to zero — every push is now a flat array write
-// with no chance of triggering a malloc+memcpy mid-loop.
-fn build_good(n: usize) -> Vec<u64> {
-    let mut v = Vec::with_capacity(n);
-    for i in 0..n {
-        v.push(i as u64); // guaranteed O(1), every single time
-    }
-    v
-}
-
-// Demonstrating the doubling pattern directly:
-fn show_growth() {
-    let mut v: Vec<u64> = Vec::new();
-    let mut last_cap = 0;
-    for i in 0..1000 {
-        v.push(i);
-        if v.capacity() != last_cap {
-            println!("pushed {i} items -> capacity jumped to {}", v.capacity());
-            last_cap = v.capacity(); // prints the geometric 0,4,8,16,32,64... sequence
-        }
-    }
-}
-```
-
----
 
 ### ♻️ Recycle Collections (Allocation Churn)
 
@@ -435,6 +385,72 @@ fn main() {
 
 > ⚖️ **Trade-off:** Adds a dependency and slightly increases binary size — profile before committing.
 
+
+### 📋 Avoid Unnecessary Clones & Copies
+
+📜 **Rule:** Prefer borrowing (`&T`, `&str`, `&[T]`) and moving over `.clone()`; treat every clone in a hot path as a bug until profiling proves it is cheap.
+
+* 🚧 **The Clone Tax:** `clone()` on a `String`, `Vec`, or `HashMap` allocates and copies every byte. Inside a loop this becomes allocation churn (see *Recycle Collections*). Even `Copy` types are not free if they are large — a 128-byte `Copy` struct still costs memory bandwidth.
+* ⚡ **Techniques:** Pass `&str` instead of `String`; use `Cow<'_, str>` when you only sometimes need ownership; `std::mem::take` / `option.take()` to move out of a slot; `Rc`/`Arc` only when shared ownership is truly required (and prefer `Rc` if single-threaded).
+
+```rust
+// ❌ BAD: clones the whole String on every call.
+fn starts_with_prefix_bad(name: String, prefix: String) -> bool {
+    name.starts_with(&prefix)
+}
+
+// ✅ GOOD: borrow — zero allocation.
+fn starts_with_prefix_good(name: &str, prefix: &str) -> bool {
+    name.starts_with(prefix)
+}
+
+// ❌ BAD: clone to "use later" when a move or take would work.
+fn pop_front_bad(queue: &mut Vec<String>) -> Option<String> {
+    if queue.is_empty() { return None; }
+    let first = queue[0].clone();
+    queue.remove(0);
+    Some(first)
+}
+
+// ✅ GOOD: move out via drain/remove — no clone.
+fn pop_front_good(queue: &mut Vec<String>) -> Option<String> {
+    if queue.is_empty() { None } else { Some(queue.remove(0)) }
+}
+```
+
+> **💡 Clippy Lints:** `clippy::redundant_clone`, `clippy::clone_on_copy`, `clippy::trivially_copy_pass_by_ref`
+
+
+### 📦 Small-Buffer Optimization (Inline Storage)
+
+📜 **Rule:** For collections that are usually small (0–N elements with small N), use inline storage (`SmallVec`, `ArrayVec`, `ArrayString`, or a custom `enum { Inline([T; N]), Heap(Vec<T>) }`) to avoid heap allocation in the common case.
+
+* 🚧 **The Always-Heap Pitfall:** `Vec`/`String` heap-allocate even for 1–2 elements. Millions of tiny vectors mean millions of allocator calls and pointer-chasing on every access.
+* ⚡ **The SBO Technique:** Store up to N elements inside the object itself (on the stack or inside the parent struct). Spill to the heap only when length exceeds N. Same idea as many standard-library strings in C++ (`SSO`) and Rust’s `tendril` / `smallvec` ecosystems.
+
+```rust
+// ❌ BAD: every short list pays a heap allocation.
+fn tags_bad(user_tags: &[&str]) -> Vec<String> {
+    user_tags.iter().map(|s| s.to_string()).collect()
+}
+
+// ✅ GOOD: SmallVec keeps ≤8 tags inline — no heap for the common case.
+// smallvec = "1"
+use smallvec::{SmallVec, smallvec};
+
+fn tags_good(user_tags: &[&str]) -> SmallVec<[String; 8]> {
+    user_tags.iter().map(|s| s.to_string()).collect()
+}
+
+fn example() {
+    let t: SmallVec<[i32; 4]> = smallvec![1, 2, 3]; // fully inline
+    let _ = t;
+}
+```
+
+> 💡 Pick N from profiling (P50/P90 lengths). Too large N bloats every instance; too small N still allocates often.
+
+
 ### 🧹 Defer Drop (Synchronous Deallocation Stalls)
 
 📜 **Rule:** If dropping a large object (huge `Vec`, big `HashMap`) is expensive, `send` it to a background thread to be dropped instead of blocking the current one.
@@ -459,6 +475,44 @@ fn finish_request_good(big_buffer: Vec<u8>, reaper: &Sender<Vec<u8>>) {
 ---
 
 ## ⚡ Instruction-Level Parallelism & Branch Optimization
+
+
+### 🧮 Explicit SIMD & Auto-Vectorization
+
+📜 **Rule:** Prefer idiomatic iterators and contiguous data so LLVM auto-vectorizes; drop to explicit SIMD (`std::simd`, intrinsics, or crates like `wide`) only when the auto-vectorizer fails on a proven hot loop.
+
+* 🖥️ **What SIMD does:** One instruction processes 4–16 elements (e.g. AVX2: eight `f32`s). Throughput can jump several× if data is contiguous, aligned, and free of loop-carried dependencies or unpredictable branches.
+* 🚧 **Why auto-vectorization fails:** Bounds checks, aliasing ambiguity, complex conditionals, non-contiguous access (`data[indices[i]]`), or mixed types. The compiler then emits scalar code even in `--release`.
+* ⚡ **Techniques:** Contiguous slices + iterators; `chunks_exact` + remainder; `#[inline]` so the loop body is visible; explicit `std::simd` or architecture intrinsics gated by `cfg(target_arch)` when you must force it.
+
+```rust
+// ❌ BAD: index loop + possible aliasing → harder to auto-vectorize.
+fn scale_bad(data: &mut [f32], factor: f32) {
+    for i in 0..data.len() {
+        data[i] *= factor;
+    }
+}
+
+// ✅ GOOD: iterator form — LLVM typically emits SIMD in release.
+fn scale_good(data: &mut [f32], factor: f32) {
+    for x in data.iter_mut() {
+        *x *= factor;
+    }
+}
+
+// ✅ EXPLICIT (when auto-vec fails): portable SIMD (Rust 1.91+ std::simd / nightly).
+// Use architecture-specific intrinsics only behind cfg; keep a scalar fallback.
+fn scale_chunks(data: &mut [f32], factor: f32) {
+    let (chunks, rem) = data.as_chunks_mut::<8>();
+    for chunk in chunks {
+        for x in chunk.iter_mut() { *x *= factor; } // still auto-vectorizable unit
+    }
+    for x in rem { *x *= factor; }
+}
+```
+
+> 💡 Verify with `cargo-show-asm` or Godbolt — look for `xmm`/`ymm`/`zmm` (x86) or `v` registers (ARM NEON/SVE). If you still see scalar loads in a hot numeric loop, then consider explicit SIMD.
+
 
 ### 🔀 Multiple Functional Units & Instruction-Level Parallelism
 
@@ -565,6 +619,72 @@ fn process_good(input: i32) -> i32 {
 
 ---
 
+
+### ➗ Strength Reduction (Expensive Ops → Cheap Ops)
+
+📜 **Rule:** Replace expensive arithmetic (division, modulo, multiply by non-constant) with cheaper equivalents the CPU can execute in fewer cycles — shifts, adds, or multiplies by a compile-time inverse.
+
+* 🖥️ **Relative costs (typical modern x86):** integer add/shift ≈ 1 cycle latency; multiply ≈ 3–4; division ≈ 10–30+. Compilers already strength-reduce many constant cases; help them with clear power-of-two sizes and avoid variable division in hot loops when a multiply-high or table works.
+* ⚡ **Common reductions:**
+  * `x * 2` / `x / 2` → `x << 1` / `x >> 1` (compiler usually does this).
+  * `x % power_of_two` → `x & (n - 1)` for unsigned.
+  * Repeated `i * stride` in a loop → running adder (`offset += stride`).
+  * Division by a fixed integer → multiply by modular inverse (compiler emits this for constants).
+
+```rust
+// ❌ BAD: variable modulo in a tight loop.
+fn bucket_bad(hash: u32, n_buckets: u32) -> u32 {
+    hash % n_buckets // slow if n_buckets is not a constant power of two
+}
+
+// ✅ GOOD: force power-of-two capacity → mask instead of div.
+fn bucket_good(hash: u32, bucket_mask: u32) -> u32 {
+    // bucket_mask = n_buckets - 1, n_buckets is power of two
+    hash & bucket_mask
+}
+
+// ✅ GOOD: strength-reduce inductive multiply to add.
+fn scatter_bad(out: &mut [f32], stride: usize) {
+    for i in 0..out.len() / stride {
+        out[i * stride] = 1.0; // multiply every iteration
+    }
+}
+fn scatter_good(out: &mut [f32], stride: usize) {
+    let mut off = 0;
+    while off < out.len() {
+        out[off] = 1.0;
+        off += stride; // cheap add
+    }
+}
+```
+
+> 💡 Do not hand-write obscure hacks the compiler already knows — write clear code with power-of-two sizes and constant divisors, then check assembly. Hand strength-reduction pays off mainly for *variable* divisors or patterns the optimizer cannot see across functions.
+
+
+### 🔗 Loop Fusion & Fission
+
+📜 **Rule:** Fuse consecutive loops that touch the same data to cut memory traffic; split (fission) a loop only when it enables better vectorization or cache behavior for distinct phases.
+
+* 🚧 **Multiple passes = multiple cache loads:** Three separate loops over the same array may reload it from DRAM three times if it does not fit in cache.
+* ⚡ **Fusion:** Combine compatible passes into one traversal so each element is loaded once. **Fission:** Split a loop that mixes vectorizable math with heavy branching so the math part can SIMD-cleanly.
+
+```rust
+// ❌ BAD: three passes — three trips through memory.
+fn process_bad(data: &mut [f32]) {
+    for x in data.iter_mut() { *x *= 2.0; }
+    for x in data.iter_mut() { *x += 1.0; }
+    for x in data.iter_mut() { *x = x.abs(); }
+}
+
+// ✅ GOOD: fused single pass — one load/store per element.
+fn process_good(data: &mut [f32]) {
+    for x in data.iter_mut() {
+        *x = (*x * 2.0 + 1.0).abs();
+    }
+}
+```
+
+
 ## 🧪 Measurement, Testing & Caution
 
 ### 🧪 A Final Word of Caution: Test as You Optimize
@@ -658,16 +778,15 @@ criterion_main!(benches);
 
 ---
 
----
 
 ## 🔢 Algorithms & Execution Patterns
 
-### 📡 The N+1 Query Problem (Network Round-Trip Latency)
+### 📡 Batching: N+1 Queries & Batch APIs
 
-📜 **Rule:** Never execute network requests, API calls, or database queries inside a loop. Always batch them into a single bulk request.
+📜 **Rule:** Never run network/DB requests or heavy per-item API calls inside a loop. Batch into one bulk request, and design your own APIs to accept slices so callers are not forced into N+1 patterns.
 
-* ⏳ **The Network Round-Trip Overhead:** Calling a database or an API takes time just to establish the connection and travel over the network wire (e.g., 2 milliseconds). If you query 1,000 users individually inside a loop, that is 1,000 separate network trips. Your math takes 1 microsecond, but the network waiting takes 2 full seconds.
-* ⚡ **The Query-Batching Technique:** Group all the IDs you need into a single list and ask the database/API for all of them at once. The network round-trip time is paid exactly *once*, dropping your wait time from 2 seconds to 3 milliseconds.
+* ⏳ **Round-trip overhead:** Each remote call pays latency (often milliseconds) far above local work (microseconds). 1,000 sequential queries ≈ seconds of waiting.
+* 🚧 **Per-call dispatch:** Even in-process, one-item APIs prevent internal pre-allocation, vectorization, and single-transaction/locking strategies.
 
 **Diagram: Network Round Trips**
 
@@ -679,7 +798,6 @@ App -> "Get User 3" -> DB (Wait...)
 
 ✅ Batched Query:
 App -> "Get Users [1, 2, 3]" -> DB (Wait ONCE...)
-
 ```
 
 ```rust
@@ -687,35 +805,38 @@ App -> "Get Users [1, 2, 3]" -> DB (Wait ONCE...)
 fn get_user_data_bad(user_ids: &[i32]) -> Vec<User> {
     let mut users = Vec::new();
     for &id in user_ids {
-        users.push(db::query("SELECT * FROM users WHERE id = ?", id)); 
+        users.push(db::query("SELECT * FROM users WHERE id = ?", id));
     }
     users
 }
 
 // ✅ GOOD: 100 items = 1 network round-trip.
 fn get_user_data_good(user_ids: &[i32]) -> Vec<User> {
-    // A single query: "SELECT * FROM users WHERE id IN (1, 2, 3...)"
-    db::query_bulk("SELECT * FROM users WHERE id IN ?", user_ids) 
+    db::query_bulk("SELECT * FROM users WHERE id IN ?", user_ids)
 }
 
-```
-
-### 📦 Batch APIs (Per-Call Dispatch Overhead)
-
-📜 **Rule:** Design your own function signatures to accept *slices* of items rather than forcing callers to invoke you once per item.
-
-* 🚧 **The Per-Call Dispatch Overhead:** A one-item-at-a-time API forces the caller into a loop of individual calls, each paying setup/dispatch overhead (and, for I/O-bound APIs, a full round trip — see the N+1 problem above).
-* 🚀 **The Slice-Based Batching Technique:** Accepting `&[T]` lets *you* internally batch, pre-allocate, and vectorize the work, amortizing overhead across the whole batch.
-
-```rust
-// ❌ BAD: Caller must loop, and you can't optimize across calls.
+// ❌ BAD: caller must loop; you cannot optimize across calls.
 fn insert_one_bad(db: &mut Database, item: Record) { db.insert(item); }
 
-// ✅ GOOD: Accepts a slice — internally batches into one transaction.
+// ✅ GOOD: accept a slice — batch into one transaction.
 fn insert_many_good(db: &mut Database, items: &[Record]) {
-    db.insert_batch(items); // Pre-allocates, single transaction, single lock
+    db.insert_batch(items);
+}
+
+struct User;
+struct Record;
+struct Database;
+impl Database {
+    fn insert(&mut self, _: Record) {}
+    fn insert_batch(&mut self, _: &[Record]) {}
+}
+mod db {
+    use super::User;
+    pub fn query(_: &str, _: i32) -> User { User }
+    pub fn query_bulk(_: &str, _: &[i32]) -> Vec<User> { vec![] }
 }
 ```
+
 
 ### 🖼️ Sliding Windows (Unlocking $O(N)$ Speed)
 
@@ -839,6 +960,41 @@ fn dfs_reachable(graph: &[Vec<usize>], start: usize) -> HashSet<usize> {
 
 > ⚠️ **Always track `visited`.** Without it, both DFS and BFS can loop forever (or exhaust memory) on any graph containing a cycle.
 
+
+### 🔁 Recursion → Iteration (Call-Stack Pressure)
+
+📜 **Rule:** Convert deep or unbounded recursion into an explicit loop (or heap-allocated stack) so you do not blow the call stack and so the compiler can optimize a flat control-flow graph.
+
+* 🚧 **The Call-Stack Limit:** Each recursive call consumes stack frame space (return address, spilled registers, locals). Depth in the tens of thousands can segfault. Recursion also blocks some optimizations and prevents guaranteed tail-call elimination in Rust (Rust does not guarantee TCO).
+* ⚡ **The Iterative Technique:** Use a `Vec` as an explicit stack for DFS-style algorithms, or rewrite as a loop with accumulator variables (as in the DP tabulation examples).
+
+```rust
+// ❌ BAD: recursion depth = n; stack overflow on large input.
+fn factorial_bad(n: u64) -> u64 {
+    if n <= 1 { 1 } else { n * factorial_bad(n - 1) }
+}
+
+// ✅ GOOD: constant stack space.
+fn factorial_good(n: u64) -> u64 {
+    let mut acc = 1;
+    for i in 2..=n { acc *= i; }
+    acc
+}
+
+// ✅ GOOD: explicit heap stack for graph DFS (see also DFS vs BFS section).
+fn dfs_iterative(graph: &[Vec<usize>], start: usize) -> Vec<bool> {
+    let mut visited = vec![false; graph.len()];
+    let mut stack = vec![start];
+    while let Some(n) = stack.pop() {
+        if visited[n] { continue; }
+        visited[n] = true;
+        stack.extend(graph[n].iter().copied());
+    }
+    visited
+}
+```
+
+
 ### 🧮 Dynamic Programming: Memoization vs. Tabulation
 
 📜 **Rule:** Never compute the exact same sub-problem twice. Cache redundant work!
@@ -937,27 +1093,203 @@ fn get_first_three_even_good(data: &[i32]) -> Vec<i32> {
 
 > 💡 **Logging is a special case of this:** Calling `log::debug!("{}", expensive_summary(&data))` still runs `expensive_summary` even if the debug level is disabled at runtime, because arguments are evaluated *before* the macro checks the level. The `log`/`tracing` crates guard the whole call site with a level check internally, but if you're building the string manually, gate it yourself: `if log::log_enabled!(Level::Debug) { ... }`.
 
-### 🔌 Short-Circuit Evaluation (Redundant Condition Evaluation)
+### 🔌 Short-Circuit Evaluation & Early Exit (Fail-Fast)
 
-📜 **Rule:** Order your `AND` (`&&`) and `OR` (`||`) conditional statements by computational cost and likelihood of failure.
+📜 **Rule:** Order conditions and checks so the cheapest rejecting work runs first — abort before expensive computation, allocation, parsing, or I/O.
 
-* 🚧 **The Wasted Work:** Compilers evaluate `&&` statements from left to right. If the first condition is `false`, the compiler *aborts immediately* (short-circuits) because the whole statement is guaranteed to be false. If you put a heavy 5-second calculation on the left, and a simple 1-nanosecond variable check on the right, you force the CPU to do the 5-second calculation even if the variable was going to fail anyway.
-* ⚡ **The Cheapest-Check-First Technique:** Always put the cheapest, most-likely-to-fail checks on the far left. Put the heavy database lookups or complex math on the far right. The cheap check will act as a bouncer, preventing the heavy computation from ever running.
+* 🚧 **Wasted work:** Compilers evaluate `&&` / `||` left-to-right and stop early, but only if you put the cheap test first. The same idea applies at function and pipeline level: auth, cache hits, and empty-input checks should precede parsing and remote calls.
+* ⚡ **Techniques:** cheapest / most-likely-to-fail checks first; return `Err` / `None` immediately; avoid computing arguments that will be discarded.
 
 ```rust
-// ❌ BAD: The expensive DB call runs first. If the user isn't an admin, 
-// we just wasted 500ms of database lookup time for nothing!
+// ❌ BAD: expensive DB call runs even when the user is not allowed.
 fn can_delete_bad(user: &User, post_id: i32) -> bool {
     db::heavy_check_post_exists(post_id) && user.is_admin
 }
 
-// ✅ GOOD: The instant boolean check runs first. 
-// If they aren't an admin, the CPU aborts instantly. The DB is never touched!
+// ✅ GOOD: instant boolean first — DB never touched if not admin.
 fn can_delete_good(user: &User, post_id: i32) -> bool {
     user.is_admin && db::heavy_check_post_exists(post_id)
 }
 
+// ❌ BAD: parse and allocate before rejecting unauthorized users.
+fn handle_bad(user: &User, body: &[u8]) -> Result<Response, Error> {
+    let parsed = parse_expensive(body)?;
+    if !user.is_allowed() { return Err(Error::Forbidden); }
+    process(parsed)
+}
+
+// ✅ GOOD: fail cheap and fast.
+fn handle_good(user: &User, body: &[u8]) -> Result<Response, Error> {
+    if !user.is_allowed() { return Err(Error::Forbidden); }
+    if body.is_empty() { return Err(Error::BadRequest); }
+    let parsed = parse_expensive(body)?;
+    process(parsed)
+}
+
+struct User;
+impl User {
+    fn is_admin(&self) -> bool { false }
+    fn is_allowed(&self) -> bool { true }
+}
+mod db { pub fn heavy_check_post_exists(_: i32) -> bool { true } }
+struct Response;
+struct Error;
+impl Error {
+    const Forbidden: Error = Error;
+    const BadRequest: Error = Error;
+}
+fn parse_expensive(_: &[u8]) -> Result<(), Error> { Ok(()) }
+fn process(_: ()) -> Result<Response, Error> { Ok(Response) }
 ```
+
+
+### 🌊 Stream Processing vs. Batch Processing
+
+📜 **Rule:** Choose streaming when latency, memory footprint, or infinite/unknown input size matter; choose batch when throughput, vectorization, and simple control flow matter.
+
+| Dimension | Stream | Batch |
+| --- | --- | --- |
+| **Latency** | First result available early | Wait for full input / window |
+| **Memory** | Bounded (working set ≈ window size) | Proportional to batch size |
+| **Throughput** | Often lower (per-item overhead) | Higher (amortize setup, SIMD, I/O) |
+| **Complexity** | State machines, watermarks, backpressure | Simple loops, easier retries |
+| **Failure** | Partial progress possible | All-or-nothing easier to reason about |
+
+* 🚧 **The Batch-Everything Pitfall:** Loading an entire multi-GB input into a `Vec` before processing spikes memory, delays time-to-first-result, and can OOM. Conversely, naïvely processing one byte at a time (unbuffered stream) destroys throughput with per-call overhead.
+* ⚡ **Hybrid Technique:** Stream *into* fixed-size batches (e.g. 64 KiB chunks or N records). You get bounded memory and early progress *plus* the ability to vectorize / compress / syscall-batch inside each chunk.
+
+```rust
+use std::io::{BufRead, BufReader, Write};
+
+// ❌ BAD (unbounded batch): entire file in memory before any work.
+fn process_batch_bad(path: &str) -> std::io::Result<()> {
+    let data = std::fs::read(path)?; // can be gigabytes
+    for line in data.split(|&b| b == b'\n') {
+        handle(line);
+    }
+    Ok(())
+}
+
+// ❌ BAD (pure per-byte stream): no amortization.
+fn process_stream_naive(path: &str) -> std::io::Result<()> {
+    let file = std::fs::File::open(path)?;
+    for byte in std::io::Read::bytes(file) {
+        handle_byte(byte?);
+    }
+    Ok(())
+}
+
+// ✅ GOOD: streamed in buffered chunks — bounded RAM, high throughput.
+fn process_stream_batched(path: &str) -> std::io::Result<()> {
+    let file = std::fs::File::open(path)?;
+    let mut reader = BufReader::with_capacity(64 * 1024, file);
+    let mut line = String::new();
+    while reader.read_line(&mut line)? > 0 {
+        handle(line.as_bytes());
+        line.clear(); // reuse buffer (see Recycle Collections)
+    }
+    Ok(())
+}
+
+fn handle(_: &[u8]) {}
+fn handle_byte(_: u8) {}
+```
+
+> 💡 In data pipelines, **micro-batching** (stream of small batches) is often the sweet spot: enough items per batch for SIMD/compression/efficient I/O, small enough for low latency and stable memory.
+
+
+### 🗜️ Compression (CPU vs. Bandwidth / Storage Trade-off)
+
+📜 **Rule:** Compress when the cost of CPU cycles to (de)compress is lower than the cost of moving or storing the uncompressed bytes — profile both sides on realistic data.
+
+* 🚧 **When compression hurts:** Tiny payloads (header-sized), already-entropy-heavy data (encrypted, JPEG), or CPU-bound paths where the extra ALU work exceeds the I/O savings. Also avoid compressing data that must be randomly accessed byte-by-byte without an index.
+* ⚡ **When compression wins:** Network transfer, disk/SSD storage, large repetitive logs or columnar data, and wire formats between services. Prefer algorithms matched to the constraint:
+  * **Throughput / low latency:** LZ4, Snappy, Zstd at low levels.
+  * **Ratio:** Zstd high levels, Brotli, xz — accept more CPU.
+  * **Columnar / analytics:** Dictionary + bit-packing + frame-of-reference (Parquet/Arrow-style) often beats general-purpose codecs on numeric data.
+
+```rust
+// ❌ BAD: compress tiny messages — overhead exceeds savings.
+fn send_bad(socket: &mut impl std::io::Write, msg: &[u8]) -> std::io::Result<()> {
+    let compressed = zstd::encode_all(msg, 3)?; // e.g. 40-byte msg → similar size + CPU
+    socket.write_all(&compressed)
+}
+
+// ✅ GOOD: compress large buffers / batches where ratio and bandwidth matter.
+fn send_good(socket: &mut impl std::io::Write, batch: &[u8]) -> std::io::Result<()> {
+    if batch.len() < 4_096 {
+        socket.write_all(batch)?; // below threshold: send raw
+    } else {
+        let compressed = zstd::encode_all(batch, 1)?; // low level = fast
+        // optionally write a small header: uncompressed flag + length
+        socket.write_all(&compressed)?;
+    }
+    Ok(())
+}
+```
+
+> 💡 Compress *once* at the boundary (disk, network), not on every intermediate hop. Re-compressing already-compressed data wastes CPU and can increase size.
+
+
+### 📊 Sorting Algorithm Selection
+
+📜 **Rule:** Use the standard library sort for almost everything; specialize only when profiling shows sort is hot *and* your data has exploitable structure (almost-sorted, tiny keys, integers in a narrow range).
+
+| Situation | Prefer |
+| --- | --- |
+| General comparable elements | `slice::sort_unstable` (usually fastest) |
+| Need stability (equal elements keep order) | `slice::sort` |
+| Integers / floats in a tight range | Counting / radix sort |
+| Already almost sorted | Adaptive sorts (timsort-like) — std may already handle well |
+| Partial order / top-K | `select_nth_unstable` — O(N) average, no full sort |
+
+```rust
+// ✅ Default: unstable is faster when stability does not matter.
+fn sort_scores(scores: &mut [i32]) {
+    scores.sort_unstable();
+}
+
+// ✅ Top-K without full sort.
+fn top_k(mut scores: Vec<i32>, k: usize) -> Vec<i32> {
+    if k >= scores.len() {
+        scores.sort_unstable_by(|a, b| b.cmp(a));
+        return scores;
+    }
+    scores.select_nth_unstable_by(k, |a, b| b.cmp(a));
+    scores[..k].sort_unstable_by(|a, b| b.cmp(a));
+    scores.truncate(k);
+    scores
+}
+```
+
+> 💡 `sort_unstable` is typically the right default in Rust — only require stability when the problem definition needs it.
+
+
+### 🔍 Binary Search vs. Hash Lookup
+
+📜 **Rule:** Prefer `HashMap`/`HashSet` for unstructured key lookup at scale; prefer sorted `Vec` + binary search when the set is small, ordered iteration matters, or you want simpler memory layout and better cache behavior.
+
+* ⏳ **HashMap:** Average O(1) lookup, but higher constant factors (hash computation, indirection, poor locality). Best when N is large and lookups dominate.
+* 📐 **Sorted Vec + `binary_search`:** O(log N) comparisons, excellent locality, low overhead, easy serialization. Often *faster than a HashMap* for N up to a few hundred (sometimes thousands), and always simpler for static tables.
+
+```rust
+// ✅ Static table: sorted array + binary search — no heap, great cache behavior.
+static KNOWN: &[(u32, &str)] = &[(1, "a"), (2, "b"), (5, "c"), (10, "d")];
+
+fn lookup_static(id: u32) -> Option<&'static str> {
+    KNOWN.binary_search_by_key(&id, |&(k, _)| k)
+        .ok()
+        .map(|i| KNOWN[i].1)
+}
+
+// ✅ Large dynamic set: HashMap (with a fast hasher if non-adversarial).
+fn lookup_dynamic(map: &rustc_hash::FxHashMap<u32, String>, id: u32) -> Option<&str> {
+    map.get(&id).map(|s| s.as_str())
+}
+```
+
+> 💡 Measure at *your* N. For tiny sets, a linear scan can beat both.
+
 
 ### 🤖 Deterministic vs. Non-Deterministic Logic (Memoization Eligibility)
 
@@ -1015,6 +1347,153 @@ fn next_id_good(current: u32) -> u32 {
 
 ---
 
+
+## 🐧 Operating Systems, Kernels, Boot & User Space
+
+### 🥾 Boot Loaders & Early Init
+
+📜 **Rule:** Boot path length is pure latency before useful work — minimize firmware/bootloader/kernel init for devices that must start fast (embedded, serverless snapshots, appliances).
+
+* Strip unnecessary firmware probes; use parallel device init where the platform allows; prefer known-good device trees over heavy discovery when the hardware is fixed.
+
+```c
+// ❌ BAD: Serial device probing — each probe blocks on hardware timeouts,
+// so total boot time is the SUM of every device's worst-case probe latency.
+for (int i = 0; i < ndevices; i++) probe_device(&devices[i]); // blocking, one at a time
+
+// ✅ GOOD: Kick off independent probes in parallel (async or worker threads),
+// then join — total time is the SLOWEST single probe, not the sum of all.
+for (int i = 0; i < ndevices; i++) start_async_probe(&devices[i]);
+for (int i = 0; i < ndevices; i++) join_probe(&devices[i]);
+```
+
+### 🧱 Kernel vs. User Space
+
+📜 **Rule:** Cross the kernel boundary as rarely as practical on hot paths. Every syscall is a mode switch, validation, and potential scheduler decision.
+
+* **User space:** Your process address space — cheapest place to compute.
+* **Kernel:** Privileged; owns devices, page tables, scheduling. Essential for I/O, but not for pure arithmetic.
+* ⚡ Batch syscalls, use buffered I/O, `io_uring`, mmap, and user-space networking stacks only when syscall rate is the bottleneck.
+
+```rust
+// ❌ BAD: One syscall (mode switch: user → kernel → user) per chunk written.
+fn write_chunks_bad(fd: &mut std::fs::File, chunks: &[&[u8]]) -> std::io::Result<()> {
+    use std::io::Write;
+    for chunk in chunks { fd.write_all(chunk)?; } // N syscalls
+    Ok(())
+}
+
+// ✅ GOOD: writev batches many buffers into a SINGLE syscall, crossing the
+// kernel boundary once instead of N times.
+fn write_chunks_good(fd: &std::fs::File, chunks: &[std::io::IoSlice]) -> std::io::Result<usize> {
+    use std::os::unix::io::AsFd;
+    use std::io::Write;
+    (fd).write_vectored(chunks) // 1 syscall
+}
+```
+
+### ⚡ Traps, Interrupts, Exceptions & Events
+
+📜 **Rule:** Treat asynchronous control-flow transfers as expensive — they flush pipelines, disturb cache/TLB locality, and can preempt critical sections.
+
+| Mechanism | Typical cause | Optimization angle |
+| --- | --- | --- |
+| **Interrupt** | Device needs service | Minimize interrupt rate (coalescing, polling/NAPI at high PPS) |
+| **Trap / exception** | Fault, syscall, breakpoint | Avoid page faults on hot path (prefault, huge pages); fewer syscalls |
+| **Signal** | OS delivers async notification | Async-signal-safe handlers only; prefer signalfd/eventfd in event loops |
+| **Event (epoll/kqueue)** | FD readiness | Edge-triggered + nonblocking I/O; avoid thundering herds |
+
+```rust
+// ✅ Event-driven: one thread waits on many FDs instead of one thread per connection.
+// (Conceptual — real code uses mio/tokio.)
+fn event_loop_sketch(fds: &[i32]) {
+    // epoll_wait / kqueue / IOCP → dispatch readable/writable events
+    let _ = fds;
+}
+```
+
+### 🔄 Processes vs. Threads
+
+📜 **Rule:** Threads share an address space (cheap communication, careful sync); processes isolate memory (safer, more overhead to spawn and to IPC).
+
+| | **Process** | **Thread** |
+| --- | --- | --- |
+| Address space | Isolated | Shared |
+| Spawn cost | High (new page tables, FDs) | Lower |
+| Crash isolation | Strong | Weak (one bad thread can corrupt all) |
+| Communication | IPC (pipes, sockets, shm) | Shared memory + atomics/locks |
+| Best for | Isolation, different privileges, language runtimes | Fine-grained parallelism inside one app |
+
+```rust
+// 🧵 Thread: cheap to spawn, shares the parent's address space directly —
+// no new page tables, no fd table copy.
+let handle = std::thread::spawn(|| { /* work using shared memory */ });
+handle.join().unwrap();
+
+// 🧱 Process: std::process::Command forks + execs a NEW address space —
+// pay for page-table setup and isolation, but a crash can't corrupt the parent.
+let status = std::process::Command::new("worker_binary").status().unwrap();
+```
+
+### 📡 IPC (Inter-Process Communication)
+
+📜 **Rule:** Pick IPC by bandwidth and latency needs — don’t use JSON-over-TCP between two processes on the same machine if shared memory fits.
+
+| Mechanism | Speed | Notes |
+| --- | --- | --- |
+| Shared memory + sync | Fastest | Explicit synchronization required |
+| Unix domain sockets | Fast | Good default local RPC |
+| Pipes / FIFOs | Fast | Simple byte streams |
+| TCP localhost | Medium | Extra stack overhead |
+| Message queues | Medium | Structured; size limits |
+
+```rust
+// ❌ BAD: TCP loopback for two local processes pays full network-stack overhead
+// (socket buffers, TCP state machine) for data that never leaves the machine.
+// let stream = TcpStream::connect("127.0.0.1:9000")?;
+
+// ✅ GOOD: Shared memory — both processes map the same region; no kernel copy
+// on each message, just a memory write + a lightweight sync primitive.
+use shared_memory::{ShmemConf};
+let shmem = ShmemConf::new().size(4096).create().unwrap(); // mapped by both processes
+```
+
+### 🔀 I/O Multiplexing
+
+📜 **Rule:** Never block one thread per connection at scale — multiplex readiness (`epoll`/`kqueue`/`IOCP`) or use async runtimes built on them.
+
+* **select/poll:** Fine for tens of FDs; O(n) per wait.
+* **epoll/kqueue/IOCP:** Scale to hundreds of thousands of FDs.
+* **Async runtimes:** Tokio, async-std — multiplex tasks on fewer OS threads.
+
+```rust
+// ❌ BAD: One OS thread per connection — 100k connections = 100k threads,
+// each with its own stack (MBs of memory) and scheduler overhead.
+// for conn in incoming { std::thread::spawn(move || handle(conn)); }
+
+// ✅ GOOD: Multiplex all connections on a small thread pool via epoll/kqueue,
+// so idle connections cost almost nothing while waiting for readiness.
+#[tokio::main]
+async fn serve(listener: tokio::net::TcpListener) {
+    loop {
+        let (socket, _) = listener.accept().await.unwrap(); // one thread, many conns
+        tokio::spawn(async move { handle(socket).await });
+    }
+}
+# async fn handle(_s: tokio::net::TcpStream) {}
+```
+
+### 🔐 Synchronization Across Processes
+
+📜 **Rule:** Process-shared synchronization must use process-shared primitives (`mutex` with shared memory, file locks, semaphores) — thread-only mutexes do not work across address spaces.
+
+```rust
+// Threads: std::sync::Mutex is enough (same address space).
+// Processes: use shared-memory mutexes (e.g. parking_lot with raw fd),
+// flock, or message-passing so you never share locks across processes.
+```
+
+
 ---
 
 ## 🧵 Concurrency, Parallelism & Async
@@ -1048,6 +1527,101 @@ fn process_parallel(data: &mut [i32]) {
 }
 
 ```
+
+
+### 🧵 Concurrency with Threads (Spawn & Join Overhead)
+
+📜 **Rule:** Prefer a fixed-size thread pool (or work-stealing pool) over spawning a fresh OS thread for every unit of work.
+
+* 🚧 **The Thread-Spawn Overhead:** Creating an OS thread requires a kernel call, a new stack allocation (often 1–8 MB of virtual address space), TLS setup, and scheduler registration. Doing this per request or per tiny task dwarfs the actual work. Joining (waiting for) many short-lived threads also serializes completion and amplifies context-switch cost.
+* 🚀 **The Thread-Pool Technique:** Spawn a small number of long-lived worker threads once (ideally ≈ number of physical cores), and push work onto a shared queue. Amortize spawn cost to near zero; keep stacks warm in the cache; let the OS schedule a stable set of runnable threads.
+
+```rust
+use std::sync::mpsc;
+use std::thread;
+
+// ❌ BAD: One OS thread per item — spawn cost dominates tiny work.
+fn process_bad(items: Vec<i32>) {
+    let handles: Vec<_> = items.into_iter().map(|x| {
+        thread::spawn(move || x * 2)
+    }).collect();
+    for h in handles { let _ = h.join(); }
+}
+
+// ✅ GOOD: Fixed pool of workers; work is enqueued, not spawned.
+fn process_good(items: Vec<i32>, num_workers: usize) {
+    let (tx, rx) = mpsc::channel();
+    let rx = std::sync::Arc::new(std::sync::Mutex::new(rx));
+    let mut handles = Vec::new();
+    for _ in 0..num_workers {
+        let rx = rx.clone();
+        handles.push(thread::spawn(move || {
+            while let Ok(x) = rx.lock().unwrap().recv() {
+                let _: i32 = x * 2; // real work here
+            }
+        }));
+    }
+    for item in items { tx.send(item).unwrap(); }
+    drop(tx); // close channel so workers exit
+    for h in handles { let _ = h.join(); }
+}
+
+// ✅ BETTER for CPU-bound work: use rayon (work-stealing pool, no manual channels).
+fn process_best(items: &mut [i32]) {
+    use rayon::prelude::*;
+    items.par_iter_mut().for_each(|x| *x *= 2);
+}
+```
+
+> 💡 **Rule of thumb:** For I/O-bound fan-out prefer async tasks; for CPU-bound parallel work prefer a work-stealing pool (`rayon`). Raw `thread::spawn` is appropriate mainly for long-lived background services, not per-item parallelism.
+
+
+### 🔒 Thread Synchronization Strategies (Beyond a Single Mutex)
+
+📜 **Rule:** Match the synchronization primitive to the access pattern — a global `Mutex` is rarely the right default for hot shared state.
+
+| Pattern | Prefer | Why |
+| --- | --- | --- |
+| Rare writes, many reads | `RwLock` / `arc_swap` / RCU-style | Readers don't block each other |
+| Simple counters / flags | `Atomic*` | No OS sleep; pure hardware RMW |
+| Producer → consumer pipelines | Channels (`mpsc`, `crossbeam`, `flume`) | Ownership transfer, no shared mutable state |
+| Many independent shards | Sharded locks / concurrent hash maps | Reduces contention by partitioning |
+| Single owner, occasional hand-off | Message passing / actor | Eliminates shared state entirely |
+
+* 🚧 **The Coarse-Lock Pitfall:** One big `Mutex` around a large structure forces *every* thread that touches *any* field to serialize. Contended locks put waiters to sleep (context switch) and destroy scalability past a few cores.
+* ⚡ **Fine-Grained & Lock-Free Techniques:**
+  * **Shard** the data (e.g. `Vec<Mutex<Shard>>` keyed by hash) so most operations hit different locks.
+  * **Prefer atomics** for single-word updates (`fetch_add`, `compare_exchange`).
+  * **Prefer channels** when you can reframe the problem as ownership transfer instead of shared mutation.
+  * **`parking_lot`** mutexes are typically faster than `std::sync::Mutex` under contention (userspace spinning before park).
+
+```rust
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::sync::{Arc, Mutex, RwLock};
+
+// ❌ BAD: One mutex for the entire map — every insert/lookup fights.
+fn counter_bad(map: &Mutex<std::collections::HashMap<u32, u64>>, key: u32) {
+    *map.lock().unwrap().entry(key).or_insert(0) += 1;
+}
+
+// ✅ GOOD (read-heavy): RwLock allows concurrent readers.
+fn lookup_good(map: &RwLock<std::collections::HashMap<u32, u64>>, key: u32) -> Option<u64> {
+    map.read().unwrap().get(&key).copied()
+}
+
+// ✅ GOOD (hot counter): pure atomic — no lock, no sleep.
+fn increment_good(counter: &AtomicU64) {
+    counter.fetch_add(1, Ordering::Relaxed);
+}
+
+// ✅ GOOD (pipeline): ownership moves through a channel — no shared mutable state.
+fn pipeline_good(tx: &std::sync::mpsc::Sender<Vec<u8>>, buf: Vec<u8>) {
+    tx.send(buf).unwrap(); // receiver owns the buffer after this
+}
+```
+
+> ⚠️ **Ordering matters:** `Relaxed` is fine for pure statistics; use `Acquire`/`Release` (or `SeqCst` when in doubt) when one atomic publishes data that another thread must observe. Wrong ordering is a silent data race under the memory model.
+
 
 ### ⏳ Synchronous vs. Asynchronous & Event Blocking
 
@@ -1233,6 +1807,72 @@ fn process_good(data: &[f64]) -> Vec<f64> {
     data.par_iter().map(|x| x * 2.0).collect()
 }
 ```
+
+---
+
+
+### 🧵 Thread-Local Storage (Avoiding Shared-State Contention)
+
+📜 **Rule:** When each thread can own its own buffer, counter, or PRNG, use thread-local storage instead of a shared `Mutex`-guarded resource.
+
+* 🚧 **The Shared-Buffer Bottleneck:** A global reusable buffer protected by a lock serializes all threads and bounces the cache line between cores (see *False Sharing* and *Lock Contention*).
+* ⚡ **The TLS Technique:** `thread_local!` gives each thread a private instance — zero synchronization on the fast path. Ideal for per-thread scratch buffers, RNGs, and statistics that are merged only at the end.
+
+```rust
+use std::cell::RefCell;
+
+thread_local! {
+    static SCRATCH: RefCell<Vec<u8>> = RefCell::new(Vec::with_capacity(4096));
+}
+
+fn format_into_scratch(data: &[u8]) -> usize {
+    SCRATCH.with(|cell| {
+        let mut buf = cell.borrow_mut();
+        buf.clear();
+        buf.extend_from_slice(data);
+        // ... process ...
+        buf.len()
+    })
+}
+```
+
+> 💡 TLS is not free at first access (lazy init) and should not replace explicit context parameters when the value should flow through the call graph for testability.
+
+
+### 📡 Signal Handling (Async-Signal-Safety & Hot-Path Interference)
+
+📜 **Rule:** Keep signal handlers minimal — set a flag or write to a self-pipe — and never do heavy work, allocate, or take locks inside them.
+
+* 🚧 **The Signal-Handler Hazard:** A signal (e.g. `SIGINT`, `SIGTERM`, `SIGALRM`) can interrupt a thread *between any two instructions*. Only a small set of async-signal-safe functions may be called from a handler. Allocating, taking a `Mutex`, or calling into most of the standard library risks deadlock or heap corruption. Even a "harmless" `println!` is unsafe in a handler.
+* ⚡ **The Flag / Self-Pipe Technique:** The handler only stores to an atomic flag (or writes one byte to a pipe/eventfd). The main event loop or a dedicated thread polls that flag / readability and performs the real work in normal, safe context.
+
+```rust
+use std::sync::atomic::{AtomicBool, Ordering};
+
+static SHUTDOWN: AtomicBool = AtomicBool::new(false);
+
+// ✅ GOOD: handler only flips an atomic — async-signal-safe.
+fn install_handler() {
+    ctrlc::set_handler(|| {
+        SHUTDOWN.store(true, Ordering::SeqCst);
+    }).expect("Error setting Ctrl-C handler");
+}
+
+fn main_loop() {
+    install_handler();
+    while !SHUTDOWN.load(Ordering::SeqCst) {
+        // normal work; shutdown is observed on the next iteration
+        do_work();
+    }
+    graceful_cleanup();
+}
+
+fn do_work() { /* ... */ }
+fn graceful_cleanup() { /* flush, close sockets, etc. */ }
+```
+
+> 💡 On servers, prefer the runtime's graceful-shutdown mechanism (`tokio::signal`, systemd socket activation) over raw POSIX signal handlers when possible — it integrates with the event loop and avoids async-signal-safety constraints entirely.
+
 
 ---
 
@@ -1452,7 +2092,6 @@ fn check_username_good(name: &str, bloom_filter: &BloomFilter) -> bool {
 
 ---
 
----
 
 ## 🏛️ Data Layout & Memory Footprint
 
@@ -1544,45 +2183,78 @@ fn update_physics_good(entities: &mut Entities) {
 
 ```
 
-### 📏 Struct Field Reordering (Struct Padding & Alignment)
 
-📜 **Rule:** Though Rust handles this automatically by default, understand how field ordering affects memory size. If you use `#[repr(C)]` for FFI, order your fields from largest to smallest.
+### 🔥 Hot/Cold Data Splitting
 
-* 🚧 **The Struct-Padding Overhead:** CPUs require data to be aligned in memory. A 64-bit integer (`u64`) must start at a multiple of 8. If you place a 1-byte `u8` right before a `u64`, the compiler must inject 7 invisible "padding" bytes between them. This bloats your struct size, causing fewer structs to fit in the CPU cache.
-* 🚀 **The Field-Reordering Technique:** Sorting your fields by size (largest to smallest) perfectly packs the data without wasting invisible bytes.
+📜 **Rule:** Split frequently accessed fields from rarely accessed ones into separate structures (or separate arrays) so hot data stays dense in cache.
 
-**Diagram: Memory Alignment & Invisible Padding**
+* 🚧 **The Mixed-Temperature Pitfall:** A `User { id, email, last_login, huge_profile_blob, audit_log_ptr }` loaded in a hot authentication loop pulls cold profile/audit data into the cache line, evicting useful hot fields of *other* users.
+* ⚡ **The Split Technique:** Keep a dense `UserHot { id, email_hash, last_login }` array for the common path; park bulky or rare fields in a side table keyed by id. Related to SoA, but driven by *access frequency* rather than field type alone.
+
+```rust
+// ❌ BAD: cold blob rides along on every hot lookup.
+struct UserBad {
+    id: u64,
+    login_count: u32,
+    profile_html: String,      // rarely needed, large
+    audit_trail: Vec<String>,  // almost never in hot path
+}
+
+// ✅ GOOD: hot path touches only hot struct; cold fetched on demand.
+struct UserHot {
+    id: u64,
+    login_count: u32,
+}
+struct UserCold {
+    profile_html: String,
+    audit_trail: Vec<String>,
+}
+
+fn bump_login(hot: &mut [UserHot], idx: usize) {
+    hot[idx].login_count += 1; // dense, cache-friendly
+}
+```
+
+> 💡 Profile field access (or reason from the call graph). If a field is used on &lt;5% of iterations of a hot loop, it is a candidate for cold storage.
+
+
+### 📏 Struct Padding, Field Reordering & External Padding
+
+📜 **Rule:** Order fields largest-to-smallest (especially under `#[repr(C)]`) to cut internal padding. Remember *trailing* (external) padding: `size_of::<T>()` is rounded up to a multiple of alignment, so padding repeats for every array element.
+
+* 🚧 **Internal padding:** A `u8` before a `u64` forces up to 7 wasted bytes so the `u64` stays aligned.
+* 🚧 **External / stride padding:** In `[T; N]`, each element’s size includes trailing padding — cache density drops for arrays of mis-sized structs.
+* ⚡ **Techniques:** Sort fields by size; prefer SoA for hot field scans; avoid `#[repr(packed)]` unless you control every access (unaligned loads). Assert `size_of`/`align_of` for FFI.
 
 ```text
-❌ BAD ORDER (u8, u64, u8): Size = 24 bytes!
-[ u8 (1b) | ... 7 bytes padding ... ]
-[ u64 (8b)                          ]
-[ u8 (1b) | ... 7 bytes padding ... ]
+❌ BAD ORDER (u8, u64, u8): often 24 bytes
+[ u8 | pad×7 | u64 | u8 | pad×7 ]
 
-✅ GOOD ORDER (u64, u8, u8): Size = 16 bytes!
-[ u64 (8b)                          ]
-[ u8 (1b) | u8 (1b) | 6b padding    ]
-
+✅ GOOD ORDER (u64, u8, u8): 16 bytes
+[ u64 | u8 | u8 | pad×6 ]
 ```
 
 ```rust
-// ❌ BAD: If using #[repr(C)], this struct takes 24 bytes due to 14 bytes of invisible padding!
 #[repr(C)]
 struct NetworkPacketBad {
-    is_active: u8,   // 1 byte (+ 7 bytes padding)
-    timestamp: u64,  // 8 bytes
-    status_code: u8, // 1 byte (+ 7 bytes padding)
+    is_active: u8,
+    timestamp: u64,
+    status_code: u8,
 }
 
-// ✅ GOOD: Grouping largest to smallest packs the data efficiently into 16 bytes.
 #[repr(C)]
 struct NetworkPacketGood {
-    timestamp: u64,  
-    is_active: u8,   
-    status_code: u8, 
+    timestamp: u64,
+    is_active: u8,
+    status_code: u8,
 }
 
+fn show() {
+    println!("bad:  {}", std::mem::size_of::<NetworkPacketBad>());
+    println!("good: {}", std::mem::size_of::<NetworkPacketGood>());
+}
 ```
+
 
 ### 📦 Data Layout & Enum Boxing (Oversized Enum Variants)
 
@@ -1646,6 +2318,48 @@ fn check_permissions(user_flags: u8) -> bool {
 ```
 
 > **💡 Clippy Lint:** `clippy::struct_excessive_bools`
+
+
+### ◀️ Logical vs. Arithmetic Bit Shifts
+
+📜 **Rule:** Use logical shifts for unsigned data and bit patterns; use arithmetic shifts only when you intentionally want sign extension on signed integers.
+
+* 🖥️ **Hardware difference:**
+  * **Logical shift** (`>>` on unsigned, or explicit logical): vacated bits are filled with **zeros**. Maps to `SHR`/`SHL` on x86.
+  * **Arithmetic right shift** (`>>` on signed integers): vacated bits are filled with the **sign bit** (1 if negative). Maps to `SAR` on x86 — preserves signed magnitude when dividing by powers of two.
+* 🚧 **The Sign-Extension Pitfall:** Applying an arithmetic right shift to a value you meant as a pure bit pattern (hashes, packed flags, fixed-point with manual scaling) injects 1-bits and corrupts the result. Conversely, a logical shift on a negative signed value does *not* equal division by two for negative numbers in the usual mathematical sense.
+* ⚡ **The Explicit-Type Technique:** Prefer unsigned types (`u32`, `u64`) for bit manipulation so `>>` is always logical. For signed division by a power of two, rely on `/` (compiler emits correct arithmetic shift or fixup) or document the arithmetic-shift intent clearly.
+
+```rust
+// Logical right shift (unsigned): zeros enter from the left.
+fn logical_shr(x: u32, n: u32) -> u32 {
+    x >> n  // e.g. 0b1111_0000 >> 2 == 0b0011_1100
+}
+
+// Arithmetic right shift (signed): sign bit is replicated.
+fn arithmetic_shr(x: i32, n: u32) -> i32 {
+    x >> n  // e.g. -16_i32 >> 2 == -4  (sign-extended)
+}
+
+// ❌ BAD: treating a bit pattern as signed accidentally sign-extends.
+fn extract_flags_bad(packed: i32) -> i32 {
+    packed >> 24  // if high bit is set, result is negative / filled with 1s
+}
+
+// ✅ GOOD: use unsigned for pure bit extraction.
+fn extract_flags_good(packed: u32) -> u32 {
+    packed >> 24  // high bits become zeros; pure field extract
+}
+
+// ✅ GOOD: intentional signed divide-by-power-of-two.
+fn div_by_4(x: i32) -> i32 {
+    x >> 2  // arithmetic shift; equivalent to x / 4 for two's-complement toward -∞
+            // (note: Rust's `/` truncates toward zero — not identical for negatives)
+}
+```
+
+> 💡 Compilers already turn `x / 2` / `x * 4` into shifts when safe; write the arithmetic you mean and let the optimizer choose the instruction unless you are in a bit-twiddling hot path where the distinction is semantic, not just performance.
+
 
 ### 🏷️ String Interning / Flyweight Pattern (Duplicate String Storage)
 
@@ -1837,9 +2551,104 @@ fn record_request_good() {
 
 ---
 
+
+### 🧬 Heterogeneous Data Structures, Unions & Enums
+
+📜 **Rule:** When elements differ in shape, use a sum type (`enum`) with dense packing; reach for `union` only when you need C-compatible overlay or proven space savings and are willing to manage safety.
+
+* **Enum (sum type):** Safe tagged union — compiler tracks the active variant. Ideal for heterogeneous collections (AST nodes, messages, shapes).
+* **Union:** Untagged; you must know which field is active. Useful for FFI and compact wire overlays; easy to misuse.
+* **Heterogeneous containers:** `Vec<Enum>` beats `Vec<Box<dyn Trait>>` for closed sets (see *OOP Costs* / static dispatch). For open plugin sets, trait objects may be justified.
+
+```rust
+// ✅ Enum: safe heterogeneous list, dense, match-dispatch.
+enum Node {
+    Int(i64),
+    Float(f64),
+    Text(String),
+    Pair(Box<Node>, Box<Node>),
+}
+
+fn eval(n: &Node) -> f64 {
+    match n {
+        Node::Int(i) => *i as f64,
+        Node::Float(f) => *f,
+        Node::Text(s) => s.parse().unwrap_or(0.0),
+        Node::Pair(a, b) => eval(a) + eval(b),
+    }
+}
+
+// Union: C interop / manual tag (unsafe to read wrong field).
+#[repr(C)]
+union Scalar {
+    i: i64,
+    f: f64,
+}
+```
+
+> 💡 Box large variants to keep the enum small (see *Enum Boxing*).
+
+
+### 🪄 Macros (Codegen vs. Runtime Cost)
+
+📜 **Rule:** Use macros to eliminate *repetitive boilerplate and runtime work* (generate match arms, lookup tables, parsers) — not to hide heavy runtime logic that should be a plain function.
+
+* ⚡ **Compile-time wins:** `macro_rules!` / proc macros can expand to specialized code paths, embed data, or generate `const` tables — paying cost at compile time instead of runtime.
+* 🚧 **Costs:** Long compile times, poor error messages, harder debugging, binary-size growth if expansions duplicate large bodies. Prefer generics/const generics when they express the same idea more clearly.
+* ⚡ **Inline const data:** Include binary assets with `include_bytes!` / `include_str!` instead of loading at runtime when size is acceptable.
+
+```rust
+// ✅ Macro generates specialized code at compile time.
+macro_rules! max3 {
+    ($a:expr, $b:expr, $c:expr) => {{
+        let x = $a;
+        let y = $b;
+        let z = $c;
+        if x >= y && x >= z { x } else if y >= z { y } else { z }
+    }};
+}
+
+// ✅ Embed read-only data — no filesystem hit at startup.
+static LICENSE: &str = include_str!("../LICENSE");
+```
+
+
 ---
 
 ## 🎛️ Abstraction & Dispatch Costs
+
+
+### 👉 Function Pointers vs. Generics vs. Closures
+
+📜 **Rule:** Prefer generics/`impl Fn` for hot call sites (static dispatch, inlining); use function pointers (`fn(...)`) for thin dynamic callbacks and FFI; avoid `Box<dyn Fn>` in tight loops.
+
+* 🖥️ **Function pointer (`fn(i32) -> i32`):** Single address, no captured state, cheap to pass, but the call is indirect → blocks inlining unless devirtualized.
+* 🧱 **`dyn Fn` / trait object:** Indirect call + possible heap allocation for the closure — flexible, slower in hot paths.
+* ⚡ **Generic `F: Fn(...)`:** Monomorphized, often fully inlined — best for hot callbacks (sort comparators, iterator adapters).
+
+```rust
+// ❌ SLOWER in a tight loop: indirect call through pointer.
+fn apply_all_ptr(data: &mut [i32], f: fn(i32) -> i32) {
+    for x in data { *x = f(*x); }
+}
+
+// ✅ FAST: monomorphized — LLVM can inline `F`.
+fn apply_all_gen<F: Fn(i32) -> i32>(data: &mut [i32], f: F) {
+    for x in data { *x = f(*x); }
+}
+
+// ✅ FFI / table of commands: function pointers are appropriate.
+static OPS: &[fn(i32, i32) -> i32] = &[add, sub];
+fn add(a: i32, b: i32) -> i32 { a + b }
+fn sub(a: i32, b: i32) -> i32 { a - b }
+
+fn eval_op(op: usize, a: i32, b: i32) -> i32 {
+    OPS[op](a, b)
+}
+```
+
+> 💡 Closures that capture environment cannot coerce to `fn` pointers — use generics or `dyn Fn`. For hot paths, generics almost always win.
+
 
 ### 🎛️ Static vs. Dynamic Dispatch (Virtual Method Table Indirection)
 
@@ -1877,6 +2686,181 @@ fn render_good(item: &impl Render) {
 
 ---
 
+
+### 💥 Panic & Exception Costs vs. `Result`
+
+📜 **Rule:** Use `Result`/`Option` for expected failure paths; reserve panics for truly unrecoverable bugs. In hot code, avoid patterns that can panic (bounds checks you could prove, `unwrap` on fallible I/O).
+
+* 🚧 **The Panic Overhead:** A panic unwinds the stack (or aborts), runs destructors, and may allocate for the panic payload. It is far more expensive than returning `Err(...)`. Even the *possibility* of panic can inhibit inlining and force extra cleanup code in the cold path (though `#[cold]` helps).
+* ⚡ **Technique:** Prefer `get` / `get_mut` / `checked_*` / `Result`-returning APIs in library boundaries; use `unwrap`/`expect` only for invariants you can prove, or in tests/examples. For binaries that never catch panics, `panic = "abort"` shrinks code size (see *Binary Size Reduction*).
+
+```rust
+// ❌ BAD: panics on missing key — expensive and turns a normal case into control-flow via unwind.
+fn lookup_bad(map: &std::collections::HashMap<u32, u32>, key: u32) -> u32 {
+    map[&key] // panics if absent
+}
+
+// ✅ GOOD: explicit Result/Option — cheap branch, no unwind tables on the success path.
+fn lookup_good(map: &std::collections::HashMap<u32, u32>, key: u32) -> Option<u32> {
+    map.get(&key).copied()
+}
+```
+
+> 💡 In FFI, never allow a panic to unwind into C — use `catch_unwind` at the boundary or `panic = "abort"`.
+
+
+### 🧱 Object-Oriented Programming Costs (Inheritance & Virtual Methods)
+
+📜 **Rule:** Treat classical OOP (deep inheritance, virtual methods, heap-allocated objects) as a *design* tool, not a performance default — each layer of indirection and dynamic dispatch has a measurable cost.
+
+* 🚧 **The OOP Overhead Stack:**
+  * **Virtual methods** → VTable lookup + blocked inlining (see *Static vs. Dynamic Dispatch*).
+  * **Heap objects** → allocation, pointer chasing, poor cache locality vs. contiguous values.
+  * **Inheritance / subtype polymorphism** → objects often carry a hidden vptr; fields from base + derived scatter related data; downcasts need RTTI or `dyn Any`-style checks.
+  * **Encapsulation via getters** → trivial getters can be inlined, but virtual getters or cross-crate accessors often are not.
+* 🚀 **Data-Oriented / Composition Alternatives:** Prefer composition over inheritance, contiguous arrays of plain data (SoA), and static dispatch via generics/enums/`enum` dispatch. When you need heterogeneous collections, consider an enum of variants (sum type) instead of a trait object — the compiler can still switch and often devirtualize.
+
+```rust
+// ❌ BAD: classical OOP — heap + vtable on every call.
+trait Shape { fn area(&self) -> f64; }
+struct Circle { r: f64 }
+impl Shape for Circle { fn area(&self) -> f64 { std::f64::consts::PI * self.r * self.r } }
+struct Rect { w: f64, h: f64 }
+impl Shape for Rect { fn area(&self) -> f64 { self.w * self.h } }
+
+fn total_area_bad(shapes: &[Box<dyn Shape>]) -> f64 {
+    shapes.iter().map(|s| s.area()).sum() // indirect call per element, no inlining
+}
+
+// ✅ GOOD: enum dispatch — contiguous, monomorphizable, inlinable.
+enum ShapeEnum {
+    Circle { r: f64 },
+    Rect { w: f64, h: f64 },
+}
+impl ShapeEnum {
+    fn area(&self) -> f64 {
+        match self {
+            ShapeEnum::Circle { r } => std::f64::consts::PI * r * r,
+            ShapeEnum::Rect { w, h } => w * h,
+        }
+    }
+}
+
+fn total_area_good(shapes: &[ShapeEnum]) -> f64 {
+    shapes.iter().map(|s| s.area()).sum() // direct calls, optimizer can inline + vectorize
+}
+```
+
+> 💡 Inheritance is not free abstraction — it is a permanent tax on layout and dispatch. Use it when the domain model truly needs open extension; otherwise prefer closed enums and generics.
+
+
+---
+
+
+### 📝 Logging, Tracing & Observability Overhead
+
+📜 **Rule:** Log and trace the *minimum* needed for operations; never format expensive strings on a disabled level; sample high-volume traces.
+
+* 🚧 **The observability tax:** Synchronous logging to disk on every request can dominate latency. String formatting allocates; holding locks while writing serializes threads.
+* ⚡ **Techniques:**
+  * Guard with level checks (`log::log_enabled!`) before building strings.
+  * Async/batch appenders; structured logging over ad-hoc format strings.
+  * Trace sampling (e.g. 1% of requests) with always-on errors.
+  * Bound cardinality of metric labels (no raw user IDs as label values).
+
+```rust
+// ❌ BAD: formats even when debug is off (depending on macro — still easy to mess up manually).
+fn handle_bad(user: &str, data: &[u8]) {
+    eprintln!("user={} bytes={}", user, expensive_hex(data));
+}
+
+// ✅ GOOD: gate expensive work on level / sampling.
+fn handle_good(user: &str, data: &[u8]) {
+    if log::log_enabled!(log::Level::Debug) {
+        log::debug!(target: "req", "user={user} bytes={}", data.len());
+    }
+}
+
+fn expensive_hex(_: &[u8]) -> String { String::new() }
+```
+
+
+### 📥 Loading Code & Data (Startup Path)
+
+📜 **Rule:** Defer work that is not needed to serve the first request — lazy-init heavy modules, load configs on demand, and prefer memory-mapping large read-only assets.
+
+* ⚡ **Lazy init:** `OnceLock` / `std::sync::Once` for global tables.
+* ⚡ **mmap** large static assets instead of `read` into a giant `Vec`.
+* ⚡ **Parallel load** of independent resources during startup when it reduces time-to-ready.
+* 🚧 **Avoid:** loading every plugin, model, and locale before binding the listen socket in latency-sensitive services.
+
+```rust
+use std::sync::OnceLock;
+
+static TABLE: OnceLock<Vec<u32>> = OnceLock::new();
+
+fn get_table() -> &'static Vec<u32> {
+    TABLE.get_or_init(|| {
+        // expensive build once, on first use
+        (0..10_000).map(|i| i * i).collect()
+    })
+}
+```
+
+
+### 🖼️ GUI & Interactive UI Performance
+
+📜 **Rule:** Keep the UI thread free — never do heavy work on the event/render thread; update only dirty regions; target stable frame budgets (e.g. 16 ms for 60 Hz).
+
+* 🚧 **Jank sources:** Sync I/O on UI thread, layout thrashing, overdraw, allocating per frame, unbounded list rendering without virtualization.
+* ⚡ **Techniques:**
+  * Background threads/async for load and compute; marshal results back to UI thread.
+  * Virtualized lists (only widgets for visible rows).
+  * Invalidate/dirty rectangles instead of full redraws when the toolkit allows.
+  * Avoid per-frame allocations; reuse paths/buffers.
+  * Debounce high-frequency input (mouse move, search typing).
+
+```rust
+// ❌ BAD: Blocking network call directly on the UI/event thread — the whole
+// UI freezes (no repaint, no input handling) until the request returns.
+fn on_click_bad() {
+    let data = fetch_from_network(); // blocks event loop for the full round-trip
+    render(data);
+}
+
+// ✅ GOOD: Offload to a background thread/task, marshal the result back to
+// the UI thread when ready — the UI stays responsive at 60fps throughout.
+fn on_click_good(ui_sender: std::sync::mpsc::Sender<Vec<u8>>) {
+    std::thread::spawn(move || {
+        let data = fetch_from_network();
+        let _ = ui_sender.send(data); // UI thread picks this up and renders
+    });
+}
+# fn fetch_from_network() -> Vec<u8> { vec![] }
+# fn render(_: Vec<u8>) {}
+```
+
+### 🔌 Drivers & Peripherals
+
+📜 **Rule:** Talk to devices in bulk, with interrupt coalescing or polling at high rate; avoid round-tripping userspace↔driver per tiny operation.
+
+* Batch DMA transfers; prefer larger buffers.
+* At very high packet/event rates, busy-polling can beat interrupts (latency vs power trade-off).
+* Userspace drivers / kernel-bypass (DPDK, SPDK) only when the kernel networking/storage path is proven insufficient.
+* Don’t spin in tight userspace loops waiting on device registers without understanding power and scheduling impact.
+
+```c
+// ❌ BAD: One DMA transfer + interrupt per tiny record — each round trip pays
+// interrupt latency and driver overhead, dwarfing the actual transfer time.
+for (int i = 0; i < n_records; i++) dma_transfer(&records[i], sizeof(records[i]));
+
+// ✅ GOOD: Batch many records into one large DMA transfer — a single
+// interrupt/completion services the whole batch instead of n_records of them.
+dma_transfer(records, n_records * sizeof(records[0]));
+```
+
+---
+
 ## 💾 I/O Optimizations
 
 ### 🚿 Buffered I/O (Per-Write Syscall Overhead)
@@ -1903,6 +2887,61 @@ fn write_lines_good(file: File, lines: &[String]) -> std::io::Result<()> {
     writer.flush() // Ensure the final partial buffer is written
 }
 ```
+
+
+### ⚙️ Syscall Batching & `io_uring` (Submission Overhead)
+
+📜 **Rule:** When you issue thousands of small I/O operations per second, batch them (or use `io_uring`) so you pay kernel transition cost once per batch instead of once per operation.
+
+* 🚧 **The Syscall Tax:** Each `read`/`write`/`recv`/`send` is a user→kernel mode switch, argument copy, and scheduler interaction. At high QPS this dominates.
+* ⚡ **Techniques:**
+  * **Buffered I/O** (already covered) batches *data*.
+  * **`writev`/`readv` (vectored I/O)** batches multiple buffers in one syscall.
+  * **`io_uring`** (Linux) submits many operations via a shared ring with minimal syscalls (sometimes zero with polling mode).
+  * **Network:** connection pooling, pipelining, HTTP/2 multiplexing — fewer connections and round-trips.
+
+```rust
+use std::io::{self, Write};
+use std::fs::File;
+
+// ✅ Vectored write: one syscall for many buffers.
+fn write_parts(file: &mut File, header: &[u8], body: &[u8]) -> io::Result<()> {
+    // writev equivalent via IoSlice
+    let bufs = [std::io::IoSlice::new(header), std::io::IoSlice::new(body)];
+    file.write_vectored(&bufs)?;
+    Ok(())
+}
+```
+
+> 💡 For extreme Linux server I/O, evaluate `tokio-uring` / `glommio` / `io-uring` crates. Complexity is higher; measure against plain buffered async I/O first.
+
+
+### 🔌 Connection Pooling & Socket Options
+
+📜 **Rule:** Reuse expensive remote connections (DB, HTTP, TCP) via a pool; tune socket options only after measuring — wrong options can hurt.
+
+* 🚧 **The Handshake Cost:** TLS + TCP handshake can take tens to hundreds of milliseconds. Opening a new connection per request destroys throughput and latency.
+* ⚡ **Pool Technique:** Keep a bounded pool of live connections; check out, use, return. Pair with timeouts, health checks, and backoff. For sockets: `TCP_NODELAY` disables Nagle when you need low latency for small messages; keep-alives detect dead peers; buffer sizes matter for bulk transfer.
+
+```rust
+// Conceptual pattern — real pools: bb8, deadpool, r2d2, hyper client pools.
+struct Pool<C> {
+    // inner: channel or free-list of connections
+    _marker: std::marker::PhantomData<C>,
+}
+
+impl<C> Pool<C> {
+    fn with_conn<R>(&self, f: impl FnOnce(&mut C) -> R) -> R {
+        // 1. check out connection (or create under limit)
+        // 2. run f
+        // 3. return to pool (or drop if unhealthy)
+        todo!()
+    }
+}
+```
+
+> 💡 Application-level pooling almost always beats relying on the remote service to accept unlimited new connections. Cap pool size to protect both sides.
+
 
 ### 💽 Memory-Mapped Files (Kernel-to-User Buffer Copying)
 
@@ -1933,7 +2972,420 @@ fn read_massive_file_good() {
 
 ---
 
+
+### 🌐 Choosing Network Layers for Speed
+
+📜 **Rule:** Use the highest-level protocol that meets your latency/throughput goals — drop down a layer only when profiling shows the upper layer is the bottleneck.
+
+| Layer | Examples | When it wins |
+| --- | --- | --- |
+| **Application RPC** | gRPC, HTTP/JSON | Developer speed, universality |
+| **HTTP/2, HTTP/3** | Multiplexing, HPACK/QPACK | Many small requests, lossy networks (QUIC) |
+| **Raw TCP** | Custom framing | Need full control; still congestion-controlled |
+| **UDP** | Custom or QUIC underneath | Latency, multicast; you own reliability |
+| **Unix domain / shm** | Local IPC | Same machine — skip the network stack |
+
+* ⚡ Same-host: prefer UDS or shared memory over TCP localhost.
+* ⚡ Cross-region: compress, batch, and reduce chatty round-trips (see *N+1*).
+* ⚡ TLS: session resumption / 0-RTT where safe; connection reuse is mandatory for performance.
+
+```rust
+// ❌ BAD: TCP over loopback for two processes on the SAME machine — pays full
+// TCP/IP stack overhead (checksums, congestion control) for zero network hop.
+// let s = std::net::TcpStream::connect("127.0.0.1:9000")?;
+
+// ✅ GOOD: Unix domain socket — skips the IP stack entirely, just a kernel
+// pipe between two local endpoints. Same API, far less overhead for same-host.
+use std::os::unix::net::UnixStream;
+fn connect_local() -> std::io::Result<UnixStream> {
+    UnixStream::connect("/tmp/app.sock")
+}
+```
+
+### 📄 Data Formats, Serialization & Endianness
+
+📜 **Rule:** Pick format by read/write pattern — not by popularity. On hot paths prefer compact binary over text; fix endianness explicitly at the boundary; avoid re-serializing the same object repeatedly.
+
+| Format | Strength | Weakness |
+| --- | --- | --- |
+| JSON / XML | Human-readable, ubiquitous | Slow parse, large, allocates |
+| CSV | Simple tables | Types ambiguous, escaping pain |
+| Protobuf / FlatBuffers / Cap’n Proto | Compact, schema evolution | Tooling required |
+| MessagePack / CBOR | Binary JSON-like | Still generic; less dense than schema’d |
+| Custom `repr(C)` / postcard | Maximal control & speed | You own compatibility |
+| Columnar (Parquet/Arrow) | Analytics scans | Poor for single-row point lookups |
+
+* 🚧 **The Format Tax:** JSON requires parsing digits, escaping strings, and often allocates. Crossing endianness boundaries without a defined format causes silent corruption.
+* ⚡ **Techniques:**
+  * Prefer **zero-copy** deserializers when buffer lifetime allows (see *Zero-Copy Parsing*).
+  * Prefer **schema + codegen** for stable services; **self-describing** formats for open ecosystems.
+  * Use `#[repr(C)]` + explicit endian helpers (`u32::to_le_bytes`) for wire formats.
+  * Cache serialized form when the same message is sent often.
+  * Version explicitly; never rely on native struct layout across machines.
+  * Same-host IPC: shared memory + a simple binary layout often beats any serialization stack (see *IPC*).
+
+```rust
+// ❌ BAD: rebuild JSON on every send.
+fn send_bad(id: u32, name: &str) -> String {
+    format!(r#"{{"id":{},"name":"{}"}}"#, id, name)
+}
+
+// ✅ GOOD: compact binary, explicit endianness.
+fn send_good(id: u32, name: &str) -> Vec<u8> {
+    let mut buf = Vec::with_capacity(4 + 2 + name.len());
+    buf.extend_from_slice(&id.to_le_bytes());
+    let len = name.len() as u16;
+    buf.extend_from_slice(&len.to_le_bytes());
+    buf.extend_from_slice(name.as_bytes());
+    buf
+}
+```
+
+
+## 🖥️ What Makes Newer Computers Faster (And How Code Should Adapt)
+
+📜 **Rule:** Performance gains across hardware generations are *not* uniform — modern speedups come from parallelism, memory hierarchy, and specialized units more than from higher single-thread clock speeds. Write code that feeds those strengths.
+
+### Why machines got faster
+
+| Era driver | What improved | What that means for code |
+| --- | --- | --- |
+| **Clock frequency** (pre-~2005) | Higher GHz | Scalar code got free speedups |
+| **ILP / wider superscalar** | More ops per cycle, better predictors | Branch-light, independent arithmetic helps |
+| **SIMD width** | SSE→AVX→AVX-512 / NEON→SVE | Contiguous numeric data wins big |
+| **Core count** | 2 → 8 → 32+ cores | Parallelism required to use the chip |
+| **Cache size & levels** | Larger L1/L2/L3, smarter prefetch | Locality still dominates; working set matters |
+| **DRAM bandwidth & latency** | More channels, still high latency | Avoid random RAM access; stream when possible |
+| **SSD / NVMe** | 100–1000× vs HDD IOPS | Random I/O viable; still slower than RAM |
+| **GPU / accelerators** | Massive throughput for data-parallel work | Offload bulk numeric / ML / graphics |
+| **Specialized instructions** | AES-NI, SHA, CRC, BMIs | Use std/library paths that hit hardware |
+
+* 🚧 **The “free lunch” is over for single threads:** Clock speeds plateaued under power/heat limits. A program that uses one core and random memory access leaves most of a modern machine idle.
+* ⚡ **Adapt by:** parallelizing CPU-bound work, keeping data cache-friendly, using SIMD-friendly layouts, batching I/O, and offloading the right workloads to GPU/accelerators.
+
+```rust
+// ❌ BAD: single-threaded scalar sum — only uses ONE of the machine's many
+// cores and doesn't tap the wide SIMD units modern CPUs devote to arithmetic.
+fn sum_old_style(data: &[f32]) -> f32 {
+    let mut total = 0.0;
+    for &x in data { total += x; } // one core, one lane
+    total
+}
+
+// ✅ GOOD: parallel + auto-vectorized — spreads work across cores (rayon)
+// AND each core's chunk auto-vectorizes into SIMD lanes, actually using
+// the hardware gains newer machines actually shipped.
+fn sum_modern(data: &[f32]) -> f32 {
+    use rayon::prelude::*;
+    data.par_chunks(4096).map(|chunk| chunk.iter().sum::<f32>()).sum()
+}
+```
+
+### 🧩 Taking Advantage of Each Component in Code
+
+#### CPU cores
+* Use work-stealing pools (`rayon`) or explicit threads for CPU-bound parallelism.
+* Prefer data-parallel loops over fine-grained task spam.
+* Pin latency-critical threads only when measured (affinity); otherwise let the OS schedule.
+
+```rust
+// ✅ Split work across all cores via a work-stealing pool instead of one thread.
+use rayon::prelude::*;
+fn sum_squares_parallel(data: &[f64]) -> f64 {
+    data.par_iter().map(|x| x * x).sum() // scales with core count automatically
+}
+```
+
+#### CPU caches & RAM
+* Contiguous layouts (`Vec`, SoA), sequential scans, and hot/cold splitting.
+* Avoid pointer-chasing graphs for hot data; prefer arenas/indices.
+* Size working sets to fit L1/L2 when possible; measure with cache-miss counters.
+
+```rust
+// ❌ BAD: Vec<Box<T>> — each element is a separate heap allocation scattered
+// across RAM, so iterating is a cache-miss-per-element pointer chase.
+// ✅ GOOD: Vec<T> — one contiguous allocation, sequential prefetch-friendly scan.
+fn sum_contiguous(data: &[u32]) -> u64 {
+    data.iter().map(|&x| x as u64).sum()
+}
+```
+
+#### SIMD units
+* Contiguous `f32`/`i32` arrays and iterator loops so LLVM auto-vectorizes.
+* Explicit SIMD only for proven hot loops the auto-vectorizer misses.
+
+```rust
+// ✅ A simple, contiguous iterator loop like this compiles down to SIMD
+// (AVX/NEON) instructions automatically — no intrinsics needed.
+fn scale(data: &mut [f32], factor: f32) {
+    for x in data.iter_mut() { *x *= factor; } // auto-vectorized by LLVM
+}
+```
+
+#### GPU
+* Bulk, data-parallel, throughput-oriented work (not tiny latency-sensitive kernels).
+* Minimize CPU↔GPU copies; on unified-memory SoCs use shared buffers (see *Unified Memory Architecture*).
+* Batch uploads; keep data resident on GPU across frames/passes.
+
+```python
+# ❌ BAD: One tiny GPU kernel launch per element — launch overhead dwarfs the work.
+# for x in data: gpu_add_one(x)
+
+# ✅ GOOD: One kernel launch over the whole batch — the GPU parallelizes internally.
+import torch
+data = torch.randn(1_000_000, device="cuda")
+result = data + 1  # single fused kernel, all elements in parallel
+```
+
+#### SSD / NVMe
+* Prefer large sequential reads/writes; use buffered or memory-mapped I/O.
+* Align I/O sizes to page/block boundaries when doing direct I/O.
+* Parallelize independent reads (async or thread pool) to exploit queue depth.
+
+```rust
+// ✅ Issue several independent reads concurrently to exploit NVMe queue depth
+// instead of waiting on one read at a time.
+async fn read_many(paths: &[&str]) -> Vec<Vec<u8>> {
+    let futs = paths.iter().map(|p| tokio::fs::read(p));
+    futures::future::join_all(futs).await.into_iter().map(Result::unwrap).collect()
+}
+```
+
+#### HDD (if still present)
+* Strongly sequential access only; avoid random I/O — seek cost dominates.
+* Prefer SSDs for databases, random access, and cold-but-latency-sensitive data.
+
+```rust
+// ❌ BAD: Random-order reads on spinning disk — each seek costs several ms,
+// dominating runtime far more than the actual data transfer.
+// for id in shuffled_ids { read_record_at(id); }
+
+// ✅ GOOD: Sort access order to match on-disk layout, so reads are sequential
+// and the disk head sweeps in one direction instead of thrashing.
+fn read_sorted(mut ids: Vec<u64>) {
+    ids.sort_unstable();
+    for id in ids { read_record_at(id); }
+}
+# fn read_record_at(_id: u64) {}
+```
+
+#### Network interface
+* Batch small messages; reuse connections; prefer fewer larger RPCs.
+* Use kernel bypass / `io_uring` / DPDK only at extreme packet rates after profiling.
+
+```rust
+// CPU: parallel numeric over all cores
+fn cpu_parallel(data: &mut [f32]) {
+    use rayon::prelude::*;
+    data.par_iter_mut().for_each(|x| *x = x.sin());
+}
+
+// RAM/cache: sequential touch, contiguous storage
+fn sum_sequential(data: &[f64]) -> f64 {
+    data.iter().sum() // prefetcher-friendly
+}
+
+// SSD: large buffered sequential read
+fn read_blob(path: &str) -> std::io::Result<Vec<u8>> {
+    use std::io::Read;
+    let mut f = std::fs::File::open(path)?;
+    let mut buf = Vec::new();
+    f.read_to_end(&mut buf)?;
+    Ok(buf)
+}
+```
+
+
+### 🏷️ Metadata Costs (Indexes, Schemas, Alloc Headers)
+
+📜 **Rule:** Metadata is not free — allocator headers, length fields, vtable pointers, index structures, and schema descriptors consume RAM and cache bandwidth. Keep metadata proportional to the value it provides.
+
+* 🚧 **Hidden metadata:** Every `Vec` has ptr/len/cap; every heap block may have allocator headers; every `HashMap` stores hashes/control bytes; every trait object carries a vptr. At millions of tiny objects, metadata can exceed payload.
+* ⚡ **Techniques:** Arena-allocate many small objects with one shared header; pack external indexes (CSR, columnar); use compact IDs instead of pointers; strip debug/schema metadata from production paths.
+
+```rust
+// ❌ BAD: 1M tiny heap objects → 1M allocator headers + pointers.
+fn many_boxes(n: usize) -> Vec<Box<u32>> {
+    (0..n as u32).map(|x| Box::new(x)).collect()
+}
+
+// ✅ GOOD: one allocation, payload-only density.
+fn one_vec(n: usize) -> Vec<u32> {
+    (0..n as u32).collect()
+}
+```
+
+
+---
+
+
+### 📚 Library Headers (Include Cost, API Surface & Header-Only Libraries)
+
+📜 **Rule:** Treat public headers as part of your *build-time performance surface* — every include, template, and macro in a widely used header is paid by every translation unit that pulls it in.
+
+#### Why library headers matter for performance
+
+* 🚧 **Compile-time cost is a performance problem:** Slow builds delay feedback, hide optimization work, and encourage dirty rebuilds. A single heavy header included from hundreds of `.c`/`.cpp` files multiplies parse and template instantiation cost.
+* 🚧 **Rebuild fan-out:** Changing one line in a popular header forces recompilation of every dependent unit — often the dominant cost in large C/C++ codebases.
+* 🚧 **Hidden codegen:** Header-only / template-heavy libraries can instantiate the same algorithm many times (once per type per TU), bloating object files and link time unless you explicitly control instantiation.
+
+```cpp
+// ❌ BAD: template<class T> function defined IN the header — every .cpp that
+// includes it and instantiates Sort<int> re-does the same codegen work,
+// and the linker later has to deduplicate identical copies at link time.
+template<class T> void Sort(std::vector<T>& v) { /* ... */ }
+
+// ✅ GOOD: declare in the header, explicitly instantiate ONCE in a .cpp —
+// every other TU just links against the single compiled instantiation.
+// sort.h:   template<class T> void Sort(std::vector<T>& v);
+// sort.cpp: template void Sort<int>(std::vector<int>&); // instantiated once
+```
+
+#### Techniques for *consumers* of libraries
+
+* **Include what you use** — pull the smallest header that declares the API you need; avoid umbrella headers (`windows.h`, giant `utils.hpp`) on hot include paths.
+* **Forward-declare** types you only hold as pointers/references in *your* headers; include the full library header only in `.cpp` files.
+* Prefer libraries that offer a **stable, thin C API** or PImpl-style boundary when you only need a few calls — less template surface, faster compiles.
+* In **Rust**, prefer precise `use` paths and optional **crate features** so unused modules are not compiled; avoid `pub use` re-export pyramids that force downstream to depend on everything.
+* Use **precompiled headers (PCH)** or **C++20 modules** for the stable third-party set you include everywhere.
+* Guard platform headers behind your own thin wrappers so the rest of the code does not see OS-sized include graphs.
+
+```text
+❌ BAD (in a public .h of your library):
+  #include <vector>
+  #include <string>
+  #include <unordered_map>
+  #include <heavy_third_party.hpp>
+  struct Widget { std::vector<std::string> names; ... };
+
+✅ GOOD:
+  // widget.h — minimal
+  struct Widget;              // or PImpl
+  Widget* widget_create();
+  void widget_destroy(Widget*);
+
+  // widget.cpp — full includes live here only
+  #include <vector>
+  #include <string>
+  #include "widget.h"
+```
+
+#### Techniques for *authors* of libraries
+
+* **PImpl (pointer to implementation):** Keep the public header free of private includes and heavy types; one pointer in the public struct. Trades an indirection for much faster client builds and ABI stability.
+* **Opaque pointers / C API boundary:** Especially valuable at language FFIs and for stable shared libraries — clients compile against a tiny header.
+* **Split headers:** `foo.h` (minimal declarations) vs `foo_detail.h` / `foo.inl` (templates and inlines) so most clients never see the heavy part.
+* **Explicit template instantiation:** Declare templates in headers, instantiate needed types once in a `.cpp` to cut duplicate codegen.
+* **Avoid header-only by default** for large libraries unless the benefit (inlining, ease of integration) is measured and needed. Header-only shifts *all* compile cost to every consumer.
+* **Do not put large static tables or heavy `static inline` functions in public headers** unless they must be inlined — they get recompiled (and sometimes re-emitted) everywhere.
+* Document required includes; don’t rely on transitive includes (they break when you slim headers later).
+
+```cpp
+// === Author pattern: PImpl ===
+// widget.h  (what clients include — stays small & stable)
+#pragma once
+class Widget {
+public:
+    Widget();
+    ~Widget();
+    void update(int x);
+private:
+    struct Impl;
+    Impl* impl_;   // only a pointer — no heavy includes here
+};
+
+// widget.cpp
+#include "widget.h"
+#include <vector>
+#include <string>
+#include <heavy_third_party.hpp>
+struct Widget::Impl {
+    std::vector<std::string> names;
+    // ...
+};
+Widget::Widget() : impl_(new Impl) {}
+Widget::~Widget() { delete impl_; }
+void Widget::update(int x) { /* use impl_ */ }
+```
+
+#### Header-only libraries — when they help vs hurt
+
+| Situation | Prefer header-only? | Why |
+| --- | --- | --- |
+| Tiny utilities, must inline | Often yes | Zero link friction; inlining wins |
+| Large template libraries (e.g. some math) | Sometimes | Required by language model |
+| Big runtime with lots of non-inline code | Usually no | Clients pay compile cost; ship a `.a`/`.so` instead |
+| Stable ABI / plugin boundary | No | Use opaque pointers + compiled lib |
+
+```cpp
+// ✅ Header-only utility: fine to inline (tiny, called everywhere).
+inline int clamp(int x, int lo, int hi) { return x < lo ? lo : (x > hi ? hi : x); }
+
+// ❌ Header-only "big runtime" library: forces every consumer to recompile
+// thousands of lines any time they touch the header — ship this as a
+// compiled .a/.so with a thin header instead.
+// #include "entire_json_parser_implementation.hpp"  // 5000+ lines, header-only
+```
+
+#### Rust-specific parallels
+
+* **Crate features** = optional “headers” — keep default features minimal.
+* **`pub use` re-exports** act like umbrella headers; re-export sparingly.
+* **Proc macros / heavy derives** on public types increase compile time for every downstream crate — document the cost; offer lighter alternatives when possible.
+* Prefer **concrete APIs** over exposing deep generic type trees in public signatures when clients rarely need to name those types.
+
+```toml
+# ❌ BAD: default features pull in the whole kitchen sink for every consumer.
+[dependencies]
+some-crate = "1.0"  # default-features = true implicitly compiles everything
+
+# ✅ GOOD: opt into only what you use — smaller compile graph, faster builds.
+[dependencies]
+some-crate = { version = "1.0", default-features = false, features = ["json"] }
+```
+
+#### Interaction with runtime performance
+
+* Slimmer headers do not directly make the CPU faster, but they:
+  * Enable **more frequent release builds** and profiling cycles.
+  * Make **LTO / inlining** practical (faster iteration on optimized builds).
+  * Reduce pressure to “just use debug builds” which can be 10–100× slower (see *Release Mode*).
+* Over-inlining from header-only code can **hurt I-cache** (see *Instruction Cache Pressure*) — measure.
+
+```bash
+# The practical payoff of slim headers: faster edit-compile-profile loops,
+# which means more optimization iterations get tried in the same amount of time.
+$ time cargo build --release     # slim headers/features → seconds, not minutes
+```
+
+> 💡 **Rule of thumb for library authors:** The public header should be the *smallest* text that still lets a client call your API correctly. Everything else belongs behind the compilation firewall (`.cpp`, private module, or explicit instantiation file).
+
+
+---
+
 ## 🔬 Hardware-Aware Optimizations
+
+
+### 📄 Huge Pages (TLB Pressure)
+
+📜 **Rule:** For multi-gigabyte working sets with random or wide sequential access, consider huge pages (2 MB / 1 GB) to cut TLB misses.
+
+* 🖥️ **The TLB Bottleneck:** The Translation Lookaside Buffer caches virtual→physical page mappings. Default pages are 4 KB; a 64 GB working set needs millions of PTEs. TLB misses force page-table walks (extra memory latency) even when data is in RAM.
+* ⚡ **Huge-page technique:** Use 2 MB (or 1 GB) pages so one TLB entry covers far more address space. On Linux: `madvise(MADV_HUGEPAGE)`, transparent huge pages (THP), or explicit `mmap` with `MAP_HUGETLB`. Allocators like jemalloc/mimalloc can be configured to prefer them.
+
+```rust
+// Conceptual: advise the kernel that a large anonymous region benefits from THP.
+// (Real code often goes through allocator config or libc::madvise.)
+fn advise_huge(ptr: *mut u8, len: usize) {
+    #[cfg(target_os = "linux")]
+    unsafe {
+        libc::madvise(ptr as *mut _, len, libc::MADV_HUGEPAGE);
+    }
+}
+```
+
+> ⚖️ Trade-off: huge pages can waste memory to internal fragmentation and are harder to allocate under memory pressure. Profile TLB misses (`perf stat -e dTLB-load-misses`) before committing.
+
 
 ### 🔮 Manual Prefetching (Hiding RAM Latency)
 
@@ -2098,6 +3550,998 @@ fn main() {
 
 ---
 
+
+## 🎛️ Domain-Specific: Audio, Video, VR, Mobile & Quantum
+
+### 🔊 Audio (Real-Time Callbacks)
+
+📜 **Rule:** Audio callbacks run under hard deadlines (e.g. every few ms). Never allocate, lock, block on I/O, or take unbounded time on the audio thread.
+
+* ⚡ Pre-allocate all buffers; use lock-free ring buffers to pass data to/from other threads.
+* ⚡ Avoid denormals (flush-to-zero); process in blocks so work scales with block size only.
+* 🚧 Logging, `malloc`, mutexes, and file I/O in the callback cause dropouts/glitches.
+
+```rust
+// ❌ BAD: allocates + locks inside the real-time callback — audio glitches under load.
+fn process_bad(out: &mut [f32], inbox: &std::sync::Mutex<Vec<f32>>) {
+    let mut data = inbox.lock().unwrap(); // priority inversion / unbounded wait
+    for s in out.iter_mut() {
+        *s = data.pop().unwrap_or(0.0);
+    }
+    log::info!("processed {} samples", out.len()); // can allocate / block
+}
+
+// ✅ GOOD: preallocated lock-free path only — no alloc, no OS lock.
+struct AudioInbox {
+    // e.g. crossbeam or heapless spsc ring; capacity fixed at init
+    buf: [f32; 4096],
+    head: std::sync::atomic::AtomicUsize,
+    tail: std::sync::atomic::AtomicUsize,
+}
+
+fn process_good(out: &mut [f32], inbox: &AudioInbox) {
+    use std::sync::atomic::Ordering::*;
+    for s in out.iter_mut() {
+        let t = inbox.tail.load(Acquire);
+        let h = inbox.head.load(Relaxed);
+        *s = if t != h {
+            let v = inbox.buf[h % inbox.buf.len()];
+            inbox.head.store(h + 1, Release);
+            v
+        } else {
+            0.0
+        };
+    }
+}
+```
+
+### 🎬 Video (Throughput + Latency)
+
+📜 **Rule:** Move pixels as little as possible; use hardware codecs/display paths; pipeline stages so decode, process, and present overlap.
+
+* ⚡ Prefer hardware decode/encode; keep frames on GPU; convert colorspace/resolution once at the boundary.
+* ⚡ Software path: planar layouts, SIMD-friendly row/tile slices, multi-threaded filters.
+
+```rust
+// ❌ BAD: full-frame CPU copy + per-frame allocation + repeated colorspace guesswork.
+fn process_frame_bad(frame: &[u8], w: usize, h: usize) -> Vec<u8> {
+    let mut rgba = frame.to_vec(); // alloc + copy every frame
+    for px in rgba.chunks_exact_mut(4) {
+        // pretend swizzle + filter
+        px.swap(0, 2);
+    }
+    rgba // another copy to GPU would follow...
+}
+
+// ✅ GOOD: reuse a preallocated buffer; process in-place; upload once.
+struct FrameScratch {
+    rgba: Vec<u8>,
+}
+
+fn process_frame_good(scratch: &mut FrameScratch, frame: &[u8]) {
+    let n = frame.len();
+    if scratch.rgba.len() < n {
+        scratch.rgba.resize(n, 0); // rare: only on resolution change
+    }
+    scratch.rgba[..n].copy_from_slice(frame);
+    for px in scratch.rgba[..n].chunks_exact_mut(4) {
+        px.swap(0, 2);
+    }
+    // then zero-copy / single upload of scratch.rgba to GPU/display
+}
+```
+
+### 🥽 Virtual Reality (Motion-to-Photon)
+
+📜 **Rule:** Missed frame deadlines cause discomfort. Budget time strictly; prioritize pose prediction and late-latching over visual luxury.
+
+* ⚡ Stable frame time with headroom; late-latch pose; foveated / VRS when available; avoid CPU–GPU sync stalls.
+
+```rust
+// ❌ BAD: wait for GPU mid-frame + read pose only at start — high motion-to-photon latency.
+fn render_frame_bad(gpu: &Gpu, scene: &Scene) {
+    let pose = read_pose();           // early pose
+    gpu.render_world(scene, &pose);
+    gpu.wait_idle();                  // full pipeline stall
+    gpu.render_ui();                  // late work after stall
+}
+
+// ✅ GOOD: budgeted passes; late-latched pose for a cheap reprojection/timewarp step.
+fn render_frame_good(gpu: &Gpu, scene: &Scene, budget_ms: f32) {
+    let pose_early = read_pose();
+    gpu.render_world_async(scene, &pose_early);
+    // other CPU work that does not block the GPU...
+    let pose_late = read_pose();      // late latch
+    gpu.timewarp_and_present(&pose_late);
+}
+
+struct Gpu;
+impl Gpu {
+    fn render_world(&self, _: &Scene, _: &Pose) {}
+    fn render_world_async(&self, _: &Scene, _: &Pose) {}
+    fn wait_idle(&self) {}
+    fn render_ui(&self) {}
+    fn timewarp_and_present(&self, _: &Pose) {}
+}
+struct Scene;
+struct Pose;
+fn read_pose() -> Pose { Pose }
+```
+
+### 📱 Mobile Devices
+
+📜 **Rule:** Optimize for **battery, thermals, and intermittent connectivity** — not just peak benchmarks on a plugged-in flagship.
+
+* ⚡ Batch network I/O; respect OS background limits; decode images off the main thread; watch big.LITTLE core placement.
+
+```rust
+// ❌ BAD: main-thread network + full-res decode every scroll — jank + battery drain.
+fn on_scroll_bad(urls: &[String]) -> Vec<Bitmap> {
+    urls.iter().map(|u| {
+        let bytes = blocking_http_get(u);           // blocks UI thread
+        decode_full_res(&bytes)                     // huge alloc + CPU
+    }).collect()
+}
+
+// ✅ GOOD: async fetch, bounded concurrency, decode target size into a reused buffer.
+async fn load_thumbs_good(urls: &[String], scratch: &mut Vec<u8>) -> Vec<Bitmap> {
+    let mut out = Vec::with_capacity(urls.len());
+    for chunk in urls.chunks(4) {                   // limit parallel downloads
+        for u in chunk {
+            let bytes = http_get_async(u).await;
+            scratch.clear();
+            decode_into(scratch, &bytes, /*max_w*/ 256, /*max_h*/ 256);
+            out.push(Bitmap::from_rgba(scratch));
+        }
+    }
+    out
+}
+
+struct Bitmap;
+impl Bitmap { fn from_rgba(_: &[u8]) -> Self { Bitmap } }
+fn blocking_http_get(_: &str) -> Vec<u8> { vec![] }
+async fn http_get_async(_: &str) -> Vec<u8> { vec![] }
+fn decode_full_res(_: &[u8]) -> Bitmap { Bitmap }
+fn decode_into(_: &mut Vec<u8>, _: &[u8], _: u32, _: u32) {}
+```
+
+### 📶 Bluetooth & BLE Optimization
+
+📜 **Rule:** Bluetooth performance is mostly about **radio on-air time, connection parameters, and payload packing** — not CPU micro-opts. Every extra advertisement, reconnect, or tiny packet costs energy and latency.
+
+#### Classic vs BLE
+
+| | **Classic (BR/EDR)** | **BLE** |
+| --- | --- | --- |
+| Best for | Audio, higher sustained throughput | Sensors, control, intermittent data |
+| Power | Higher when active | Deep sleep + short bursts |
+
+* ⚡ Longest advertising interval that still meets discovery needs; raise ATT MTU + Data Length Extension; **batch** samples into one notification.
+* 🚧 Per-sample packets and polling reads multiply radio events.
+
+```rust
+// ❌ BAD: one BLE notification per sample — radio dominated, burns battery.
+fn on_sample_bad(tx: &BleNotify, sample: i16) {
+    let bytes = sample.to_le_bytes();
+    tx.notify(&bytes); // many tiny packets
+}
+
+// ✅ GOOD: accumulate, then one notification per connection interval window.
+struct SampleBatch {
+    buf: Vec<u8>,
+    max: usize,
+}
+
+impl SampleBatch {
+    fn push(&mut self, sample: i16) {
+        self.buf.extend_from_slice(&sample.to_le_bytes());
+    }
+    fn flush_if_full(&mut self, tx: &BleNotify) {
+        if self.buf.len() >= self.max {
+            tx.notify(&self.buf);
+            self.buf.clear();
+        }
+    }
+}
+
+struct BleNotify;
+impl BleNotify { fn notify(&self, _: &[u8]) {} }
+```
+
+**Checklist:** sparse advertising · interval/slave-latency tuned for power vs latency · MTU/DLE on · notifications + batched payloads · no alloc in BLE callbacks · protocol tolerates loss/duplicates.
+
+### ⚛️ Quantum Computing (Hybrid Classical–Quantum)
+
+📜 **Rule:** Today’s quantum programs are **hybrid** — classical host code optimizes circuit submission, shot count, and post-processing; quantum speedup is lost if the classical pipeline is wasteful.
+
+* ⚡ Minimize circuit depth/gates; transpile for device topology; batch jobs; choose shot counts from statistics, not habit.
+
+```rust
+// ❌ BAD: submit one circuit at a time in a tight loop — queue/API latency dominates.
+fn expect_values_bad(api: &QpuApi, circuits: &[Circuit], shots: u32) -> Vec<f64> {
+    circuits.iter().map(|c| {
+        let result = api.run(c, shots); // round-trip per circuit
+        result.expectation()
+    }).collect()
+}
+
+// ✅ GOOD: batch circuits in one job; reuse a fixed shot budget chosen for the CI width you need.
+fn expect_values_good(api: &QpuApi, circuits: &[Circuit], shots: u32) -> Vec<f64> {
+    let job = api.run_batch(circuits, shots); // one submission
+    job.expectations()
+}
+
+struct Circuit;
+struct QpuApi;
+impl QpuApi {
+    fn run(&self, _: &Circuit, _: u32) -> QpuResult { QpuResult }
+    fn run_batch(&self, _: &[Circuit], _: u32) -> QpuBatchResult { QpuBatchResult }
+}
+struct QpuResult;
+impl QpuResult { fn expectation(&self) -> f64 { 0.0 } }
+struct QpuBatchResult;
+impl QpuBatchResult { fn expectations(&self) -> Vec<f64> { vec![] } }
+```
+
+
+## 🤖 Optimizing Code for AI / ML Hardware
+
+📜 **Rule:** ML workloads are usually **memory-bandwidth bound** or **tensor-core bound**, not classic scalar-CPU bound. Optimize data movement, layout, batching, and precision before micro-tuning host-side loops.
+
+### What ML hardware is good at
+
+| Hardware | Strength | Weakness | Code implication |
+| --- | --- | --- | --- |
+| **GPU (CUDA/Metal/ROCm)** | Massive data-parallel throughput | High launch & PCIe cost | Large batches; keep data on device |
+| **Tensor cores / matrix units** | Mixed-precision GEMM (FP16/BF16/INT8) | Need friendly shapes & layouts | Align dims to tile sizes; use supported dtypes |
+| **NPU / edge accelerators** | Low-power inference | Limited ops/dynamic control | Static shapes; quantize; fuse ops |
+| **CPU (AVX/AMX)** | Flexible, good for small batches / data prep | Lower throughput than GPU for large GEMM | Use for dataloading, tokenization, small models |
+| **High-bandwidth memory (HBM)** | Feeds wide SIMD/tensor units | Capacity limited; host RAM is slower | Minimize host↔device copies |
+
+```python
+# ❌ BAD: small batch, FP32 — under-utilizes tensor cores, wastes bandwidth.
+out = model(x_fp32_batch_of_1)
+
+# ✅ GOOD: large batch, mixed precision — keeps the tensor cores fed and
+# halves the memory traffic per element vs FP32.
+with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+    out = model(x_batch_of_256.to("cuda"))
+```
+
+### 1. Data movement dominates
+
+* 🚧 **PCIe / host–device copies** often cost more than the kernel.
+* ⚡ Keep tensors resident on the device; pin host memory for async copies; overlap copy and compute.
+
+```rust
+// ❌ BAD: copy every step host→device→host (pseudo-API).
+fn step_bad(host: &mut [f32], device: &DeviceBuffer) {
+    device.upload(host);          // H2D every iteration
+    device.kernel_forward();
+    device.download(host);        // D2H every iteration — kills throughput
+}
+
+// ✅ GOOD: data stays on device; host only supplies new batch when needed.
+fn step_good(batch: Option<&[f32]>, device: &mut DeviceBuffer) {
+    if let Some(b) = batch {
+        device.upload_async(b);   // overlap with previous compute when streamed
+    }
+    device.kernel_forward();
+    // read back only for checkpoints / final result, not every step
+}
+
+struct DeviceBuffer;
+impl DeviceBuffer {
+    fn upload(&self, _: &[f32]) {}
+    fn upload_async(&self, _: &[f32]) {}
+    fn download(&self, _: &mut [f32]) {}
+    fn kernel_forward(&self) {}
+}
+```
+
+### 2. Layout & contiguity
+
+* Tensor cores and GEMM libraries expect **contiguous**, preferred dimension orders (e.g. specific K/N alignment).
+* Prefer **channels-first or channels-last** consistently with what the framework/kernel was built for; forced permutes are pure memory traffic.
+* Avoid strided views in hot paths — `contiguous()` (or equivalent) once before a long device sequence, not per layer if avoidable.
+* Batch dimension should be the one that enables **coalesced** loads (adjacent threads read adjacent addresses).
+
+```python
+# ❌ BAD: a transposed/strided view fed straight into a matmul-heavy layer —
+# the kernel either falls back to a slow strided path or silently re-copies.
+x = tensor.permute(0, 2, 1)  # now non-contiguous
+y = layer(x)  # may implicitly re-materialize every call
+
+# ✅ GOOD: force contiguity ONCE, outside the hot loop, then reuse.
+x = tensor.permute(0, 2, 1).contiguous()  # one memory-traffic cost, up front
+for _ in range(many_steps):
+    y = layer(x)  # every call now hits the fast contiguous path
+```
+
+### 3. Batch size & shape
+
+* Tiny batches under-utilize GPUs (kernel launch overhead + low occupancy).
+* ⚡ **Increase batch size** until memory fills or latency SLO is hit (throughput vs latency trade-off).
+* Pad sequences to **multiples of tile sizes** (8/16/32/64) when required by tensor cores — wasted FLOPs often beat unaligned slow paths.
+* Prefer **static shapes** on NPUs and many inference engines; dynamic ranks/shapes force fallbacks.
+
+```python
+# ❌ BAD: batch size 1, launched in a tight Python loop — each call pays
+# fixed kernel-launch overhead for almost no actual compute.
+for x in inputs:
+    out = model(x.unsqueeze(0))  # batch of 1, thousands of tiny launches
+
+# ✅ GOOD: pad/collect into one large, tile-aligned batch — one launch does
+# the work of thousands, and the GPU stays saturated.
+batch = torch.stack(inputs)  # e.g. shape (256, ...) — a multiple of 32
+out = model(batch)
+```
+
+### 4. Precision & quantization
+
+* **FP32** is rarely required end-to-end for inference; **FP16/BF16** cuts memory traffic ~2× and enables tensor cores.
+* **INT8 / INT4** quantization further reduces bandwidth and can use integer tensor paths — validate accuracy.
+* Keep **master weights / reductions** in higher precision when training (loss scaling, FP32 accumulators) to preserve stability.
+* Measure **quality vs speed**; don’t quantize blindly.
+
+```python
+# ❌ BAD: full FP32 inference — 4 bytes/param, no tensor-core matmul path.
+model = model.float()
+out = model(x.float())
+
+# ✅ GOOD: quantize to INT8 for inference — ~4× less memory traffic and
+# integer tensor-core throughput, after validating accuracy on a held-out set.
+import torch.quantization as tq
+model_int8 = tq.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+out = model_int8(x)
+```
+
+### 5. Kernel fusion & graph optimization
+
+* Each separate kernel reads/writes global memory. **Fusing** elementwise ops into matmuls (or using compiler/runtime fusion — XLA, TorchInductor, TensorRT, TVM) cuts trips to HBM.
+* Prefer vendor/framework fused ops (FlashAttention, fused MLP, fused optimizers) over naive sequences of small ops.
+* For custom kernels: minimize global stores; use shared memory/scratch carefully; avoid divergent branches across a warp/wavefront.
+
+```python
+# ❌ BAD: each op round-trips through HBM separately — matmul writes to
+# global memory, then relu reads it back, then dropout reads it back again.
+y = torch.relu(x @ w)
+y = torch.dropout(y, p=0.1, train=True)
+
+# ✅ GOOD: let the compiler fuse the elementwise chain into the matmul kernel,
+# so intermediate results stay in registers/shared memory instead of HBM.
+fused_fn = torch.compile(lambda x, w: torch.dropout(torch.relu(x @ w), 0.1, True))
+y = fused_fn(x, w)
+```
+
+### 6. Host-side pipeline (CPU code that feeds the accelerator)
+
+The CPU is often the system bottleneck even when the GPU does the math.
+
+* ⚡ Parallel data loading; prefetch next batch; reuse buffers; bulk tokenization.
+
+```rust
+// ❌ BAD: GPU waits while host loads synchronously each batch.
+fn train_bad(batches: impl Iterator<Item = Vec<f32>>, device: &DeviceBuffer) {
+    for batch in batches {
+        device.upload(&batch);      // GPU idle during load of *next* was zero
+        device.kernel_forward();
+    }
+}
+
+// ✅ GOOD: prefetch next batch on host while device runs current.
+fn train_good(mut batches: impl Iterator<Item = Vec<f32>>, device: &DeviceBuffer) {
+    let mut current = batches.next();
+    while let Some(batch) = current.take() {
+        let next = batches.next();  // host prepares next
+        device.upload(&batch);
+        device.kernel_forward();
+        current = next;
+    }
+}
+
+struct DeviceBuffer;
+impl DeviceBuffer {
+    fn upload(&self, _: &[f32]) {}
+    fn kernel_forward(&self) {}
+}
+```
+
+### 7. Multi-GPU & scaling
+
+* **Data parallel:** replicate model, shard batch — simple; needs efficient **all-reduce** (NCCL/RCCL).
+* **Tensor / pipeline parallel:** shard the model when it does not fit one device — higher communication complexity.
+* Overlap communication with computation; use **gradient accumulation** when global batch must be large but per-device memory is tight.
+* Place workers so interconnect (NVLink/Infinity Fabric) is used instead of slow PCIe hops when possible.
+
+```python
+# ❌ BAD: synchronize and gather gradients from every worker every microstep —
+# communication serializes with compute, wasting the interconnect's bandwidth.
+for micro_batch in micro_batches:
+    loss = model(micro_batch).backward()
+    all_reduce(model.gradients())  # blocks every single microstep
+
+# ✅ GOOD: accumulate gradients locally, overlap comm with compute, and only
+# all-reduce once per optimizer step — far fewer, larger sync points.
+for micro_batch in micro_batches:
+    (loss / len(micro_batches)).backward()  # accumulates into .grad, no sync
+all_reduce(model.gradients())  # one sync per full batch
+optimizer.step()
+```
+
+### 8. Inference-specific optimizations
+
+* ⚡ Batch when latency allows; **graph compile once**, run many times (TensorRT, ORT, IREE, …).
+* ⚡ Strip training-only paths; freeze batch-norm; disable autograd/debug watchers.
+* ⚡ For **LLMs** specifically (KV cache, continuous batching, speculative decode), see *Writing & Serving LLM Systems*.
+
+```python
+# ❌ BAD: rebuild/retrace the computation graph on every inference call.
+def infer_bad(x):
+    return model(x)  # eager mode: re-dispatches every op, every call
+
+# ✅ GOOD: compile the graph ONCE, then reuse the optimized, fused executable
+# for every subsequent call — no repeated tracing/dispatch overhead.
+compiled_model = torch.compile(model, mode="reduce-overhead")
+def infer_good(x):
+    return compiled_model(x)  # first call compiles; rest reuse the graph
+```
+
+### 9. What *not* to do on the accelerator path
+
+* Tiny kernel launches in a Python/host loop without batching or graph capture.
+* Synchronize (`device.synchronize()`, `.cpu()`, `.item()`) inside the inner loop — forces pipeline drains.
+* Random host↔device copies for logging/metrics every step.
+* Assuming CPU cache wisdom alone transfers: GPU wants **coalesced, bulk, regular** access, not pointer-chasing graphs.
+
+```python
+# ❌ BAD: forces a full pipeline drain (device→host sync) every step just to
+# log a scalar — the GPU stalls waiting for work already in flight to finish.
+for step in training_loop:
+    loss = train_step()
+    print(loss.item())  # .item() blocks until the device catches up
+
+# ✅ GOOD: accumulate metrics on-device, sync only occasionally (e.g. every
+# N steps or at epoch end) so the pipeline keeps flowing.
+running_loss = torch.zeros((), device="cuda")
+for step in training_loop:
+    running_loss += train_step()
+    if step % 100 == 0:
+        print(running_loss.item() / 100)  # one sync per 100 steps, not per step
+        running_loss.zero_()
+```
+
+### 10. Checklist
+
+1. Is the workload **memory-bound or compute-bound**? (profile bandwidth vs FLOPs)
+2. Are tensors **on-device**, contiguous, and in the **kernel-preferred layout**?
+3. Is **batch size** large enough to hide launch latency?
+4. Can **precision** drop (FP16/BF16/INT8) without breaking quality?
+5. Are elementwise ops **fused** into larger kernels?
+6. Does the **host pipeline** prefetch so the device never idles?
+7. Are **sync points** and copies removed from the hot path?
+
+```bash
+# ✅ A quick first pass through the checklist: profile before guessing.
+$ nsys profile --stats=true python train.py     # NVIDIA: bandwidth vs compute, sync stalls
+$ python -c "import torch; print(torch.cuda.memory_summary())"  # HBM usage
+```
+
+> 💡 **Bottom line:** For AI/ML hardware, the winning code moves less data, uses wider specialized units (tensor cores), and keeps the accelerator busy with large, regular, low-precision math — while the CPU focuses on feeding it efficiently.
+
+---
+
+
+## 📟 Optimizing for Embedded, IoT & Constrained Devices
+
+📜 **Rule:** On small devices the scarce resources are **RAM, flash, power, and often a single slow core** — optimize for size and predictability first; “throughput at all costs” techniques from servers can make things worse.
+
+### Device spectrum (different constraints)
+
+| Class | Examples | Typical limits | Optimize for |
+| --- | --- | --- | --- |
+| **Tiny MCU** | Arduino Uno (ATmega328), many Cortex-M0 | KB of RAM, tens of KB flash, no MMU, MHz clocks | Code size, static allocation, sleep current |
+| **Mid MCU** | Cortex-M4/M7, ESP32 | Hundreds of KB RAM, Wi-Fi/BT stacks | Stack depth, interrupt latency, RF duty cycle |
+| **Small Linux SBC** | Raspberry Pi Zero/3/4, similar boards | Hundreds of MB RAM, SD card rootfs | Startup time, SD wear, thermal throttling |
+| **Calculators / ultra-constrained** | Graphing calculators, appliance controllers | Tiny RAM/ROM, often no heap | Fixed-point math, tables, no dynamic alloc |
+| **Battery IoT** | Sensors, wearables | µA sleep budgets | Wake time, radio on-air time, duty cycling |
+
+```rust
+// The same "sum an array" task looks very different depending on device class:
+// Tiny MCU (no heap, no_std): fixed-size static buffer, no allocation.
+#![no_std]
+static mut BUF: [u16; 32] = [0; 32];
+fn sum_tiny(n: usize) -> u32 {
+    unsafe { BUF[..n].iter().map(|&x| x as u32).sum() }
+}
+
+// Pi-class Linux: a Vec is fine — plenty of RAM, std available.
+fn sum_pi(data: &[u16]) -> u32 { data.iter().map(|&x| x as u32).sum() }
+```
+
+### 1. Memory: static first
+
+* 🚧 Heap is optional (and dangerous) on many MCUs — fragmentation + unpredictable failure.
+* ⚡ Prefer static buffers, stack, and arena/bump allocators reset per frame/request.
+
+```rust
+// ❌ BAD: heap in the sensor path — fragmentation + alloc failure in the field.
+fn on_sensor_bad(samples: &[u16]) -> Vec<u32> {
+    samples.iter().map(|&s| s as u32 * 3).collect() // allocates every call
+}
+
+// ✅ GOOD: caller-owned buffer; no heap; no_std-friendly.
+fn on_sensor_good(samples: &[u16], out: &mut [u32]) -> usize {
+    let n = samples.len().min(out.len());
+    for i in 0..n {
+        out[i] = samples[i] as u32 * 3;
+    }
+    n
+}
+
+// ✅ GOOD: fixed static ring for ISR → main.
+static mut RX: [u8; 256] = [0; 256];
+static mut RX_LEN: usize = 0;
+
+fn on_byte_isr(b: u8) {
+    unsafe {
+        if RX_LEN < RX.len() {
+            RX[RX_LEN] = b;
+            RX_LEN += 1;
+        }
+    }
+}
+```
+
+### 2. Flash / code size
+
+* Compile with **size optimization**: `-Os` / `-Oz`, Rust `opt-level = "z"`, LTO, `panic = "abort"`, strip symbols (see *Binary Size Reduction*).
+* Avoid heavyweight standard libraries and formatters (`printf` family, `serde` with many formats, large GUI stacks).
+* Prefer **lookup tables in flash** (const) over runtime computation when RAM is tighter than flash — or the reverse if execute-from-flash is slow (architecture-dependent).
+* Feature-gate unused peripherals and protocols.
+
+```toml
+# Cargo.toml — size-optimized release profile for a flash-constrained MCU.
+[profile.release]
+opt-level = "z"     # optimize for size, not speed
+lto = true           # cross-crate dead-code elimination
+codegen-units = 1
+panic = "abort"      # skip unwinding tables — smaller binary
+strip = true         # drop debug symbols from the final image
+```
+
+### 3. CPU & timing predictability
+
+* Many embedded systems care about **worst-case latency** (ISR deadline, control loop) more than average throughput.
+* Keep **ISRs short**: set a flag / push to a ring buffer; do work in the main loop or a lower-priority task.
+* Disable or bound dynamic features that cause jitter (unbounded allocation, logging, GC if any).
+* Use **fixed-point** (`i32` Q-format) instead of software float on MCUs without an FPU — much faster and smaller.
+* On Pis and similar: watch **thermal throttling** — sustained max clocks may not be available; measure under real load/enclosure.
+
+```rust
+// ❌ BAD: heavy work directly in the ISR — blocks other interrupts and
+// blows the deadline for anything time-critical waiting behind it.
+fn uart_isr_bad(byte: u8, log_buffer: &mut alloc::vec::Vec<u8>) {
+    log_buffer.push(byte);           // allocation possible inside an ISR!
+    process_and_format(log_buffer);  // slow, unbounded work in the ISR
+}
+
+// ✅ GOOD: ISR just stashes the byte and sets a flag; real work happens
+// in the main loop where timing is not safety-critical.
+static mut FLAG: bool = false;
+fn uart_isr_good(byte: u8, ring: &mut [u8; 64], head: &mut usize) {
+    ring[*head % 64] = byte;
+    *head += 1;
+    unsafe { FLAG = true; } // main loop polls this and does the real work
+}
+# fn process_and_format(_: &mut alloc::vec::Vec<u8>) {}
+```
+
+### 4. Power & IoT duty cycles
+
+* ⚡ Sleep by default; wake on interrupt; batch sensor reads and network uploads — radio TX often dominates energy.
+
+```rust
+// ❌ BAD: busy-poll forever — never sleeps, battery dies.
+fn loop_bad(sensor: &Sensor, radio: &Radio) {
+    loop {
+        let v = sensor.read();      // continuous on
+        radio.send(&[v]);           // continuous TX
+    }
+}
+
+// ✅ GOOD: deep sleep → timed wake → brief work → sleep.
+fn loop_good(sensor: &Sensor, radio: &Radio, rtc: &Rtc) {
+    loop {
+        rtc.sleep_until_next_period(); // µA-range sleep
+        let mut batch = [0u16; 8];
+        for s in batch.iter_mut() {
+            *s = sensor.read();
+        }
+        radio.send(as_bytes(&batch));  // one short TX
+    }
+}
+
+fn as_bytes(s: &[u16]) -> &[u8] {
+    unsafe {
+        core::slice::from_raw_parts(s.as_ptr() as *const u8, s.len() * 2)
+    }
+}
+struct Sensor; impl Sensor { fn read(&self) -> u16 { 0 } }
+struct Radio; impl Radio { fn send(&self, _: &[u8]) {} }
+struct Rtc; impl Rtc { fn sleep_until_next_period(&self) {} }
+```
+
+### 5. Storage & flash wear (SD cards, EEPROM, NOR)
+
+* SD cards on Pis wear out under constant small writes (logs, swap). **Batch writes**, use tmpfs for hot scratch, reduce fsync frequency when safe.
+* EEPROM/NOR: limit write cycles; journal carefully; wear-level if you control the scheme.
+* Prefer append-only logs with occasional compaction over in-place updates of large structures.
+
+```rust
+// ❌ BAD: fsync/write on every tiny log line — hammers flash write cycles
+// and can wear out an SD card or EEPROM within weeks under heavy logging.
+fn log_bad(line: &str, file: &mut std::fs::File) {
+    use std::io::Write;
+    writeln!(file, "{line}").unwrap();
+    file.sync_all().unwrap(); // one flash write per line
+}
+
+// ✅ GOOD: buffer many lines, flush in batches on a timer or size threshold.
+struct BatchLogger { buf: String, threshold: usize }
+impl BatchLogger {
+    fn log(&mut self, line: &str, file: &mut std::fs::File) {
+        use std::io::Write;
+        self.buf.push_str(line);
+        self.buf.push('\n');
+        if self.buf.len() >= self.threshold {
+            file.write_all(self.buf.as_bytes()).unwrap(); // one write for many lines
+            self.buf.clear();
+        }
+    }
+}
+```
+
+### 6. I/O & peripherals
+
+* Use **hardware peripherals** (UART DMA, SPI hardware CS, PWM, ADC with DMA) instead of bit-banging in software loops.
+* Match SPI/I²C clock to what the bus and cables allow — slower can be *more* reliable without hurting product metrics.
+* Debounce inputs in hardware or with short timed state machines, not heavy frameworks.
+
+```c
+// ❌ BAD: bit-banging SPI in a software loop — CPU spends every cycle
+// toggling GPIO pins by hand, can't do anything else while transferring.
+for (int i = 0; i < len; i++) {
+    for (int b = 7; b >= 0; b--) {
+        gpio_write(MOSI, (data[i] >> b) & 1);
+        gpio_write(SCK, 1); gpio_write(SCK, 0); // manual clock toggling
+    }
+}
+
+// ✅ GOOD: hand the buffer to the hardware SPI+DMA peripheral — it clocks
+// the bits out autonomously while the CPU is free to do other work.
+spi_dma_transfer(SPI1, data, len); // fire-and-forget; interrupt on completion
+```
+
+### 7. Concurrency on small systems
+
+* Bare metal: main loop + ISRs, or a tiny RTOS (priority stacks sized explicitly).
+* Avoid thread-per-connection models on MCUs — use state machines and **I/O multiplexing** concepts at a small scale (select on few FDs, or event flags).
+* On Raspberry Pi-class Linux: prefer a **few processes/threads**, not large thread pools; memory is limited and context switches cost energy/time.
+
+```rust
+// ✅ A tiny cooperative state machine replaces a thread per task on bare metal —
+// no stacks to allocate per task, no scheduler, deterministic memory use.
+enum State { Idle, Sampling, Sending }
+
+fn tick(state: State, sensor_ready: bool, tx_done: bool) -> State {
+    match state {
+        State::Idle if sensor_ready => State::Sampling,
+        State::Sampling => State::Sending,       // sample taken, start TX
+        State::Sending if tx_done => State::Idle, // TX finished, go idle
+        s => s, // no transition this tick
+    }
+}
+```
+
+### 8. Language / runtime choices
+
+| Approach | Fits well when |
+| --- | --- |
+| **C / Rust `no_std`** | Tiny MCUs, strict RAM/flash |
+| **MicroPython / Lua** | Prototyping, larger MCUs with room for a VM |
+| **Full Linux + Python** | Pi-class, where developer speed > resource cost |
+| **Arduino framework** | Fast start; still apply static buffers & short ISRs underneath |
+
+* If you use a GC language on a constrained device, **budget heap** and measure pause/allocation behavior under worst-case input.
+* Prefer **deterministic failure** (static assert on buffer sizes, explicit `Result`) over panicking/aborting in field devices when recovery is possible.
+
+```rust
+// ✅ Compile-time assertion catches an oversized buffer before it ever ships,
+// instead of discovering the overflow as a field crash.
+const BUF_SIZE: usize = 64;
+const _: () = assert!(BUF_SIZE <= 128, "buffer too large for this MCU's RAM budget");
+
+// ✅ Explicit Result instead of panicking on bad input in the field.
+fn parse_frame(data: &[u8]) -> Result<u16, &'static str> {
+    if data.len() < 2 { return Err("short frame"); }
+    Ok(u16::from_le_bytes([data[0], data[1]]))
+}
+```
+
+### 9. Networking on constrained links
+
+* Small packets, binary codecs (not JSON) on LoRa/BLE/802.15.4 (see *Data Formats*).
+* Aggressive timeouts and **idempotent** retries — links are lossy.
+* Don’t pull large TLS stacks if a lighter DTLS/pre-shared key model is acceptable for the threat model.
+
+```rust
+// ❌ BAD: verbose JSON over a lossy, low-bandwidth radio link.
+// {"sensor_id": 42, "temperature_c": 21.5, "timestamp": 1234567890}  // ~65 bytes
+
+// ✅ GOOD: fixed-layout binary frame — a fraction of the bytes on air,
+// which directly means less radio-on time and less battery drain.
+struct Frame { sensor_id: u8, temp_c_x10: i16, timestamp: u32 } // 7 bytes packed
+fn encode(f: &Frame) -> [u8; 7] {
+    let mut b = [0u8; 7];
+    b[0] = f.sensor_id;
+    b[1..3].copy_from_slice(&f.temp_c_x10.to_le_bytes());
+    b[3..7].copy_from_slice(&f.timestamp.to_le_bytes());
+    b
+}
+```
+
+### 10. Calculators & extreme constraints
+
+* Precompute tables (trig, logs) into ROM.
+* Fixed-point or BCD if the domain requires it.
+* No heap; all workspace global or stack.
+* UI redraw only dirty regions; never allocate per keypress.
+
+```c
+// ❌ BAD: compute sin() at runtime with software floating point on a chip
+// with no FPU — dozens to hundreds of cycles per call, on every redraw.
+float y = sinf(angle);
+
+// ✅ GOOD: precomputed sine table in ROM — a single array lookup.
+static const int16_t SIN_TABLE[256] = { /* precomputed Q15 fixed-point values */ };
+int16_t fast_sin(uint8_t angle) { return SIN_TABLE[angle]; } // O(1), no FPU needed
+```
+
+### Checklist for constrained targets
+
+1. **RAM peak** measured (not only average) — including stack and ISR nesting  
+2. **Flash/image size** under the device limit with room for updates  
+3. **No heap** on the hottest paths (or a bounded arena)  
+4. **ISRs** short; work deferred  
+5. **Sleep current** and wake frequency match battery math  
+6. **Write rate** to flash/SD is wear-safe  
+7. **Worst-case** loop time meets control/IO deadlines  
+8. Build uses **size-oriented** flags and stripped release artifacts  
+
+```bash
+# Quick checks against the list above, on a Rust embedded target:
+$ cargo size --release                 # flash/RAM footprint of the final image
+$ cargo bloat --release -n 10          # biggest contributors to code size
+```
+
+> 💡 Server optimizations (huge hash maps, unbounded thread pools, rich logging) are often anti-patterns here. The winning embedded program is small, static, sleepy, and predictable.
+
+---
+
+
+## 🧰 Virtualization, Emulation & Sandboxing Costs
+
+📜 **Rule:** Each layer of virtualization or emulation multiplies overhead — avoid nested abstraction on hot paths; give VMs/containers clear CPU/memory topology; prefer paravirtualized or hardware-accelerated I/O.
+
+* 🖥️ **Emulation** (interpret or binary-translate another ISA): can be 10–100× slower than native. Use only when required; cache translated blocks; never put hot loops under pure interpretation.
+* 🖥️ **Virtualization** (hypervisor + guest OS): near-native CPU with hardware virt (VT-x/AMD-V), but I/O and syscall-heavy workloads pay exit costs. Minimize VM exits (batch hypercalls, virtio, huge pages in guest).
+* 🖥️ **Containers**: share the host kernel — cheaper than VMs, still pay namespace/cgroup overhead and noisy-neighbor risk.
+* ⚡ **Code implications:** Prefer static linking or predictable syscalls in guests; avoid fine-grained timer interrupts; pin vCPUs for latency-critical guests; don’t nest VMs without need.
+
+```text
+Native process     ████████████  ~100% potential
+Container          ███████████░  small overhead
+VM (hardware virt) █████████░░░  exits on I/O/privileged ops
+Emulated ISA       ██░░░░░░░░░░  large translation tax
+```
+
+
+---
+
+
+## ☁️ Cloud & Multi-Tenant Optimizations
+
+📜 **Rule:** In the cloud you optimize for *cost, tail latency, and noisy neighbors* — not just raw single-machine throughput. Design for horizontal scale, fast startup, and efficient idle.
+
+* ⚡ **Startup / cold start:** Shrink binaries, defer heavy init, use snapshots/provisioned concurrency for serverless. Avoid loading huge configs before listening on a port.
+* ⚡ **Horizontal scale:** Stateless services + external state (DB, object storage). Prefer connection pooling to managed DBs; watch per-connection memory.
+* ⚡ **Right-sizing:** Many small instances can beat one huge instance for availability, but raise orchestration and tail-latency overhead — measure.
+* ⚡ **Network topology:** Same-AZ / same-region calls are far cheaper than cross-region. Place chatty tiers together; compress cross-region payloads.
+* ⚡ **Spot/preemptible:** Checkpoint work; make jobs restartable; keep critical latency paths on on-demand capacity.
+* ⚡ **Observability tax:** High-cardinality metrics and verbose traces can cost more than the service — sample, aggregate, and bound labels (see *Logging & Tracing*).
+* 🚧 **Noisy neighbor:** Don’t assume exclusive use of disk bandwidth, LLC, or NICs on shared hosts. Use timeouts, bulkheads, and adaptive concurrency limits.
+
+```rust
+// ✅ Fast listen: bind before heavy init when possible; load rest lazily.
+fn main() {
+    let listener = std::net::TcpListener::bind("0.0.0.0:8080").unwrap();
+    // heavy_init() deferred until first request or background task
+    for stream in listener.incoming().flatten() {
+        handle(stream);
+    }
+}
+fn handle(_: std::net::TcpStream) {}
+```
+
+
+---
+
+
+## 🔧 LLVM, Compilers & Writing Programming Languages
+
+### 🧬 Using LLVM Effectively
+
+📜 **Rule:** LLVM optimizes what it can *see* and *prove* — feed it clear IR, stable types, and whole-program visibility when performance matters.
+
+* ⚡ Emit optimizable IR; use LTO/PGO (see *Link-Time Optimization*, *Profile-Guided Optimization*); set `target-cpu` for SIMD; verify with assembly dumps.
+
+```rust
+// ❌ BAD: side effects / opaque calls prevent LLVM from vectorizing or DCE.
+#[inline(never)]
+fn opaque(x: i32) -> i32 { unsafe { core::ptr::read_volatile(&x) } }
+
+fn sum_bad(a: &[i32]) -> i32 {
+    let mut s = 0;
+    for &x in a {
+        s += opaque(x); // blocks autovectorize / const-fold
+    }
+    s
+}
+
+// ✅ GOOD: pure data-parallel loop — LLVM can vectorize in release.
+fn sum_good(a: &[i32]) -> i32 {
+    a.iter().sum()
+}
+
+// ✅ GOOD: compile-time values stay out of the hot runtime path.
+const fn table() -> [u32; 4] { [1, 2, 3, 4] }
+static T: [u32; 4] = table();
+```
+
+### 🛠️ Writing Your Own Language (Performance-Relevant Choices)
+
+📜 **Rule:** Language design *is* performance design — value representation, evaluation strategy, and memory model set the ceiling before any optimizer runs.
+
+| Design choice | Faster tendency | Slower tendency |
+| --- | --- | --- |
+| Values | Unboxed scalars, tagged immediates | Everything a heap object |
+| Dispatch | Static types, monomorphization, inline caches | Pure interpreter, megamorphic calls |
+| Memory | Region/arena, ownership, generational GC | Naïve refcount everywhere |
+| Strings | SSO / ropes, immutable sharing | Always allocate per slice |
+
+```rust
+// ❌ BAD: interpreter boxes every integer — alloc storm on arithmetic.
+enum ValueBad { Int(Box<i64>), Obj(Box<Obj>) }
+fn add_bad(a: ValueBad, b: ValueBad) -> ValueBad {
+    match (a, b) {
+        (ValueBad::Int(x), ValueBad::Int(y)) => ValueBad::Int(Box::new(*x + *y)),
+        _ => panic!("type error"),
+    }
+}
+
+// ✅ GOOD: unboxed immediate ints in a tagged value (NaN-box or low-bit tag).
+#[derive(Copy, Clone)]
+struct Value(u64); // low bit 1 => int in high bits; else pointer
+
+impl Value {
+    fn from_int(i: i32) -> Self { Value(((i as u64) << 1) | 1) }
+    fn as_int(self) -> Option<i32> {
+        if self.0 & 1 == 1 { Some((self.0 >> 1) as i32) } else { None }
+    }
+}
+
+fn add_good(a: Value, b: Value) -> Option<Value> {
+    Some(Value::from_int(a.as_int()? + b.as_int()?)) // no heap
+}
+
+struct Obj;
+```
+
+* ⚡ Bytecode + tight VM loop; JIT specialize on observed types; AOT via LLVM/Cranelift; cheap FFI (see *Calling Conventions*).
+
+## 🧠 Writing & Serving LLM Systems
+
+📜 **Rule:** LLM performance is dominated by **memory bandwidth, KV cache management, batching, and kernel quality** — not by clever scalar micro-opts in Python glue code. Apply the general accelerator rules in *Optimizing Code for AI / ML Hardware* (residency, fusion, precision, prefetch); below is what is *specific* to LLMs.
+
+### Training-oriented
+
+* ⚡ Fused optimizer/attention kernels; activation checkpointing when memory-bound.
+* ⚡ Graph compile (Torch compile, XLA) for fusion; shard with FSDP/DeepSpeed/tensor parallel and overlap communication.
+* ⚡ Gradient accumulation when global batch must grow beyond per-device memory.
+
+```python
+# ❌ BAD: store every activation for backward — memory-bound long before
+# compute-bound; large models OOM well before the GPU's FLOPs are saturated.
+out = transformer_block(x)  # every intermediate activation kept for backward
+
+# ✅ GOOD: activation checkpointing — recompute activations during the
+# backward pass instead of storing them, trading extra compute for far
+# less memory, so you can fit a larger batch/model on the same GPU.
+from torch.utils.checkpoint import checkpoint
+out = checkpoint(transformer_block, x, use_reentrant=False)
+```
+
+### Inference / serving-oriented
+
+* ⚡ **Continuous batching** and **paged KV caches** (PagedAttention-style) to raise GPU utilization vs one-request-per-batch.
+* ⚡ Quantize weights (INT8/INT4 / GPTQ/AWQ-style) when quality allows — pure bandwidth win for decode.
+* ⚡ KV cache layout, reuse, and eviction dominate long-context serving; preallocate or page; no per-token host allocs.
+* ⚡ Speculative decoding / draft models under the right load shapes.
+* ⚡ Production runtimes (vLLM, TensorRT-LLM, llama.cpp, ORT, etc.) over naïve eager loops.
+* 🚧 Don’t synchronize to host every token; stream without flushing the whole pipeline.
+
+```python
+# ❌ BAD: one request per forward pass — while request A is generating,
+# the GPU sits mostly idle waiting on request B, C, D to even arrive.
+def serve_bad(request):
+    return model.generate(request.tokens)  # processed one at a time
+
+# ✅ GOOD: continuous batching — new requests join an in-flight batch each
+# decode step, and a paged KV cache lets sequences of different lengths
+# share GPU memory without over-allocating for the longest possible sequence.
+class ContinuousBatcher:
+    def __init__(self, model, kv_cache):
+        self.model, self.kv_cache, self.active = model, kv_cache, []
+
+    def step(self, new_requests):
+        self.active.extend(new_requests)             # admit new work each tick
+        batch = self.kv_cache.gather(self.active)     # paged, per-sequence KV
+        next_tokens = self.model.decode_step(batch)   # one fused step, whole batch
+        self.active = [r for r in self.active if not r.is_done(next_tokens)]
+        return next_tokens
+```
+
+### Host / product code around the model
+
+* Tokenize in bulk; reuse buffers; bound concurrent generations; cache repeated system prompts.
+
+```rust
+// ❌ BAD: rebuild prompt + allocate token vec every request.
+fn generate_bad(model: &Model, user: &str) -> String {
+    let prompt = format!("system: You are helpful.\nuser: {user}\n"); // alloc
+    let tokens: Vec<u32> = tokenize(&prompt); // alloc every time
+    model.decode_alloc(&tokens)               // more alloc per token internally
+}
+
+// ✅ GOOD: reusable buffers; shared system prefix tokens; bounded decode into scratch.
+struct GenScratch {
+    tokens: Vec<u32>,
+    out: String,
+}
+
+fn generate_good(model: &Model, system_toks: &[u32], user: &str, sc: &mut GenScratch) -> &str {
+    sc.tokens.clear();
+    sc.tokens.extend_from_slice(system_toks); // cached system prompt
+    tokenize_into(user, &mut sc.tokens);
+    sc.out.clear();
+    model.decode_into(&sc.tokens, &mut sc.out);
+    &sc.out
+}
+
+struct Model;
+impl Model {
+    fn decode_alloc(&self, _: &[u32]) -> String { String::new() }
+    fn decode_into(&self, _: &[u32], out: &mut String) { out.push_str("..."); }
+}
+fn tokenize(_: &str) -> Vec<u32> { vec![] }
+fn tokenize_into(_: &str, sink: &mut Vec<u32>) { sink.push(1); }
+```
+
+> 💡 Orchestration in Python/JS is fine; keep the **decode loop and memory path** in optimized native/CUDA/Metal kernels or a proven runtime.
+
+---
+
 ## 🏗️ Compiler, Build & Linking
 
 ### ⏱️ Compile-Time Evaluation (Runtime Computation of Constants)
@@ -2119,6 +4563,43 @@ const RESULT: u32 = compute_pow_good(2, 10); // Calculated at compile time!
 ```
 
 > **💡 Clippy Lint:** `clippy::missing_const_for_fn`
+
+
+### 📞 Calling Conventions (Register Args vs. Stack Traffic)
+
+📜 **Rule:** Keep hot-path functions compatible with the platform ABI's register-argument limit so arguments stay in registers instead of spilling to the stack; avoid unnecessary large-by-value passes.
+
+* 🖥️ **What a calling convention defines:** Which registers hold the first N integer/float arguments, which are caller- vs callee-saved, where the return value goes, and how the stack is aligned. On System V AMD64 (Linux/macOS) the first six integer args are in `rdi, rsi, rdx, rcx, r8, r9`; on Windows x64 the first four are in `rcx, rdx, r8, r9`. Extra args go on the stack — slower and more cache pressure.
+* 🚧 **The Stack-Spill Overhead:** Passing many arguments, or large structs by value, forces stores/loads through the stack frame. Crossing an FFI boundary with the wrong convention is undefined behavior.
+* ⚡ **Techniques:**
+  * Pass small primitives and `Copy` types by value; pass large structs by reference (`&T` / `&mut T`).
+  * Keep the number of hot arguments within the register limit when practical (or pack related fields into a small struct passed by value/reference).
+  * For FFI, use `#[repr(C)]` and `extern "C"` (or the correct ABI) so both sides agree.
+
+```rust
+// ❌ BAD: many args + large struct by value → stack traffic.
+fn process_bad(a: i32, b: i32, c: i32, d: i32, e: i32, f: i32, g: i32, big: [u8; 256]) {
+    let _ = a + b + c + d + e + f + g + big[0] as i32;
+}
+
+// ✅ GOOD: excess context packed; large payload by reference.
+struct Ctx { a: i32, b: i32, c: i32, d: i32, e: i32, f: i32, g: i32 }
+fn process_good(ctx: &Ctx, big: &[u8; 256]) {
+    let _ = ctx.a + ctx.b + ctx.c + ctx.d + ctx.e + ctx.f + ctx.g + big[0] as i32;
+}
+
+// ✅ FFI: explicit C ABI so the linker/calling convention matches the C side.
+#[repr(C)]
+pub struct Point { x: f64, y: f64 }
+
+#[no_mangle]
+pub extern "C" fn length(p: Point) -> f64 {
+    (p.x * p.x + p.y * p.y).sqrt()
+}
+```
+
+> 💡 Inlining eliminates calling-convention cost entirely for hot callees — another reason tiny hot functions benefit from `#[inline]` across crates.
+
 
 ### 📋 Explicit Inlining (Cross-Crate Inlining Limits)
 
@@ -2280,6 +4761,29 @@ cargo pgo optimize build
 
 ---
 
+
+### 🔗 Symbol Visibility & Dead-Code Stripping
+
+📜 **Rule:** Alongside LTO and static/dynamic linking choices, export only the symbols you must — every public/`#[no_mangle]` symbol is a root the linker must keep.
+
+* Prefer crate-private helpers; export a minimal C ABI surface for shared libraries.
+* Pair with `lto = "fat"`, `codegen-units = 1`, and `strip = true` in release (see *Link-Time Optimization* and *Binary Size Reduction*).
+* On ELF, section GC (`--gc-sections`, default in release) drops unused code when nothing references it.
+
+```rust
+// ❌ BAD: public no_mangle surface larger than needed.
+#[no_mangle]
+pub extern "C" fn internal_helper_should_not_be_exported(x: i32) -> i32 { x + 1 }
+
+// ✅ GOOD: only the real API is exported; helper can be inlined away.
+#[inline]
+fn helper(x: i32) -> i32 { x + 1 }
+
+#[no_mangle]
+pub extern "C" fn api_entry(x: i32) -> i32 { helper(x) }
+```
+
+
 ### 🔗 Dynamic Link Libraries (DLLs) vs. Static Linking
 
 📜 **Rule:** Static-link for the fastest, most predictable single binary; dynamic-link (DLLs on Windows, `.so` shared objects on Linux, `.dylib` on macOS) when you need to share code across multiple processes or patch a dependency without recompiling everything that uses it.
@@ -2333,7 +4837,6 @@ fn call_good(x: f64) -> f64 {
 
 ---
 
----
 
 ## 🌐 General Performance Principles (Language-Agnostic)
 
