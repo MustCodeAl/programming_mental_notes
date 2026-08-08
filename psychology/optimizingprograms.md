@@ -15,9 +15,10 @@
 7. [Low-level hardware/compiler topics](#low-level-hardwarecompiler-topics)
 8. [Domain-specific starter checklists](#domain-specific-starter-checklists)
 9. [Case studies and benchmark examples](#case-studies-and-benchmark-examples)
-10. [Performance myths (nuanced)](#performance-myths-nuanced)
-11. [Profiling toolbox](#profiling-toolbox)
-12. [Further reading (official docs first)](#further-reading-official-docs-first)
+10. [Extended optimization pattern catalog](#extended-optimization-pattern-catalog)
+11. [Performance myths (nuanced)](#performance-myths-nuanced)
+12. [Profiling toolbox](#profiling-toolbox)
+13. [Further reading (official docs first)](#further-reading-official-docs-first)
 
 ---
 
@@ -90,6 +91,25 @@ Premature optimization often increases maintenance cost and bug risk without use
 - A fast wrong answer is still wrong.
 - Add regression tests around hot code before risky changes (`unsafe`, custom allocators, lock-free structures).
 - Use property-style checks for algorithm rewrites where practical.
+
+### Practical measurement workflow (repeatable)
+
+1. Define one user-visible objective (e.g., p99 latency from 180ms to <120ms).
+2. Capture baseline metrics in release mode.
+3. Identify top bottlenecks with a profiler.
+4. Form one optimization hypothesis.
+5. Implement one isolated change.
+6. Re-measure and keep/discard based on results.
+7. Record what changed, where, and why.
+
+This avoids unbounded tuning sessions and makes performance work reviewable.
+
+### Release-profile sanity checklist
+
+- Verify `cargo build --release` for all benchmark runs.
+- Ensure benchmark input cannot be constant-folded.
+- Confirm CPU frequency scaling / thermal throttling is not dominating variance.
+- Repeat benchmarks and compare confidence intervals, not single runs.
 
 ### Minimal benchmark harness pattern (Criterion)
 
@@ -194,6 +214,33 @@ fn has_pair_with_sum(sorted: &[i64], target: i64) -> bool {
 
 Greedy coin change is optimal only for some coin systems (canonical systems). For arbitrary denominations, dynamic programming may be required for optimality.
 
+### Batching and N+1 elimination
+
+If a loop performs remote calls (DB/network/fs metadata), you often get larger wins by collapsing calls than by speeding the loop body.
+
+```text
+N calls in loop:      latency ~= N * round_trip + compute
+single batched call:  latency ~= 1 * round_trip + compute + merge
+```
+
+Start with:
+
+- batched read APIs (`IN (...)`, bulk endpoints),
+- batched writes (transactions / multi-row inserts),
+- API signatures that accept slices/iterators instead of single items.
+
+### BFS vs DFS: choose by objective
+
+| Goal | Usually prefer | Why |
+|---|---|---|
+| Shortest path in unweighted graph | BFS | explores by hop distance |
+| Deep exploration/backtracking | DFS (iterative) | low overhead frontier stack |
+| Unbounded depth from untrusted input | iterative DFS/BFS | avoids recursion stack overflow |
+
+### Recursion to iteration in hot or deep paths
+
+Rust does not guarantee tail-call optimization. Convert deep recursion to explicit stack/loop when depth can grow with input.
+
 ---
 
 ## Data structures and data layout
@@ -220,6 +267,32 @@ Use a faster non-cryptographic hasher only when:
 - Split cold metadata away from hot loops.
 - Consider SoA (structure of arrays) over AoS when processing single fields across many elements.
 - Measure before/after with cache-miss counters.
+
+### \"Which structure should I try first?\" quick table
+
+| Access pattern | Candidate | Why |
+|---|---|---|
+| append + iterate | `Vec<T>` | contiguous, simple, fast default |
+| queue (pop front + push back) | `VecDeque<T>` | avoids frequent shifting |
+| membership tests on unique keys | `HashSet<T>` | expected O(1) lookup |
+| ordered lookup / range queries | `BTreeMap<K,V>` | stable ordering + range APIs |
+| many tiny bit flags | bitflags/bitset | compact memory footprint |
+
+### Hot/cold split sketch
+
+```rust
+struct EntityHot {
+    pos: [f32; 3],
+    vel: [f32; 3],
+}
+
+struct EntityCold {
+    debug_name: String,
+    ui_state: u32,
+}
+```
+
+The idea is to keep frequently-touched fields cache-dense while moving rarely-read fields out of the hot walk.
 
 ### Bloom filter sanity check
 
@@ -264,6 +337,23 @@ fn write_record_once<W: Write>(mut w: W, key: &[u8], value: &[u8]) -> io::Result
 
 If you need OS-handle interoperability, prefer modern FD/handle traits (e.g., `AsFd`/`AsHandle`) to avoid lifetime bugs around raw descriptors.
 
+### String/bytes construction patterns
+
+Common anti-pattern in hot paths:
+
+- repeated `format!` + concatenation inside loops,
+- repeated UTF-8 conversions without reuse.
+
+Preferred pattern:
+
+- reserve approximate output size,
+- append into a reusable `String`/`Vec<u8>`,
+- reuse buffers across requests/frames.
+
+### `io_uring` and advanced async I/O (Linux)
+
+`io_uring` can reduce syscall overhead and improve batching for some workloads, but gains depend on kernel version, operation mix, and queue depth. Treat as an advanced optimization after profiling conventional buffered/async pipelines.
+
 ### Memory mapping: when it helps, when it does not
 
 `mmap` can reduce explicit copy paths and simplify random access, but it is not automatically "zero-copy" end-to-end and is not always faster than buffered I/O.
@@ -293,6 +383,15 @@ Atomics provide synchronization guarantees, but contended updates can still seri
 
 Use techniques like sharding, per-thread aggregation, or reduced write sharing to lower contention.
 
+### Synchronization choice cheat sheet
+
+| Situation | Typical tool | Notes |
+|---|---|---|
+| many reads, few writes | `RwLock` | measure write-heavy regressions |
+| tiny shared counters | atomics + sharding | avoid one global hot counter |
+| ownership transfer | channels | often simplifies locking model |
+| CPU parallel map/reduce | Rayon | work-stealing is usually enough |
+
 ### Async entry points and blocking boundaries
 
 ```rust
@@ -312,6 +411,15 @@ Cache-line padding may help when independent hot counters are written by differe
 - Keep signal handlers minimal and async-signal-safe.
 - In Rust, prefer safe coordination primitives (`Atomic*`, channels, `OnceLock`) over mutable global statics.
 
+### Tokio + Rayon together
+
+A common production pattern is:
+
+- Tokio for network/socket/timer orchestration,
+- Rayon (or dedicated blocking pools) for CPU-heavy transforms.
+
+Avoid long CPU loops on async executor workers.
+
 ---
 
 ## Low-level hardware/compiler topics
@@ -322,6 +430,17 @@ A function call does **not** inherently mean "save all CPU state" or "touch RAM.
 
 Avoid blanket rules like "never call functions in loops"; verify with profiling and generated code.
 
+### Reading optimized assembly without overfitting
+
+Check for:
+
+- whether expected inlining occurred,
+- whether bounds checks remain in hot loops,
+- whether vector instructions appear where expected,
+- whether branches match your mental model.
+
+Then return to end-to-end metrics. Better-looking assembly is not automatically better product latency.
+
 ### Locals and references: avoid absolute claims
 
 Locals are not guaranteed to stay in registers/L1, and mutating through a reference is not guaranteed to force a RAM write each iteration. Actual behavior depends on optimization level, aliasing, and code shape.
@@ -329,6 +448,8 @@ Locals are not guaranteed to stay in registers/L1, and mutating through a refere
 ### Iterators vs indexing
 
 Iterator style can improve clarity and sometimes aid optimization, but it does not inherently remove all bounds checks or guarantee SIMD. Indexed loops can optimize equally well.
+
+Use whichever representation keeps invariants obvious; when performance differs, keep the faster one only if the measured gain justifies complexity.
 
 ### Functional combinators and branches
 
@@ -348,6 +469,8 @@ In practice:
 - `std::arch` intrinsics are available for target-specific paths.
 - Keep SIMD paths behind clear feature/target guards and benchmark them.
 
+If you evaluate `std::simd`, verify its current stability/support matrix directly in official docs for your current stable toolchain.
+
 ### PGO/LTO/target-cpu and architecture-specific tuning
 
 Potentially high impact, but always measure:
@@ -364,6 +487,15 @@ Guardrails:
 ### Prefetch, huge pages, unsafe micro-tuning
 
 Use only with strong evidence from counters/profiles; these techniques are workload- and platform-sensitive and can regress performance.
+
+### PGO quick path (conceptual)
+
+1. Build instrumented binary.
+2. Run representative production-like workload.
+3. Rebuild with collected profile data.
+4. Compare end-to-end metrics and binary size.
+
+Keep a non-PGO fallback path in CI/release process.
 
 ---
 
@@ -448,6 +580,67 @@ Scenario: API endpoint has high p99 latency.
 5. Keep only if improvement is material and code remains maintainable.
 
 (Workflow is real; exact numbers intentionally omitted unless reproducibly measured.)
+
+### Additional mini case study: allocation churn in parser loop
+
+Scenario: parser throughput is unstable under burst load.
+
+1. Measure: allocation profiler shows heavy `String`/`Vec` churn in token loop.
+2. Change: pre-reserve buffers + reuse per-request scratch buffers.
+3. Validate: parser regression tests + malformed-input tests.
+4. Re-measure: throughput and tail-latency variance.
+5. Decision: keep if gains persist across input shapes (small/medium/large payloads).
+
+Again, numbers are intentionally omitted until measured in your environment.
+
+---
+
+## Extended optimization pattern catalog
+
+These are high-value patterns from day-to-day systems work. Treat them as candidates, not defaults.
+
+### API and abstraction patterns
+
+- Prefer static dispatch (`impl Trait`/generics) in hot paths when code-size impact is acceptable.
+- Use dynamic dispatch where flexibility is needed and call frequency is low/moderate.
+- Keep trait-object boundaries away from tight numeric loops if profiling says virtual-call overhead matters.
+
+### Loop and control-flow patterns
+
+- Fuse passes when two sequential loops touch the same data and fusion does not hurt clarity.
+- Split (fission) loops when one mixed loop blocks vectorization or creates branch-heavy hot paths.
+- Hoist loop-invariant work outside loops.
+- Use early-exit checks for negative/rare cases where correctness allows.
+
+### Allocation and lifetime patterns
+
+- Use request/frame-local scratch arenas when many temporary allocations share lifetime.
+- Recycle frequently used buffers (`clear`, retain capacity).
+- Prefer borrowing (`&str`, `&[u8]`, `Cow`) over cloning when ownership transfer is unnecessary.
+
+### Logging and observability overhead
+
+- Avoid expensive formatting on disabled log levels.
+- Sample high-volume traces in hot paths.
+- Distinguish profiling mode from production observability budgets.
+
+### Startup and binary-size patterns
+
+- Defer expensive initialization until first real use when startup latency matters.
+- Keep an eye on code-size growth from aggressive monomorphization/inlining.
+- Reassess `lto`, `codegen-units`, and panic strategy per deployment target.
+
+### Data movement patterns
+
+- Prefer operating on slices/views instead of repeatedly materializing intermediate vectors.
+- Batch small writes/reads to reduce syscall and framing overhead.
+- Avoid unnecessary encode/decode hops across layers.
+
+### Guardrails for `unsafe` optimization
+
+- Document invariants in `// SAFETY:` comments.
+- Add targeted tests around the invariants.
+- Keep a safe equivalent reference implementation where practical for cross-checking.
 
 ---
 
