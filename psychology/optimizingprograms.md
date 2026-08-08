@@ -453,19 +453,9 @@ fn factorial_good(n: u64) -> u64 {
     for i in 2..=n { acc *= i; }
     acc
 }
-
-// ✅ GOOD: explicit heap stack for graph DFS (see also DFS vs BFS section).
-fn dfs_iterative(graph: &[Vec<usize>], start: usize) -> Vec<bool> {
-    let mut visited = vec![false; graph.len()];
-    let mut stack = vec![start];
-    while let Some(n) = stack.pop() {
-        if visited[n] { continue; }
-        visited[n] = true;
-        stack.extend(graph[n].iter().copied());
-    }
-    visited
-}
 ```
+
+> 💡 For graph traversal specifically, see *DFS vs. BFS* above — it shows an explicit-stack iterative DFS and explains when to prefer it over recursion.
 
 
 ### 🧮 Dynamic Programming: Memoization vs. Tabulation
@@ -796,7 +786,7 @@ fn calculate_daily_discount_good(price: f64, current_hour: u64) -> f64 {
 📜 **Rule:** Prefer stateless functions and components by default; introduce state deliberately, only where it earns its keep.
 
 * 🧊 **Stateless:** A stateless function's output depends *only* on its current inputs — it holds no memory of previous calls (this is the same property as the "pure function" discussed in *"Deterministic vs. Non-Deterministic Logic"* above). Stateless code is trivially safe to run concurrently (no shared mutable data means no data races), trivially cacheable/memoizable, and trivially testable in isolation.
-* 🔥 **Stateful:** A stateful component (a struct holding a running total, a connection pool, an in-memory cache, a database) retains information across calls. State is often *necessary* — you can't have a cache, a game's world, or a network connection without it — but every piece of retained state is a new source of concurrency hazards (see *"Lock Contention"* above), harder-to-reproduce bugs (behavior now depends on call history, not just current arguments), and a life-cycle you must manage correctly (who initializes it, who mutates it, who tears it down).
+* 🔥 **Stateful:** A stateful component (a struct holding a running total, a connection pool, an in-memory cache, a database) retains information across calls. State is often *necessary* — you can't have a cache, a game's world, or a network connection without it — but every piece of retained state is a new source of concurrency hazards (see *Thread Synchronization Strategies* in the Concurrency section), harder-to-reproduce bugs (behavior now depends on call history, not just current arguments), and a life-cycle you must manage correctly (who initializes it, who mutates it, who tears it down).
 * 🎯 **The deciding question:** Does this component need to remember anything between calls? If not, keep it a stateless function — it's strictly easier to reason about and parallelize. If it does, isolate the state behind the smallest possible interface (a single struct, a single lock, a single owning thread) rather than letting mutable state leak across the codebase, so the "blast radius" of state-related bugs stays contained.
 * 🖥️ **Why the compiler cares:** A stateless function's result depends only on its arguments, which are typically already sitting in registers — the compiler can freely reorder, cache, hoist out of loops, or run the call on any thread, because it can *prove* no hidden dependency exists. A stateful function that reads/writes shared memory forces the compiler (and the CPU's memory-ordering hardware) to treat every call as having side effects it can't reorder around, which blocks exactly the kind of optimizations covered throughout this document.
 
@@ -830,26 +820,8 @@ fn next_id_good(current: u32) -> u32 {
 📜 **Rule:** Default to contiguous memory structures (`Vec`) for small/ordered data, but pivot to `HashMap` when large-scale, repeated lookups are required. **Always pre-allocate capacity.**
 
 * ⏳ **The Growth-Reallocation Overhead:** When a collection runs out of space, it must ask the Operating System for a new, larger memory block, copy all existing elements over to the new location, and free the old block. Doing this continuously inside a loop heavily stalls the CPU.
-* ⚡ **Pre-allocation:** Initializing with `.with_capacity()` calculates the exact memory footprint needed and pays the OS allocation tax just *once* upfront.
-
-```rust
-// ❌ BAD: Repeatedly re-allocates memory and copies data as it grows.
-fn collect_bad(items: &[i32]) -> Vec<i32> {
-    let mut vec = Vec::new();
-    for &item in items { vec.push(item * 2); }
-    vec
-}
-
-// ✅ GOOD: Pre-allocate the exact size needed. Zero re-allocations!
-fn collect_good(items: &[i32]) -> Vec<i32> {
-    let mut vec = Vec::with_capacity(items.len());
-    for &item in items { vec.push(item * 2); }
-    vec
-}
-
-```
-
-> **💡 Clippy Lints:** `clippy::slow_vector_initialization`, `clippy::vec_init_then_push`
+* ⚡ **Pre-allocation:** Initializing with `.with_capacity()` calculates the exact memory footprint needed and pays the OS allocation tax just *once* upfront. See *Reserve Capacity & Amortized Complexity* below for a full example and Clippy lints.
+* 🔍 **Vec vs. HashMap:** For small sets (up to ~a few hundred elements), a sorted `Vec` + binary search is often faster than a `HashMap` due to better cache locality. See *Binary Search vs. Hash Lookup* for the comparison.
 
 ### ⛓️ LinkedLists vs. Contiguous Storage (Cache Locality)
 
@@ -2918,6 +2890,39 @@ fn pipeline_good(tx: &std::sync::mpsc::Sender<Vec<u8>>, buf: Vec<u8>) {
 }
 ```
 
+**Why atomics beat a mutex for a hot counter:**
+
+* ⏳ **The Traffic Jam (Mutexes):** When 16 parallel threads try to increment a single `Mutex` counter, 15 threads are violently put to sleep by the OS. Waking them up requires a massive context switch, turning your 16-core machine into a slow single-core machine for that counter.
+* 🚀 **The Hardware Bypass (Atomics):** Atomic operations use specialized hardware instructions (like `LOCK XADD` on x86). Contended atomics don't run "at the same time" — each update still acquires the cache line exclusively via the MESI cache-coherency protocol — but they are far cheaper than a mutex (no syscall, no OS sleep/wake). The win is avoiding kernel scheduling overhead, not magically parallel writes.
+
+```text
+❌ Mutex (Lock Contention):
+Thread 1: [ RUNNING ]
+Thread 2: [ SLEEPING... ] -> Wakes Up -> [ RUNNING ]
+Thread 3: [ SLEEPING........................... ] -> Wakes Up -> [ RUNNING ]
+
+✅ Atomics (no OS sleep — cache coherency serializes, not the scheduler):
+Thread 1: [ RUNNING ]
+Thread 2: [ RUNNING ]  (briefly waits to acquire the cache line, not the OS)
+Thread 3: [ RUNNING ]
+```
+
+```rust
+use std::sync::{Mutex, Arc};
+use std::sync::atomic::{AtomicUsize, Ordering};
+
+// ❌ BAD: threads fight over the lock, 15 of 16 sleep waiting.
+fn update_counter_bad(counter: Arc<Mutex<usize>>) {
+    let mut lock = counter.lock().unwrap();
+    *lock += 1; // OS-level lock overhead
+}
+
+// ✅ GOOD: hardware atomic — no sleeping/waking, no syscall.
+fn update_counter_good(counter: Arc<AtomicUsize>) {
+    counter.fetch_add(1, Ordering::Relaxed);
+}
+```
+
 > ⚠️ **Ordering matters:** `Relaxed` is fine for pure statistics; use `Acquire`/`Release` (or `SeqCst` when in doubt) when one atomic publishes data that another thread must observe. Wrong ordering is a silent data race under the memory model.
 
 
@@ -2968,46 +2973,6 @@ fn process_many(files: &[String]) -> Vec<Vec<String>> {
     use rayon::prelude::*;
     files.par_iter().map(|f| parse_data(f)).collect()
 }
-```
-
-### 🔒 Lock Contention (The Concurrency Bottleneck)
-
-📜 **Rule:** Avoid wrapping highly-contended shared data in a `Mutex`. Prefer hardware-level Atomics, Lock-Free structures, or Message Passing (Channels).
-
-* ⏳ **The Traffic Jam (Mutexes):** When 16 parallel threads try to increment a single `Mutex` counter, 15 threads are violently put to sleep by the Operating System. Waking them up requires a massive context switch. This lock contention turns your screaming-fast 16-core machine into a slow, single-core machine.
-* 🚀 **The Hardware Bypass (Atomics):** Atomic operations (`AtomicUsize`) avoid the OS scheduler entirely. They use specialized hardware instructions (like `LOCK XADD` in x86) to update memory safely at the silicon level, without putting threads to sleep. Note that *contended* atomics don't literally run "at the same time": each update still has to acquire the cache line exclusively via the cache-coherency protocol (MESI), so updates to the *same* location serialize through the hardware. Atomics are far cheaper than a mutex (no syscall, no context switch), but a hot, heavily-contended atomic counter is still a serialization point — the win comes from avoiding sleeping/waking, not from magically parallel writes.
-
-**Diagram: Thread Execution States**
-
-```text
-❌ Mutex (Lock Contention):
-Thread 1: [ RUNNING ]
-Thread 2: [ SLEEPING... ] -> Wakes Up -> [ RUNNING ]
-Thread 3: [ SLEEPING........................... ] -> Wakes Up -> [ RUNNING ]
-
-✅ Atomics (no sleeping — but contended updates still serialize via cache coherency):
-Thread 1: [ RUNNING ]
-Thread 2: [ RUNNING ]  (briefly waits to acquire the cache line, not the OS)
-Thread 3: [ RUNNING ]
-
-```
-
-```rust
-use std::sync::{Mutex, Arc};
-use std::sync::atomic::{AtomicUsize, Ordering};
-
-// ❌ BAD: Threads violently fight over the lock, putting each other to sleep.
-fn update_counter_bad(counter: Arc<Mutex<usize>>) {
-    let mut lock = counter.lock().unwrap();
-    *lock += 1; // OS-level lock overhead
-}
-
-// ✅ GOOD: Threads update via a hardware atomic — no sleeping/waking.
-// (Contended updates to the SAME counter still serialize through cache coherency.)
-fn update_counter_good(counter: Arc<AtomicUsize>) {
-    counter.fetch_add(1, Ordering::Relaxed); // Fast: no syscall, no context switch
-}
-
 ```
 
 ### ⚛️ Avoid Needless Atomics (Atomic vs. Non-Atomic Reference Counting)
@@ -3114,7 +3079,7 @@ fn process_good(data: &[f64]) -> Vec<f64> {
 
 📜 **Rule:** When each thread can own its own buffer, counter, or PRNG, use thread-local storage instead of a shared `Mutex`-guarded resource.
 
-* 🚧 **The Shared-Buffer Bottleneck:** A global reusable buffer protected by a lock serializes all threads and bounces the cache line between cores (see *False Sharing* and *Lock Contention*).
+* 🚧 **The Shared-Buffer Bottleneck:** A global reusable buffer protected by a lock serializes all threads and bounces the cache line between cores (see *False Sharing* and *Thread Synchronization Strategies*).
 * ⚡ **The TLS Technique:** `thread_local!` gives each thread a private instance — zero synchronization on the fast path. Ideal for per-thread scratch buffers, RNGs, and statistics that are merged only at the end.
 
 ```rust
