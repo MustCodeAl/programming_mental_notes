@@ -58,13 +58,11 @@
 | [Blessed.rs](https://blessed.rs/crates) | Recommended ecosystem crates |
 | [High Assurance](https://highassurance.rs/chp4/sw_stack_1.html) | Secure systems programming |
 
-<details>
 <summary><strong>🏢 Microsoft Pragmatic Rust Guidelines</strong></summary>
 
 - [Microsoft Pragmatic Rust Guidelines](https://microsoft.github.io/rust-guidelines/)
 - [Microsoft Pragmatic Rust Guidelines — Complete Rules](https://microsoft.github.io/rust-guidelines/agents/all.txt)
 
-</details>
 
 ---
 
@@ -369,7 +367,6 @@ where
 
 - **Generics and Trait Bounds**: Generic types depend on their trait bounds, implying a dependency on the trait.
 
-<details>
 <summary><strong>🏢 Microsoft Guideline — Keep abstractions simple</strong></summary>
 
 ### 🪜 Abstraction Ladder
@@ -449,7 +446,6 @@ impl HttpClient {
 }
 ```
 
-</details>
 
 ---
 
@@ -559,7 +555,7 @@ fn main() {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Debug, Display, and diagnostics</strong></summary>
 
 ### 🐛 Public Types Should Support `Debug`
@@ -624,7 +620,7 @@ tracing::info!(
 );
 ```
 
-</details>
+
 
 ---
 
@@ -679,7 +675,7 @@ fn main() {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Send compatibility</strong></summary>
 
 ```rust
@@ -711,7 +707,7 @@ fn verify() {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -730,7 +726,7 @@ fn verify() {
 | **Exhaustive matching** | No wildcard `_` for business-critical enums |
 | **Minimal `pub` surface** | Use `pub(crate)` for internal APIs |
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline additions</strong></summary>
 
 | Idiom | Description |
@@ -746,7 +742,7 @@ fn verify() {
 | **Additive Cargo features** | Features should compose |
 | **Document magic values** | Explain why unusual constants exist |
 
-</details>
+
 
 ---
 
@@ -825,7 +821,7 @@ fn first(values: &[i32]) -> Option<i32> {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Errors, panics, and recovery</strong></summary>
 
 ```text
@@ -900,7 +896,7 @@ fn load() -> Result<Config, AppError> {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -930,7 +926,7 @@ mod tests {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Test observable behavior</strong></summary>
 
 Avoid tautological tests:
@@ -989,7 +985,7 @@ pub fn disable_certificate_validation() {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -1066,7 +1062,7 @@ cargo bench
 # Run benchmark targets.
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Verification Pipeline</strong></summary>
 
 ```bash
@@ -1117,7 +1113,7 @@ feature checks
 Miri / benchmarks
 ```
 
-</details>
+
 
 ---
 
@@ -1131,7 +1127,7 @@ Miri / benchmarks
 - Write tests for your code to ensure correctness.
 - Use `cargo fmt` to format your code.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Magic values and lint exceptions</strong></summary>
 
 ### 🔢 Document Magic Values
@@ -1171,7 +1167,7 @@ pub async fn ping() {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -1253,7 +1249,7 @@ fn main() {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Avoid correctness-sensitive global state</strong></summary>
 
 Avoid:
@@ -1278,7 +1274,7 @@ struct App {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -1315,7 +1311,7 @@ fn main() {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Cheap service handles</strong></summary>
 
 ```rust
@@ -1330,7 +1326,7 @@ struct DatabaseInner {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -1376,7 +1372,7 @@ impl UserId {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Prefer semantic types</strong></summary>
 
 Avoid:
@@ -1409,7 +1405,7 @@ fn transfer(
 }
 ```
 
-</details>
+
 
 ---
 
@@ -1838,7 +1834,7 @@ let total: i32 =
 assert_eq!(total, 10);
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Collection interoperability</strong></summary>
 
 Custom collections should consider implementing:
@@ -1868,7 +1864,7 @@ ExactSizeIterator
 
 Provide truthful `size_hint()` information because consumers such as `collect()` can use it for allocation planning.
 
-</details>
+
 
 ---
 
@@ -1934,7 +1930,7 @@ assert_eq!(
 
 Taken as a whole, these methods allow iterators to be transformed so that they produce exactly the sequence of elements that are needed for most situations.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Allocation and throughput</strong></summary>
 
 ### 📦 Preallocate
@@ -2001,7 +1997,7 @@ Benchmark
   └── No improvement → revert
 ```
 
-</details>
+
 
 ---
 
@@ -2128,7 +2124,7 @@ fn example() {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Async API design</strong></summary>
 
 ### ✅ Prefer `async fn`
@@ -2195,7 +2191,7 @@ for chunk in chunks {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -2214,7 +2210,7 @@ async fn main() {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Isolate runtime-specific details</strong></summary>
 
 ```text
@@ -2230,7 +2226,7 @@ Runtime Abstraction
 
 Keep runtime-specific types out of domain APIs unless runtime integration is itself the feature.
 
-</details>
+
 
 ---
 
@@ -2524,7 +2520,7 @@ fn main()
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — I/O boundaries and sans-I/O</strong></summary>
 
 ### 📥 Accept Standard I/O Traits
@@ -2579,7 +2575,7 @@ custom readers
  Network     Tests
 ```
 
-</details>
+
 
 ---
 
@@ -2628,7 +2624,7 @@ fn foo(a: u8) {
 
 This is the process of using types to rule out bad inputs. For example, using the type `Ascii` instead of `u8` to guarantee that the highest bit is zero. This is the preferred method of enforcing validity of input.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Strong types guard invariants</strong></summary>
 
 Avoid:
@@ -2677,7 +2673,7 @@ Validate
 Rest of Program
 ```
 
-</details>
+
 
 ---
 
@@ -2756,7 +2752,7 @@ mod private {
 
 Making a field public is a strong commitment: it pins down a representation choice, and prevents the type from providing any validation or maintaining any invariants on the contents of the field, since clients can mutate it arbitrarily. Public fields are most appropriate for struct types in the C spirit: compound, passive data structures. Otherwise, consider providing getter/setter methods and hiding fields instead.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Hide synchronization machinery</strong></summary>
 
 Avoid:
@@ -2789,7 +2785,7 @@ impl Store {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -2960,7 +2956,7 @@ fn foo<
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Builders and parameter design</strong></summary>
 
 ### 🏭 Builder Pattern
@@ -3008,7 +3004,7 @@ fn create_deposit(
 }
 ```
 
-</details>
+
 
 ---
 
@@ -3241,7 +3237,7 @@ extern "C" fn foo() {
 
 A group of imports is a set of imports on the same or sequential lines. One or more blank lines or other items (e.g., a function) separate groups of imports. Within a group of imports, imports must be version-sorted. Groups of imports must not be merged or re-ordered.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Naming</strong></summary>
 
 Prefer:
@@ -3276,7 +3272,7 @@ Factory
 Handler
 ```
 
-</details>
+
 
 ---
 
@@ -3551,7 +3547,7 @@ Prefer to put a generics clause on one line. Break other parts of an item declar
 
 Do not put spaces before or after `<` nor before `>`. Only put a space after `>` if it is followed by a word or opening brace, not an opening parenthesis. Put a space after each comma. Do not use a trailing comma for a single-line generics clause.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Macro design</strong></summary>
 
 ```text
@@ -3589,7 +3585,7 @@ foo
     └── ordinary unit tests
 ```
 
-</details>
+
 
 ---
 
@@ -3639,7 +3635,7 @@ pub fn add(
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Rustdoc structure</strong></summary>
 
 ```rust
@@ -3673,7 +3669,7 @@ pub fn operation() {
 }
 ```
 
-</details>
+
 
 ---
 
@@ -3713,7 +3709,7 @@ mod networking {
 }
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Module organization</strong></summary>
 
 ```rust
@@ -3745,7 +3741,7 @@ models
 misc
 ```
 
-</details>
+
 
 ---
 
@@ -3754,7 +3750,7 @@ misc
 - **Crates** group one or more related modules into either a library or a binary. They facilitate organizing code between projects. For libraries, visibility modifiers decide which items the module(s) export (e.g. the public API of the crate).
   - Crates can also have dependencies, which are themselves crates (e.g. 3rd party libraries used internally). Chapter 2's `rcli` tool was a binary crate that had two library crate dependencies: `rc4` and `clap`.
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — Workspaces and MSRV</strong></summary>
 
 ### 🗂️ Workspace Layout
@@ -3814,7 +3810,7 @@ tracing.workspace = true
 rust-version = "1.xx"
 ```
 
-</details>
+
 
 ---
 
@@ -3832,7 +3828,7 @@ System
 └── REST / gRPC Services
 ```
 
-<details>
+
 <summary><strong>🏢 Microsoft Guideline — FFI and portability</strong></summary>
 
 ```text
@@ -3881,7 +3877,7 @@ platform/
 └── fallback.rs
 ```
 
-</details>
+
 
 ---
 
