@@ -355,6 +355,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://www.bottomupcs.com/index.html
 * https://mcpservers.org/
 * https://flokoe.github.io/bash-hackers-wiki/
+* https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html
 
 
 #### hacking guides
