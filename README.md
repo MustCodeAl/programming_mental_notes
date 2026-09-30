@@ -316,18 +316,42 @@ When writing useful software, think in terms of avoiding manual labor, repetitio
 
 When problem-solving, consider the following approaches:
 
-- For counting problems, use iteration.
-- For minimum and maximum problems, use structural patterns.
-- For decision problems, use recursive solution or creation patterns.
-- For greedy solutions or behavioral patterns, use greedy solutions.
+
+Most interview problems can be solved with [Depth First Search](https://programming-idioms.org/idiom/18/depth-first-traversal-of-a-tree), [Breath First Search](https://programming-idioms.org/idiom/128/breadth-first-traversing-of-a-tree), and [Two Pointers](https://www.geeksforgeeks.org/dsa/palindrome-string/#using-twopointers-on-time-and-o1-space)
+
+- For counting problems, use iteration and or tabulation.
+- For minimum and maximum problems, use memoization and or structural patterns.
+- For decision problems, use recursive solution with backtracking and or creation patterns.
+- For greedy solutions or behavioral patterns, use greedy solutions which means every step choose immediate best answer .
+
+Also, if you can't figure out a [dynamic programming solution](https://idiomatic-rust-snippets.org/algorithms/dynamic-programming/intro.html), you can usually always do [DFS](https://resources.devweekends.com/dsa-patterns/dfs) + [memoization](https://www.alg0.dev/memoization/) which does the same thing.
 
 When dealing with memory, think in terms of creational patterns. When it comes to networking, think in terms of structural patterns. When it comes to other people’s software, external software, or operating systems, think in terms of behavioral patterns.
 
 When designing a system, consider the macro level, such as filtering, file input, searching, sorting, pipelines, and pattern matching.
 
+###### Data Modeling
 
+Most apps Now A Days are data intensive. 
+they store data to find again usually in databases,
+save results of expensive operations to speed up reads with cache
+allow users to search for data by keywords or filters with search indexs
+send messages to other processes to be handled asynchronously usually through stream processing
+periodically crunch large amount of accumulated data through batch processing
 
+And such is why data models are the most important part of developing software. They have an effect on how the software is written and also how we think about the problem we are solving.
 
+Most applications are built by layering one data model on top of another, for each layer you think about how it is represented in terms of the next lower layer.
+
+As an app developer you look at the real world to model people, organizations, goods, actions, money flow, sensors, etc into objects and or data structures and apis that manipulate those data structures.
+
+Then when you store those data structures you express them in terms of a general  data format such as json, xml, tables in a relational database, and or a graph model.
+
+usually the database. software decided on a way of representing that data in terms of bytes in memory, on disk, and or on a network, which allows the data to be queried, searched, manipulated, and processed in different ways.
+
+each layer hide the complexity of the layer below it by providing it a clean data model and allows different groups of people to work effectively
+
+---
 
 ## Useful links and references
 
@@ -385,6 +409,7 @@ When designing a system, consider the macro level, such as filtering, file input
 
 #### references and language guides
 * https://www.techempower.com/benchmarks/
+* https://algo.monster/
 * https://os.phil-opp.com/
 * https://www.lurklurk.org/effective-rust/
 * https://doc.rust-lang.org/nightly/style-guide/
@@ -496,6 +521,7 @@ When designing a system, consider the macro level, such as filtering, file input
 * https://roadmap.sh/
 * https://andreasbm.github.io/web-skills/
 * https://www.sijinjoseph.com/programmer-competency-matrix/
+* /resources/interview-questions/rest-microservices#33-api-rate-limiting
 
 #### useful tools
 * https://godbolt.org/
