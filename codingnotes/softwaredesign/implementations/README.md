@@ -131,7 +131,14 @@ fn mod(mut x: u32, mut y: u32) -> u32{
 }
 ```
 
+
+---
+
+
+
 ### 1. Sliding Window (Fixed Size)
+
+**The Core Intuition:** Instead of recalculating the sum of a subarray from scratch every time it shifts—which leads to redundant `O(k)` work per step—you can reuse the bulk of the previous window. As the window slides forward by one index, only two elements change: the old element drops off the left edge, and a new element enters on the right edge. By simply subtracting the outgoing value and adding the incoming value in `O(1)` time, you maintain a rolling sum across the entire array efficiently.
 
 This pattern is perfect for finding the maximum sum of a contiguous subarray of size `k`.
 
@@ -172,7 +179,11 @@ fn max_sum_subarray(arr: &[i32], k: usize) -> Option<i32> {
 
 ```
 
+---
+
 ### 2. Two Pointers (Fast and Slow)
+
+**The Core Intuition:** If you have a cyclic path or linked list, a single pointer traversing sequentially can loop forever without realizing it's trapped. By introducing a second pointer moving at a faster speed (e.g., jumping two steps for every one step the slow pointer takes), you create a relative closing speed. If there is no cycle, the fast pointer will safely reach the end (`None`). If a cycle exists, the fast pointer is bound to "lap" the slow pointer and land on the exact same node, much like a faster runner overtaking a slower one on a circular track.
 
 Commonly known as Floyd’s Cycle-Finding Algorithm (the "Tortoise and the Hare"), this pattern detects cycles in linked structures using two pointers moving at different speeds.
 
@@ -202,7 +213,11 @@ fn detect_linked_list_cycle(head_node: Option<&Node>) -> bool {
 }
 ```
 
+---
+
 ### 3. Prefix Sum
+
+**The Core Intuition:** When you need to repeatedly query the sum of elements between arbitrary indices `left` and `right`, doing it naively every time results in repetitive linear scans. By pre-calculating a running total from the start of the array up to every index (a prefix sum array) in a single `O(n)` pass, you compress any range sum into a basic subtraction problem: the sum from `left` to `right` is simply everything up to `right + 1` minus everything up to `left`.
 
 This technique is ideal for Range Sum Queries, allowing you to calculate the sum of any subarray in constant time after a one-time linear preprocessing step.
 
@@ -233,7 +248,11 @@ impl RangeSumEngine {
 }
 ```
 
+---
+
 ### 4. Binary Search
+
+**The Core Intuition:** Searching through an unorganized collection forces you to check elements one by one (`O(n)`). However, if the data is already sorted, every single comparison allows you to discard an entire half of the remaining search space instantly. By maintaining low and high boundaries and checking the exact midpoint, you cut the problem size in half with every single iteration, reducing the search time complexity to logarithmic scale (`O(log n)`).
 
 The classic "divide and conquer" algorithm for finding a target in a sorted collection by repeatedly 
 halving the search space.
@@ -268,6 +287,7 @@ fn perform_binary_search(sorted_array: &[i32], target_value: i32) -> Option<usiz
 
 ```
 
+---
 
 ##### Recursive approach:
 
@@ -292,7 +312,11 @@ fn binary_search(numbers: &[u32], target: u32) -> Option<u32> {
 }
 ```
 
+---
+
 ### 5. Heaps (Priority Queue)
+
+**The Core Intuition:** If you only care about extracting extreme values (like the maximum or minimum element) continuously from a dynamic dataset, keeping the entire collection fully sorted is a waste of computational effort (`O(n log n)`). A binary heap provides a structural compromise: it maintains a partially ordered tree where the optimal element is always sitting instantly accessible at the root in `O(1)` time, while insertions and extractions rebalance the tree in efficient `O(log n)` time.
 
 Rust provides `BinaryHeap` in the standard library for this pattern.
 
@@ -312,8 +336,11 @@ fn get_top_k_largest_elements(input_numbers: Vec<i32>, k_count: usize) -> Vec<i3
 }
 ```
 
+---
 
 ### 6. Stacks (LIFO)
+
+**The Core Intuition:** Many programming and structural validations—such as matching nested brackets, parsing HTML tags, or evaluating expressions—follow a strict "Last-In, First-Out" discipline. The most recent element introduced must be the very first one resolved or closed. A stack naturally models this behavior by restricting all insertions and removals to a single end, allowing you to track open states cleanly and evaluate pairings in reverse chronological order.
 
 Rust's `Vec` is the standard way to implement a stack using `push` and `pop`.
 
@@ -339,7 +366,11 @@ fn check_balanced_brackets(input_string: &str) -> bool {
 
 ```
 
+---
+
 ### 7. Trees (DFS/BFS)
+
+**The Core Intuition:** Hierarchical data structures like trees branch outward, meaning linear iteration is insufficient to visit every node. To explore them systematically, you have to choose between two core philosophies: going as deep down a single branch as possible before backtracking (**DFS**, using recursion or a stack) or exploring level by level horizontally across the board (**BFS**, using a queue). This ensures every node in the hierarchy is accounted for without infinite loops or missing branches.
 
 Using `Option<Box<Node>>` is the idiomatic way to handle recursive pointers in Rust.
 
@@ -364,7 +395,11 @@ fn perform_inorder_traversal(node_ref: Option<&TreeNode>) {
 }
 ```
 
+---
+
 ### 8. Tries (Prefix Trees)
+
+**The Core Intuition:** Storing thousands of words in a standard hash map means checking prefixes or autocomplete suggestions requires scanning multiple strings, leading to redundant character comparisons. A Trie optimizes this by factoring out common word prefixes into a shared tree of nodes. Every path down the tree spells out prefixes and words explicitly, making prefix-based searches and lookups scale purely with the length of the target word rather than the total number of words stored.
 
 Excellent for autocomplete features or dictionary lookups.
 
@@ -389,8 +424,11 @@ impl TrieNode {
     }
 }
 ```
+---
 
 ### 9. Graphs (Adjacency List)
+
+**The Core Intuition:** Unlike strict trees, general graphs can contain multi-directional links, cycles, and isolated clusters. To traverse them without getting stuck in infinite loops or missing disconnected components, you need an explicit memory tracker (`visited_nodes` set) combined with a traversal frontier (either a `VecDeque` for level-order BFS or a call stack for depth-first DFS). This decouples the network structure from your traversal logic, ensuring every connected node is safely evaluated exactly once.
 
 Represented efficiently using a `HashMap` or a `Vec` of `Vec`.
 
@@ -418,7 +456,11 @@ fn breadth_first_search(graph_adjacency_list: &HashMap<i32, Vec<i32>>, starting_
 
 ```
 
+---
+
 ### 10. Backtracking
+
+**The Core Intuition:** When faced with combinatorial problems (like generating subsets, permutations, or solving puzzles) where you must explore multiple potential paths, brute-forcing every single option independently is computationally explosive. Backtracking acts as an intelligent trial-and-error framework: you build a candidate solution incrementally, and the moment a choice violates the problem constraints or hits a dead end, you instantly abandon ("backtrack") that branch, undo your last action, and try the next alternative.
 
 Solving the "Subset" problem using recursion.
 
@@ -445,7 +487,11 @@ fn generate_subsets(
 }
 ```
 
+---
+
 ### 11. Dynamic Programming (Memoization)
+
+**The Core Intuition:** Pure recursive solutions for problems like Fibonacci or overlapping sub-problems often recompute identical states millions of times, leading to exponential time complexity. Memoization bridges top-down recursion and efficiency by introducing a cache (like a `Vec` or `HashMap`). The very first time a unique sub-problem is solved, its result is stored; any subsequent calls for that same state bypass computation entirely and return the cached answer in `O(1)` time.
 
 Using a `HashMap` or `Vec` to store previously computed results.
 
@@ -469,7 +515,11 @@ fn compute_fibonacci_with_memo(n_target: usize, result_cache: &mut Vec<i64>) -> 
 
 ```
 
+---
+
 ### 12. Greedy Algorithm
+
+**The Core Intuition:** Global optimization problems can sometimes be solved without looking ahead at every possible future consequence. If a problem exhibits the "greedy choice property"—meaning that making the locally optimal choice at each individual step guarantees an optimal overall solution (such as picking coin denominations or scheduling non-overlapping intervals sorted by end time)—you can bypass complex search trees and construct your final answer in a single, efficient linear pass.
 
 Solving the "Interval Scheduling" or "Coin Change" problem by making the locally optimal choice.
 
@@ -490,7 +540,11 @@ fn calculate_minimum_coins_required(mut remaining_amount: i32, coin_denomination
 
 ```
 
+---
+
 ### 13. Intervals
+
+**The Core Intuition:** Range-based problems often feel chaotic because intervals can start and end in any arbitrary order. The foundational trick to making interval problems manageable is **sorting them by their start times**. Once sorted, any potential overlaps are guaranteed to be adjacent to one another. This transforms a complex multi-way comparison problem into a clean, single-pass linear sweep where you only ever need to compare the current interval against the most recently merged one.
 
 Merging overlapping intervals using sorting and a single pass.
 
@@ -517,8 +571,11 @@ fn merge_overlapping_intervals(mut input_intervals: Vec<Vec<i32>>) -> Vec<Vec<i3
 }
 
 ```
+---
 
 ### 14. Two Pointers (Opposite Ends)
+
+**The Core Intuition:** When dealing with symmetric data structures like strings or arrays where you need to compare or evaluate elements from outer boundaries inward (such as checking palindromes or reversing content), maintaining two independent indices starting at opposite ends is far more efficient than nested loops. By moving the `left` pointer forward and the `right` pointer backward based on conditional logic, you converge on the center in linear `O(n)` time with `O(1)` auxiliary space.
 
 Commonly used for reversing a string or checking palindromes.
 
@@ -540,7 +597,12 @@ fn is_palindrome_check(input_text: &str) -> bool {
 
 ```
 
+---
+
 ### 15. K-Way Merge
+
+**The Core Intuition:** Merging two sorted lists is straightforward, but merging `k` separate sorted lists simultaneously can quickly become messy if you repeatedly scan all lists to find the absolute smallest next element. By utilizing a min-heap to track the current smallest head element from each of the `k` active lists, you can dynamically extract the global minimum in `O(log k)` time and push the next element from that same list into the heap, scaling efficiently regardless of how many lists you are combining.
+
 
 Merging `k` sorted lists using a `BinaryHeap`.
 
@@ -570,7 +632,11 @@ impl PartialOrd for NodeState {
 
 ```
 
+---
+
 ### 16. Topological Sort (Kahn's Algorithm)
+
+**The Core Intuition:** In a directed acyclic graph representing task dependencies (where an edge from `A` to `B` means `A` must happen before `B`), you cannot process any node until all of its incoming prerequisites are fully satisfied. Kahn’s algorithm mirrors real life: it counts the incoming dependency degree for every node, isolates all starting nodes with zero prerequisites into a processing queue, and dynamically "releases" downstream neighbor nodes by decrementing their degree counts as dependencies are completed.
 
 Used for resolving dependencies in a Directed Acyclic Graph (DAG).
 
