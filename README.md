@@ -357,7 +357,9 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 
 #### general useful stuff
 * https://github.com/MustCodeAl/awesome-voice-active-discord
+* https://fmhy.net/
 * https://deckly.dev/
+* https://mustcodeal-seleniumbase-rs.docs7.io/README
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
 * https://github.com/Awesome-Windows/Awesome
@@ -396,6 +398,8 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://wiki.devsecopsguides.com/
 * https://malwareunicorn.org/workshops/re101.html#0
 * https://github.com/0xZ0F/Z0FCourse_ReverseEngineering
+* https://mustcodeal.github.io/rust-game-hacking-book/
+  
 
 
 
@@ -495,6 +499,7 @@ each layer hide the complexity of the layer below it by providing it a clean dat
   
 #### search engines
 * https://osintframework.com/
+* https://start.me/p/L1rEYQ/osint4all
 * https://webmii.com/
 * https://xresolver.com/
 * https://dnsdumpster.com/
@@ -580,6 +585,7 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://forum.reverse4you.org/
 * https://www.deepseek.com/
   
+  
 
 
 #### practice
@@ -604,5 +610,6 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://overthewire.org/wargames/
 * https://www.vimarcade.com/
 * https://www.shortcutfoo.com/app/dojos/vim
+* https://pwn.college/
   
 
