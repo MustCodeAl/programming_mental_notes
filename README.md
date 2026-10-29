@@ -382,6 +382,7 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://mcpservers.org/
 * https://flokoe.github.io/bash-hackers-wiki/
 * https://matklad.github.io/2020/04/13/simple-but-powerful-pratt-parsing.html
+* https://cheatsheetseries.owasp.org/index.html
 
 
 #### hacking guides
