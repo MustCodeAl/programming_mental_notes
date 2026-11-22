@@ -359,6 +359,7 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://github.com/MustCodeAl/awesome-voice-active-discord
 * https://fmhy.net/
 * https://deckly.dev/
+* https://wstg.owasp.org/latest/
 * https://mustcodeal-seleniumbase-rs.docs7.io/README
 * https://github.com/sindresorhus/awesome
 * https://github.com/jaywcjlove/awesome-mac
@@ -585,6 +586,8 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://arena.ai/ (old site https://chat.lmsys.org/)
 * https://forum.reverse4you.org/
 * https://www.deepseek.com/
+* https://www.experientiallabs.ai/
+* https://venice.ai/about
   
   
 
@@ -612,5 +615,7 @@ each layer hide the complexity of the layer below it by providing it a clean dat
 * https://www.vimarcade.com/
 * https://www.shortcutfoo.com/app/dojos/vim
 * https://pwn.college/
+* https://churchofmalware.org/
+
   
 
